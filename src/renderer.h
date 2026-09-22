@@ -20,8 +20,9 @@ typedef struct renderer_vtable {
     void (*destroy)(renderer_t *self);
     void (*clear)(renderer_t *self, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
     void (*present)(renderer_t *self);
-    renderer_texture_t *(*create_texture)(renderer_t *self, const void *data,
-                                          size_t size);
+    renderer_texture_t *(*create_texture_from_rgba)(renderer_t *self,
+                                                    const uint8_t *rgba,
+                                                    int width, int height);
     void (*destroy_texture)(renderer_t *self, renderer_texture_t *texture);
     void (*draw_texture)(renderer_t *self, renderer_texture_t *texture,
                          const rect_t *dst);
@@ -31,7 +32,6 @@ typedef struct renderer_vtable {
                       uint8_t g, uint8_t b, uint8_t a);
     void (*set_texture_alpha)(renderer_t *self, renderer_texture_t *texture,
                               uint8_t alpha);
-    void (*set_blend_mode)(renderer_t *self, blend_mode_t blend_mode);
     void (*get_texture_size)(renderer_t *self, renderer_texture_t *texture,
                              int *width, int *height);
 } renderer_vtable_t;
@@ -60,6 +60,15 @@ static inline void renderer_present(renderer_t *self) {
     if (self && self->vt && self->vt->present) {
         self->vt->present(self);
     }
+}
+
+static inline renderer_texture_t *
+renderer_create_texture_from_rgba(renderer_t *self, const uint8_t *rgba,
+                                  int width, int height) {
+    if (self && self->vt && self->vt->create_texture_from_rgba) {
+        return self->vt->create_texture_from_rgba(self, rgba, width, height);
+    }
+    return NULL;
 }
 
 static inline void renderer_draw_texture(renderer_t *self,
@@ -91,13 +100,6 @@ static inline void renderer_set_texture_alpha(renderer_t *self,
                                               uint8_t alpha) {
     if (self && self->vt && self->vt->set_texture_alpha) {
         self->vt->set_texture_alpha(self, texture, alpha);
-    }
-}
-
-static inline void renderer_set_blend_mode(renderer_t *self,
-                                           blend_mode_t blend_mode) {
-    if (self && self->vt && self->vt->set_blend_mode) {
-        self->vt->set_blend_mode(self, blend_mode);
     }
 }
 

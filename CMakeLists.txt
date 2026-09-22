@@ -23,6 +23,15 @@ else()
     message(FATAL_ERROR "Unsupported window backend: ${WINDOW}. Supported values: sdl3")
 endif()
 
+set(RENDERER "sdl3" CACHE STRING "Renderer backend to use (e.g., sdl3)")
+set_property(CACHE RENDERER PROPERTY STRINGS "sdl3")
+
+if (RENDERER STREQUAL "sdl3")
+    list(APPEND WIDEBRIM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/sdl.c")
+else()
+    message(FATAL_ERROR "Unsupported renderer backend: ${RENDERER}. Supported values: sdl3")
+endif()
+
 add_executable(widebrim ${WIDEBRIM_SOURCES})
 target_include_directories(widebrim PRIVATE ${INCLUDE_DIRS})
 target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
