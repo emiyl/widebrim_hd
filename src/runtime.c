@@ -9,6 +9,7 @@
 #include "window.h"
 
 #define TARGET_FRAMERATE 60.0
+#define WINDOW_SCALE 0.5
 
 int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
     (void)assets_root;
@@ -35,8 +36,8 @@ int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
         return -1;
     }
 
-    rt->window =
-        window_create_sdl("widebrim", WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT, 0);
+    rt->window = window_create_sdl("widebrim", WB_SCREEN_WIDTH * WINDOW_SCALE,
+                                   WB_SCREEN_HEIGHT * WINDOW_SCALE, 0);
     if (!rt->window) {
         fprintf(stderr, "widebrim: Failed to create window\n");
         runtime_destroy(rt);
@@ -83,6 +84,20 @@ void runtime_run(runtime_t *rt) {
     clock_init(&rt->clock);
 
     while (rt->running) {
+        input_event_t event;
+
+        while (input_poll_event(rt->input, &event)) {
+            window_convert_event_to_render_coordinates(rt->window, &event);
+
+            switch (event.type) {
+            case INPUT_EVENT_QUIT:
+                rt->running = false;
+                break;
+            default:
+                break;
+            }
+        }
+
         dt_ms = wb_clock_tick(&rt->clock, interval_sec);
         if (dt_ms / interval_ms > 1.25) {
             dt_ms = interval_ms;
