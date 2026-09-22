@@ -36,7 +36,7 @@ int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
     }
 
     renderer_t *renderer =
-        renderer_create_sdl(window_as_native_renderer(rt->window));
+        renderer_create_sdl(window_as_sdl3_renderer(rt->window));
     if (!renderer) {
         fprintf(stderr, "widebrim: Failed to create renderer\n");
         window_destroy(rt->window);

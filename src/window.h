@@ -9,8 +9,7 @@ typedef struct window_t window_t;
 
 typedef struct window_vtable {
     void (*destroy)(window_t *self);
-    void *(*as_native_window)(const window_t *self);
-    void *(*as_native_renderer)(const window_t *self);
+    void *(*as_sdl3_renderer)(const window_t *self);
     void (*set_scale)(window_t *self, float x_scale, float y_scale);
     void (*convert_event_to_render_coordinates)(window_t *self,
                                                 input_event_t *event);
@@ -45,16 +44,9 @@ window_convert_event_to_render_coordinates(window_t *self,
     }
 }
 
-static inline void *window_as_native_window(const window_t *self) {
-    if (self && self->vt && self->vt->as_native_window) {
-        return self->vt->as_native_window(self);
-    }
-    return NULL;
-}
-
-static inline void *window_as_native_renderer(const window_t *self) {
-    if (self && self->vt && self->vt->as_native_renderer) {
-        return self->vt->as_native_renderer(self);
+static inline void *window_as_sdl3_renderer(const window_t *self) {
+    if (self && self->vt && self->vt->as_sdl3_renderer) {
+        return self->vt->as_sdl3_renderer(self);
     }
     return NULL;
 }

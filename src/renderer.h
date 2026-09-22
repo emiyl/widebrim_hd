@@ -14,8 +14,6 @@ typedef struct {
 typedef struct renderer_texture_t renderer_texture_t;
 typedef struct renderer_t renderer_t;
 
-typedef enum { BLEND_MODE_NONE = 0, BLEND_MODE_BLEND = 1 } blend_mode_t;
-
 typedef struct renderer_vtable {
     void (*destroy)(renderer_t *self);
     void (*clear)(renderer_t *self, uint8_t r, uint8_t g, uint8_t b, uint8_t a);

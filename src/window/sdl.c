@@ -29,12 +29,7 @@ static void sdl_window_destroy(window_t *self) {
     free(self);
 }
 
-static void *sdl_window_as_native_window(const window_t *window) {
-    sdl_window_t *impl = (sdl_window_t *)window->impl;
-    return impl ? (void *)impl->window : NULL;
-}
-
-static void *sdl_window_as_native_renderer(const window_t *window) {
+static void *sdl_window_as_sdl3_renderer(const window_t *window) {
     sdl_window_t *impl = (sdl_window_t *)window->impl;
     return impl ? (void *)impl->renderer : NULL;
 }
@@ -140,8 +135,7 @@ sdl_window_convert_event_to_render_coordinates(window_t *self,
 
 static const window_vtable g_sdl_window_vtable = {
     .destroy = sdl_window_destroy,
-    .as_native_window = sdl_window_as_native_window,
-    .as_native_renderer = sdl_window_as_native_renderer,
+    .as_sdl3_renderer = sdl_window_as_sdl3_renderer,
     .set_scale = sdl_window_set_scale,
     .convert_event_to_render_coordinates =
         sdl_window_convert_event_to_render_coordinates};
