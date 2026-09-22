@@ -73,7 +73,7 @@ void screen_collection_draw(screen_collection_t *sc, renderer_t *renderer) {
 }
 
 bool screen_collection_handle_event(screen_collection_t *sc,
-                                    input_event_t event) {
+                                    const input_event_t *event) {
     for (size_t i = 0; i < sc->count; ++i) {
         if (sc->layers[i].handle_event &&
             sc->layers[i].handle_event(sc->layers[i].impl, event)) {

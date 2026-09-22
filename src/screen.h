@@ -11,7 +11,7 @@ typedef struct {
     void *impl;
     void (*update)(void *impl, float dt_ms);
     void (*draw)(void *impl, renderer_t *renderer);
-    bool (*handle_event)(void *impl, input_event_t event);
+    bool (*handle_event)(void *impl, const input_event_t *event);
     void (*on_quit)(void *impl);
     void (*destroy)(void *impl);
 } screen_layer_t;
@@ -33,7 +33,7 @@ screen_layer_t screen_collection_remove_at(screen_collection_t *sc,
 void screen_collection_update(screen_collection_t *sc, float dt_ms);
 void screen_collection_draw(screen_collection_t *sc, renderer_t *renderer);
 bool screen_collection_handle_event(screen_collection_t *sc,
-                                    input_event_t event);
+                                    const input_event_t *event);
 void screen_collection_on_quit(screen_collection_t *sc);
 
 #endif // SCREEN_H
