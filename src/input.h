@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct input_t input_t;
 
-typedef struct input_vtable {
+typedef struct input_vtable_t {
     void (*destroy)(input_t *self);
     bool (*poll_event)(input_t *self, input_event_t *event);
 } input_vtable_t;

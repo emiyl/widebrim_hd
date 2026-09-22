@@ -32,6 +32,15 @@ else()
     message(FATAL_ERROR "Unsupported renderer backend: ${RENDERER}. Supported values: sdl3")
 endif()
 
+set(INPUT "sdl3" CACHE STRING "Input backend to use (e.g., sdl3)")
+set_property(CACHE INPUT PROPERTY STRINGS "sdl3")
+
+if (INPUT STREQUAL "sdl3")
+    list(APPEND WIDEBRIM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/input/sdl.c")
+else()
+    message(FATAL_ERROR "Unsupported input backend: ${INPUT}. Supported values: sdl3")
+endif()
+
 add_executable(widebrim ${WIDEBRIM_SOURCES})
 target_include_directories(widebrim PRIVATE ${INCLUDE_DIRS})
 target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})

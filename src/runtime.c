@@ -27,11 +27,18 @@ int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
         return -1;
     }
 
+    rt->input = input_create_sdl();
+    if (!rt->input) {
+        fprintf(stderr, "widebrim: Failed to create input\n");
+        runtime_destroy(rt);
+        return -1;
+    }
+
     rt->window =
         window_create_sdl("widebrim", WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT, 0);
     if (!rt->window) {
         fprintf(stderr, "widebrim: Failed to create window\n");
-        SDL_Quit();
+        runtime_destroy(rt);
         return -1;
     }
 
@@ -39,19 +46,27 @@ int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
         renderer_create_sdl(window_as_sdl3_renderer(rt->window));
     if (!renderer) {
         fprintf(stderr, "widebrim: Failed to create renderer\n");
-        window_destroy(rt->window);
-        SDL_Quit();
+        runtime_destroy(rt);
         return -1;
     }
 
-    fprintf(stderr, "widebrim: Runtime initialisation not implemented yet\n");
-    return -1;
+    rt->running = true;
+    return 0;
 }
 
-void runtime_destroy(runtime_t *runtime) {
-    if (!runtime)
+void runtime_destroy(runtime_t *rt) {
+    if (!rt)
         return;
-    runtime->running = false;
+    if (rt->input) {
+        input_destroy(rt->input);
+        rt->input = NULL;
+    }
+    if (rt->window) {
+        window_destroy(rt->window);
+        rt->window = NULL;
+    }
+    rt->running = false;
+    SDL_Quit();
 }
 
 void runtime_run(runtime_t *runtime) {
