@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "input.h"
 #include "window.h"
 
 typedef struct {
