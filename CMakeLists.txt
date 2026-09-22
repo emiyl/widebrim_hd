@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(widebrim C)
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL3 REQUIRED sdl3)
@@ -16,6 +17,7 @@ file(GLOB WIDEBRIM_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.
 add_executable(widebrim ${WIDEBRIM_SOURCES})
 target_include_directories(widebrim PRIVATE ${INCLUDE_DIRS})
 target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
+target_compile_options(widebrim PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 
 # Work around pkg-config library ordering on some platforms.
 if(APPLE)

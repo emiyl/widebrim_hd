@@ -26,6 +26,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    (void)language;
+
     fprintf(stderr, "widebrim: exiting\n");
     return 0;
 }
