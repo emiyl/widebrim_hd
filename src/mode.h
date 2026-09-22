@@ -49,12 +49,12 @@ typedef enum {
     GAME_MODE_DIARY = 43,
     GAME_MODE_NAZOBA = 44,
     GAME_MODE_INVALID = 255
-} game_mode;
+} game_mode_t;
 
 typedef struct {
     screen_layer_t layer;
     bool (*is_done)(void *impl);
     bool valid;
-} mode_handler;
+} mode_handler_t;
 
 #endif // MODE_H
