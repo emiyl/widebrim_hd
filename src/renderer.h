@@ -77,6 +77,13 @@ static inline void renderer_draw_texture(renderer_t *self,
     }
 }
 
+static inline void renderer_destroy_texture(renderer_t *self,
+                                            renderer_texture_t *texture) {
+    if (self && self->vt && self->vt->destroy_texture) {
+        self->vt->destroy_texture(self, texture);
+    }
+}
+
 static inline void renderer_draw_rect(renderer_t *self, const rect_t *rect,
                                       uint8_t r, uint8_t g, uint8_t b,
                                       uint8_t a) {

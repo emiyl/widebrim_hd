@@ -9,7 +9,7 @@
 
 typedef struct {
     void *impl;
-    void (*update)(void *impl, renderer_t *renderer);
+    void (*update)(void *impl, float dt_ms);
     void (*draw)(void *impl, renderer_t *renderer);
     bool (*handle_event)(void *impl, input_event_t event);
     void (*on_quit)(void *impl);

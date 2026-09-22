@@ -37,7 +37,7 @@ int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
     }
 
     rt->window = window_create_sdl("widebrim", WB_SCREEN_WIDTH * WINDOW_SCALE,
-                                   WB_SCREEN_HEIGHT * WINDOW_SCALE, 0);
+                                   WB_SCREEN_HEIGHT * WINDOW_SCALE * 2, 0);
     if (!rt->window) {
         fprintf(stderr, "widebrim: Failed to create window\n");
         runtime_destroy(rt);

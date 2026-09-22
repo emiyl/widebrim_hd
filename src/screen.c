@@ -59,8 +59,7 @@ screen_layer_t screen_collection_pop(screen_collection_t *sc) {
 void screen_collection_update(screen_collection_t *sc, float dt_ms) {
     for (size_t i = 0; i < sc->count; ++i) {
         if (sc->layers[i].update) {
-            sc->layers[i].update(sc->layers[i].impl,
-                                 (renderer_t *)(uintptr_t)dt_ms);
+            sc->layers[i].update(sc->layers[i].impl, dt_ms);
         }
     }
 }
