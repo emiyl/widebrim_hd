@@ -15,19 +15,15 @@ typedef enum {
     WB_LOGICAL_PRESENTATION_INTEGER_SCALE = 4
 } window_logical_presentation;
 
-typedef enum {
-    WB_SCALE_MODE_NEAREST = 0,
-} window_scale_mode;
-
 typedef struct window_vtable {
     void (*destroy)(window_t *self);
-    void (*set_logical_presentation)(window_t *self,
-                                     window_logical_presentation presentation);
-    void (*set_scale_mode)(window_t *self, window_scale_mode scale_mode);
-    void (*convert_event_to_render_coordinates)(window_t *self,
-                                                input_event_t *event);
     void *(*as_native_window)(const window_t *self);
     void *(*as_native_renderer)(const window_t *self);
+    void (*set_logical_presentation)(window_t *self, int w, int h,
+                                     window_logical_presentation presentation);
+    void (*set_scale)(window_t *self, float x_scale, float y_scale);
+    void (*convert_event_to_render_coordinates)(window_t *self,
+                                                input_event_t *event);
 } window_vtable;
 
 struct window_t {
@@ -45,17 +41,17 @@ static inline void window_destroy(window_t *self) {
 }
 
 static inline void
-window_set_logical_presentation(window_t *self,
+window_set_logical_presentation(window_t *self, int w, int h,
                                 window_logical_presentation presentation) {
     if (self && self->vt && self->vt->set_logical_presentation) {
-        self->vt->set_logical_presentation(self, presentation);
+        self->vt->set_logical_presentation(self, w, h, presentation);
     }
 }
 
-static inline void window_set_scale_mode(window_t *self,
-                                         window_scale_mode scale_mode) {
-    if (self && self->vt && self->vt->set_scale_mode) {
-        self->vt->set_scale_mode(self, scale_mode);
+static inline void window_set_scale(window_t *self, float x_scale,
+                                    float y_scale) {
+    if (self && self->vt && self->vt->set_scale) {
+        self->vt->set_scale(self, x_scale, y_scale);
     }
 }
 

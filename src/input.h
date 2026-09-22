@@ -36,7 +36,7 @@ typedef struct {
         input_mouse_motion_event_t mouse_motion;
         input_mouse_button_event_t mouse_button;
         input_key_event_t key;
-    } event;
+    } data;
 } input_event_t;
 
 typedef struct input_t input_t;

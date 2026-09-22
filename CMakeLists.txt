@@ -14,6 +14,15 @@ include_directories(${INCLUDE_DIRS})
 
 file(GLOB WIDEBRIM_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 
+set(WINDOW "sdl3" CACHE STRING "Window backend to use (e.g., sdl3)")
+set_property(CACHE WINDOW PROPERTY STRINGS "sdl3")
+
+if(WINDOW STREQUAL "sdl3")
+    list(APPEND WIDEBRIM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/window/sdl.c")
+else()
+    message(FATAL_ERROR "Unsupported window backend: ${WINDOW}. Supported values: sdl3")
+endif()
+
 add_executable(widebrim ${WIDEBRIM_SOURCES})
 target_include_directories(widebrim PRIVATE ${INCLUDE_DIRS})
 target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
