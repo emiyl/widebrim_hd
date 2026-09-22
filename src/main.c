@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
-static void print_usage(const char* argv0) {
+static void print_usage(const char *argv0) {
     printf("Usage: %s\n --assets <assets_path> [--language en]\n", argv0);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     const char *assets_root = NULL;
-    const char* language = "en";
+    const char *language = "en";
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--assets") == 0 && i + 1 < argc) {
