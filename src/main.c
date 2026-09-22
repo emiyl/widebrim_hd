@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "runtime.h"
 
@@ -23,8 +24,16 @@ int main(int argc, char *argv[]) {
     }
 
     if (assets_root == NULL) {
-        fprintf(stderr, "widebrim: --assets <assets_path> is required.\n");
-        print_usage(argv[0]);
+        assets_root = "assets";
+        fprintf(stderr,
+                "widebrim: --assets <assets_path> not specified, defaulting to "
+                "'%s'\n",
+                assets_root);
+    }
+
+    if (access(assets_root, F_OK) != 0) {
+        fprintf(stderr, "widebrim: assets directory '%s' does not exist.\n",
+                assets_root);
         return 1;
     }
 
