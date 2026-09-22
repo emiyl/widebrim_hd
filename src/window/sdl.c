@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,24 +10,6 @@ typedef struct sdl_window_t {
     SDL_Window *window;
     SDL_Renderer *renderer;
 } sdl_window_t;
-
-static SDL_RendererLogicalPresentation
-sdl_logical_presentation_from_widebrim(window_logical_presentation mode) {
-    switch (mode) {
-    case WB_LOGICAL_PRESENTATION_DISABLED:
-        return SDL_LOGICAL_PRESENTATION_DISABLED;
-    case WB_LOGICAL_PRESENTATION_STRETCH:
-        return SDL_LOGICAL_PRESENTATION_STRETCH;
-    case WB_LOGICAL_PRESENTATION_LETTERBOX:
-        return SDL_LOGICAL_PRESENTATION_LETTERBOX;
-    case WB_LOGICAL_PRESENTATION_OVERSCAN:
-        return SDL_LOGICAL_PRESENTATION_OVERSCAN;
-    case WB_LOGICAL_PRESENTATION_INTEGER_SCALE:
-        return SDL_LOGICAL_PRESENTATION_INTEGER_SCALE;
-    default:
-        return SDL_LOGICAL_PRESENTATION_DISABLED;
-    }
-}
 
 static void sdl_window_destroy(window_t *self) {
     if (!self) {
@@ -54,20 +37,6 @@ static void *sdl_window_as_native_window(const window_t *window) {
 static void *sdl_window_as_native_renderer(const window_t *window) {
     sdl_window_t *impl = (sdl_window_t *)window->impl;
     return impl ? (void *)impl->renderer : NULL;
-}
-
-static void
-sdl_window_set_logical_presentation(window_t *self, int w, int h,
-                                    window_logical_presentation presentation) {
-    if (!self) {
-        return;
-    }
-    sdl_window_t *sdl_window = (sdl_window_t *)self->impl;
-    if (sdl_window && sdl_window->renderer) {
-        SDL_SetRenderLogicalPresentation(
-            sdl_window->renderer, w, h,
-            sdl_logical_presentation_from_widebrim(presentation));
-    }
 }
 
 static void sdl_window_set_scale(window_t *self, float x_scale, float y_scale) {
@@ -173,12 +142,11 @@ static const window_vtable g_sdl_window_vtable = {
     .destroy = sdl_window_destroy,
     .as_native_window = sdl_window_as_native_window,
     .as_native_renderer = sdl_window_as_native_renderer,
-    .set_logical_presentation = sdl_window_set_logical_presentation,
     .set_scale = sdl_window_set_scale,
     .convert_event_to_render_coordinates =
         sdl_window_convert_event_to_render_coordinates};
 
-window_t *create_sdl_window(const char *title, int width, int height,
+window_t *window_create_sdl(const char *title, int width, int height,
                             unsigned int flags) {
     window_t *window = (window_t *)calloc(1u, sizeof(*window));
     if (!window) {
