@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "runtime.h"
+
 static void print_usage(const char *argv0) {
     printf("Usage: %s\n --assets <assets_path> [--language en]\n", argv0);
 }
@@ -14,7 +16,7 @@ int main(int argc, char *argv[]) {
             assets_root = argv[i + 1];
         } else if (strcmp(argv[i], "--language") == 0 && i + 1 < argc) {
             language = argv[i + 1];
-        } else {
+        } else if (strcmp(argv[i], "--help") == 0) {
             print_usage(argv[0]);
             return 1;
         }
@@ -26,7 +28,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    (void)language;
+    runtime_t runtime;
+    runtime_init(&runtime, assets_root, language);
 
     fprintf(stderr, "widebrim: exiting\n");
     return 0;
