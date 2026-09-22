@@ -3,13 +3,14 @@
 
 #include <stdbool.h>
 
+#include "clock.h"
 #include "input.h"
-#include "renderer.h"
 #include "window.h"
 
 typedef struct {
     window_t *window;
     input_t *input;
+    wb_clock_t clock;
     bool running;
 } runtime_t;
 

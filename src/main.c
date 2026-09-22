@@ -38,8 +38,15 @@ int main(int argc, char *argv[]) {
     }
 
     runtime_t runtime;
-    runtime_init(&runtime, assets_root, language);
+    if (runtime_init(&runtime, assets_root, language) != 0) {
+        fprintf(stderr, "widebrim: Failed to initialize runtime\n");
+        return 1;
+    }
+
+    runtime_run(&runtime);
 
     fprintf(stderr, "widebrim: exiting\n");
+    runtime_destroy(&runtime);
+
     return 0;
 }

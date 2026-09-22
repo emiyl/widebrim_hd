@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "bg_layer.h"
+#include "clock.h"
 #include "renderer.h"
 #include "window.h"
 
@@ -69,10 +70,22 @@ void runtime_destroy(runtime_t *rt) {
     SDL_Quit();
 }
 
-void runtime_run(runtime_t *runtime) {
-    if (!runtime)
+void runtime_run(runtime_t *rt) {
+    if (!rt) {
+        fprintf(stderr, "widebrim: Invalid runtime pointer\n");
         return;
-    while (runtime->running) {
-        // Main loop logic here
+    }
+
+    const double interval_sec = 1.0 / TARGET_FRAMERATE;
+    const double interval_ms = interval_sec * 1000.0;
+    double dt_ms = 0.0;
+
+    clock_init(&rt->clock);
+
+    while (rt->running) {
+        dt_ms = wb_clock_tick(&rt->clock, interval_sec);
+        if (dt_ms / interval_ms > 1.25) {
+            dt_ms = interval_ms;
+        }
     }
 }
