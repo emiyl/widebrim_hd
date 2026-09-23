@@ -1,0 +1,103 @@
+#include "mode_title.h"
+
+#include <stdlib.h>
+
+typedef struct {
+    game_state_t *state;
+    bool done;
+} mode_title_impl_t;
+
+static bool mode_title_is_done(void *user) {
+    if (!user) {
+        fprintf(stderr,
+                "widebrim: mode_title_is_done called with NULL user pointer\n");
+        return false;
+    }
+
+    mode_title_impl_t *impl = (mode_title_impl_t *)user;
+    return impl->done;
+}
+
+static void mode_title_destroy(void *user) {
+    if (!user) {
+        fprintf(stderr,
+                "widebrim: mode_title_destroy called with NULL user pointer\n");
+        return;
+    }
+
+    free(user);
+}
+
+static bool mode_title_advance(mode_title_impl_t *impl) {
+    if (!impl) {
+        fprintf(stderr,
+                "widebrim: mode_title_advance called with NULL impl pointer\n");
+        return false;
+    }
+
+    fprintf(stderr,
+            "widebrim: mode_title_advance called, advancing to next state\n");
+
+    impl->done = true;
+    return true;
+}
+
+static bool mode_title_handle_event(void *user, const input_event_t *event) {
+    if (!user) {
+        fprintf(stderr, "widebrim: mode_title_handle_event called with NULL "
+                        "user pointer\n");
+        return false;
+    }
+
+    mode_title_impl_t *impl = (mode_title_impl_t *)user;
+    if (event) {
+        switch (event->type) {
+        case INPUT_EVENT_KEY_DOWN:
+        case INPUT_EVENT_MOUSE_BUTTON_DOWN:
+            return mode_title_advance(impl);
+        default:
+            return false;
+        }
+    }
+
+    return false;
+}
+
+mode_handler_t mode_title_create(game_state_t *state,
+                                 screen_controller_t *controller) {
+    mode_handler_t handler;
+    mode_title_impl_t *impl =
+        (mode_title_impl_t *)malloc(sizeof(mode_title_impl_t));
+
+    if (!impl) {
+        fprintf(stderr,
+                "widebrim: failed to allocate memory for mode_title_impl_t\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (!state) {
+        fprintf(stderr,
+                "widebrim: mode_title_create called with NULL state pointer\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (!controller) {
+        fprintf(stderr, "widebrim: mode_title_create called with NULL "
+                        "controller pointer\n");
+        exit(EXIT_FAILURE);
+    }
+
+    impl->state = state;
+    impl->done = false;
+
+    handler.layer.impl = impl;
+    handler.layer.update = NULL;
+    handler.layer.draw = NULL;
+    handler.layer.handle_event = mode_title_handle_event;
+    handler.layer.on_quit = NULL;
+    handler.layer.destroy = mode_title_destroy;
+    handler.is_done = mode_title_is_done;
+    handler.valid = true;
+
+    return handler;
+}
