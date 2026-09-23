@@ -38,7 +38,7 @@ static void mode_spawner_void_mode(mode_spawner_t *spawner) {
     }
 
     spawner->has_active_mode = false;
-    spawner->current_active_mode = GAME_MODE_INVALID;
+    spawner->current_active_mode = MODE_INVALID;
 }
 
 static void mode_spawner_load_mode(mode_spawner_t *spawner, game_mode_t mode) {
@@ -110,8 +110,8 @@ void mode_spawner_init(mode_spawner_t *spawner, game_state_t *state,
                        renderer_t *renderer) {
     spawner->state = state;
     spawner->has_active_mode = false;
-    spawner->current_active_mode = GAME_MODE_INVALID;
-    spawner->pending_target_mode = GAME_MODE_INVALID;
+    spawner->current_active_mode = MODE_INVALID;
+    spawner->pending_target_mode = MODE_INVALID;
     spawner->switch_pending = false;
     spawner->should_quit = false;
 

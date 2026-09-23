@@ -30,8 +30,8 @@ void game_state_reset(game_state_t *state) {
         return;
     }
     memset(state, 0, sizeof(game_state_t));
-    state->current_mode = GAME_MODE_INVALID;
-    state->next_mode = GAME_MODE_INVALID;
+    state->current_mode = MODE_INVALID;
+    state->next_mode = MODE_INVALID;
     state->place_num = 0;
     state->event_id = 0;
     state->first_touch_enabled = false;
@@ -171,7 +171,7 @@ game_mode_t game_state_get_mode(const game_state_t *state) {
         fprintf(
             stderr,
             "widebrim: game_state_get_mode called with NULL state pointer\n");
-        return GAME_MODE_INVALID;
+        return MODE_INVALID;
     }
     return state->current_mode;
 }
@@ -190,7 +190,7 @@ game_mode_t game_state_get_next_mode(const game_state_t *state) {
     if (!state) {
         fprintf(stderr, "widebrim: game_state_get_next_mode called with NULL "
                         "state pointer\n");
-        return GAME_MODE_INVALID;
+        return MODE_INVALID;
     }
     return state->next_mode;
 }
@@ -208,10 +208,10 @@ game_mode_t game_state_consume_mode_next(game_state_t *state) {
         fprintf(stderr,
                 "widebrim: game_state_consume_mode_next called with NULL "
                 "state pointer\n");
-        return GAME_MODE_INVALID;
+        return MODE_INVALID;
     }
     game_mode_t next_mode = state->next_mode;
-    state->next_mode = GAME_MODE_INVALID;
+    state->next_mode = MODE_INVALID;
     return next_mode;
 }
 
