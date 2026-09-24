@@ -69,7 +69,7 @@ static void mode_spawner_load_mode(mode_spawner_t *spawner, game_mode_t mode) {
         return;
     }
 
-    fprintf(stderr, "widebrim: loading mode %d\n", (int)mode);
+    fprintf(stderr, "widebrim: loading mode %s\n", game_mode_to_string(mode));
     game_state_set_mode(spawner->state, mode);
     spawner->current_active_mode = mode;
 

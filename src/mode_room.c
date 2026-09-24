@@ -42,7 +42,10 @@ mode_handler_t mode_room_create(game_state_t *state,
         exit(EXIT_FAILURE);
     }
 
-    const char *bg_sub_path = "bg/room_1_bg.png";
+    int room_num = game_state_get_place_num(state);
+    char bg_sub_path[256];
+    snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.png", room_num);
+
     bg_loader_load(state, controller, bg_sub_path,
                    screen_controller_set_bg_sub);
 

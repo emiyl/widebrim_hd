@@ -24,10 +24,7 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
                                        sprite_instance_t *sprite) {
     mode_title_impl_t *impl = (mode_title_impl_t *)user;
 
-    (void)event;
-    (void)sprite;
-
-    if (!impl) {
+    if (!impl || !event) {
         return false;
     }
 
@@ -39,16 +36,32 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
         }
         impl->active_click_sprite = sprite;
         return true;
-    case INPUT_EVENT_MOUSE_BUTTON_UP:
-        if (sprite == impl->active_click_sprite) {
-            impl->active_click_sprite = NULL;
-            if (sprite && sprite->frame_count > 1U) {
-                sprite_layer_set_playing(sprite, false);
-                sprite_layer_set_frame(sprite, 0U);
-            }
+
+    case INPUT_EVENT_MOUSE_BUTTON_UP: {
+        if (sprite != impl->active_click_sprite) {
+            return false;
+        }
+
+        impl->active_click_sprite = NULL;
+
+        if (sprite && sprite->frame_count > 1U) {
+            sprite_layer_set_playing(sprite, false);
+            sprite_layer_set_frame(sprite, 0U);
+        }
+
+        if (sprite == impl->start_button) {
+            printf("widebrim: start button clicked\n");
+        }
+        if (sprite == impl->continue_button) {
             return mode_title_advance(impl);
         }
+        if (sprite == impl->bonus_button) {
+            printf("widebrim: bonus button clicked\n");
+        }
+
         return false;
+    }
+
     default:
         return false;
     }
@@ -192,9 +205,8 @@ static bool mode_title_advance(mode_title_impl_t *impl) {
         return false;
     }
 
-    fprintf(stderr,
-            "widebrim: mode_title_advance called, advancing to MODE_ROOM\n");
     game_state_set_mode(impl->state, MODE_ROOM);
+    game_state_set_place_num(impl->state, 1);
 
     impl->done = true;
     return true;
