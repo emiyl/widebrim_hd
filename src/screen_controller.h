@@ -100,11 +100,28 @@ static inline sprite_instance_t *screen_controller_add_sprite_asset(
     sprite_instance_t *sprite = NULL;
 
     if (!sc || !sc->sprite || !state || !rel_path) {
+        fprintf(stderr, "widebrim: one or more required arguments are NULL\n");
         return NULL;
     }
 
     if (!sprite_loader_load_animation_rgba(state, rel_path, &frames,
                                            &frame_count, &frame_w, &frame_h)) {
+        uint8_t *single_frame = NULL;
+        int single_w = 0;
+        int single_h = 0;
+
+        if (sprite_loader_load_frame_rgba(state, rel_path, 0U, &single_frame,
+                                          &single_w, &single_h)) {
+            sprite = screen_controller_add_sprite_z(sc, single_frame, single_w,
+                                                    single_h, x, y, z, alpha);
+            free(single_frame);
+            return sprite;
+        }
+
+        fprintf(stderr,
+                "widebrim: sprite_loader_load_animation_rgba failed for asset: "
+                "%s\n",
+                rel_path);
         return NULL;
     }
 

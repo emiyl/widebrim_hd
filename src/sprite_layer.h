@@ -14,6 +14,7 @@ typedef bool (*sprite_event_callback_t)(void *user, const input_event_t *event,
                                         sprite_instance_t *sprite);
 
 struct sprite_instance_t {
+    renderer_t *renderer;
     renderer_texture_t *tex;
     renderer_texture_t **frames;
     size_t frame_count;
@@ -28,6 +29,11 @@ struct sprite_instance_t {
     int width;
     int height;
     uint8_t alpha;
+    uint8_t base_alpha;
+    float fade_duration_ms;
+    float fade_elapsed_ms;
+    bool fading_in;
+    bool fading_out;
     bool interactive;
     bool visible;
     void *user;
@@ -67,6 +73,8 @@ bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing);
 bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
                                   sprite_event_callback_t on_event, void *user);
 bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible);
+bool sprite_layer_fade_in(sprite_instance_t *sprite, float duration_ms);
+bool sprite_layer_fade_out(sprite_instance_t *sprite, float duration_ms);
 bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y);
 bool sprite_layer_handle_event(sprite_layer_t *layer,
                                const input_event_t *event);

@@ -427,10 +427,6 @@ bool sprite_loader_load_animation_rgba(game_state_t *state,
             width = frame_w;
             height = frame_h;
         } else if (frame_w != width || frame_h != height) {
-            fprintf(stderr,
-                    "widebrim: sprite animation frame %zu has size %dx%d, "
-                    "expected %dx%d\n",
-                    index, frame_w, frame_h, width, height);
             goto cleanup;
         }
     }

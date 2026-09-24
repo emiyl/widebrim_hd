@@ -5,12 +5,90 @@
 
 #include "bg_loader.h"
 
+#define MOVE_MODE_ICON_SIZE 84
+
 typedef struct {
     game_state_t *state;
     screen_controller_t *controller;
+    sprite_instance_t *move_mode_sprite;
     bool done;
     bool in_move_mode;
 } mode_room_impl_t;
+
+static bool mode_room_on_move_mode_icon_click(void *user,
+                                              const input_event_t *event,
+                                              sprite_instance_t *sprite) {
+    (void)sprite;
+    if (!user) {
+        fprintf(stderr, "widebrim: mode_room_on_move_mode_icon_click called "
+                        "with NULL user pointer\n");
+        return false;
+    }
+
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    static bool clicked = false;
+    static bool sprite_is_offset = false;
+    const int clicked_offset = 5;
+
+    switch (event->type) {
+    case INPUT_EVENT_MOUSE_BUTTON_DOWN:
+        clicked = true;
+        if (!sprite_is_offset) {
+            sprite_layer_set_sprite_position(
+                impl->move_mode_sprite,
+                impl->move_mode_sprite->x + clicked_offset,
+                impl->move_mode_sprite->y + clicked_offset);
+            sprite_is_offset = true;
+        }
+        break;
+    case INPUT_EVENT_MOUSE_BUTTON_UP:
+        if (sprite_is_offset) {
+            sprite_layer_set_sprite_position(
+                impl->move_mode_sprite,
+                impl->move_mode_sprite->x - clicked_offset,
+                impl->move_mode_sprite->y - clicked_offset);
+            sprite_is_offset = false;
+        }
+        if (clicked) {
+            clicked = false;
+            impl->in_move_mode = true;
+            if (impl->move_mode_sprite) {
+                sprite_layer_fade_out(impl->move_mode_sprite, 250.0f);
+            }
+            fprintf(
+                stderr,
+                "widebrim: move mode icon clicked, in_move_mode is now %s\n",
+                impl->in_move_mode ? "true" : "false");
+            return true;
+        }
+        break;
+    default:
+        break;
+    }
+
+    return false;
+}
+
+static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
+                                            game_state_t *state,
+                                            screen_controller_t *controller) {
+    if (!impl) {
+        return;
+    }
+
+    const int x = WB_SCREEN_WIDTH - MOVE_MODE_ICON_SIZE - 20;
+    const int y = WB_SCREEN_HEIGHT * 2 - MOVE_MODE_ICON_SIZE - 20;
+
+    impl->move_mode_sprite = screen_controller_add_sprite_asset(
+        controller, state, "ani/movemode.spr", x, y, 0, 255, 0.0f, false);
+    if (!impl->move_mode_sprite) {
+        fprintf(stderr, "widebrim: failed to load move mode sprite\n");
+        return;
+    }
+
+    sprite_layer_set_interactive(impl->move_mode_sprite, true,
+                                 mode_room_on_move_mode_icon_click, impl);
+}
 
 static bool mode_room_is_done(void *user) {
     if (!user) {
@@ -48,6 +126,7 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     bg_loader_load(state, controller, bg_sub_path,
                    screen_controller_set_bg_sub);
+    mode_room_load_move_mode_sprite(impl, state, controller);
 
     screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);

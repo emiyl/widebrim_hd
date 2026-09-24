@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+static void sprite_instance_apply_alpha(renderer_t *renderer,
+                                        sprite_instance_t *instance);
+
 static void sprite_instance_clear(sprite_layer_t *layer,
                                   sprite_instance_t *instance) {
     size_t i;
@@ -25,12 +28,18 @@ static void sprite_instance_clear(sprite_layer_t *layer,
         instance->tex = NULL;
     }
 
+    instance->renderer = NULL;
     instance->x = 0;
     instance->y = 0;
     instance->z = 0;
     instance->width = 0;
     instance->height = 0;
     instance->alpha = 255;
+    instance->base_alpha = 255;
+    instance->fade_duration_ms = 0.0f;
+    instance->fade_elapsed_ms = 0.0f;
+    instance->fading_in = false;
+    instance->fading_out = false;
     instance->interactive = false;
     instance->visible = false;
     instance->user = NULL;
@@ -151,6 +160,7 @@ sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
     }
 
     instance = &layer->sprites[layer->count];
+    instance->renderer = layer->renderer;
     instance->tex = tex;
     instance->frames = NULL;
     instance->frame_count = 0U;
@@ -165,6 +175,11 @@ sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
     instance->width = width;
     instance->height = height;
     instance->alpha = alpha;
+    instance->base_alpha = alpha;
+    instance->fade_duration_ms = 0.0f;
+    instance->fade_elapsed_ms = 0.0f;
+    instance->fading_in = false;
+    instance->fading_out = false;
     instance->interactive = false;
     instance->visible = true;
     layer->count += 1U;
@@ -189,6 +204,7 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
     }
 
     instance = &layer->sprites[layer->count];
+    instance->renderer = layer->renderer;
     instance->frames =
         (renderer_texture_t **)calloc(frame_count, sizeof(*instance->frames));
     if (!instance->frames) {
@@ -221,6 +237,11 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
     instance->width = width;
     instance->height = height;
     instance->alpha = alpha;
+    instance->base_alpha = alpha;
+    instance->fade_duration_ms = 0.0f;
+    instance->fade_elapsed_ms = 0.0f;
+    instance->fading_in = false;
+    instance->fading_out = false;
     instance->interactive = false;
     instance->visible = true;
     instance->user = NULL;
@@ -297,6 +318,74 @@ bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible) {
     }
 
     sprite->visible = visible;
+    if (!visible) {
+        sprite->fading_in = false;
+        sprite->fading_out = false;
+        sprite->fade_duration_ms = 0.0f;
+        sprite->fade_elapsed_ms = 0.0f;
+    }
+    return true;
+}
+
+bool sprite_layer_fade_in(sprite_instance_t *sprite, float duration_ms) {
+    if (!sprite) {
+        return false;
+    }
+
+    if (duration_ms < 0.0f) {
+        duration_ms = 0.0f;
+    }
+
+    if (sprite->base_alpha == 0U) {
+        sprite->base_alpha = 255U;
+    }
+
+    sprite->fade_duration_ms = duration_ms;
+    sprite->fade_elapsed_ms = 0.0f;
+    sprite->fading_in = true;
+    sprite->fading_out = false;
+    sprite->visible = true;
+
+    if (duration_ms <= 0.0f) {
+        sprite->alpha = sprite->base_alpha;
+        sprite->visible = true;
+        sprite->fade_duration_ms = 0.0f;
+        sprite->fade_elapsed_ms = 0.0f;
+        sprite->fading_in = false;
+        sprite_instance_apply_alpha(sprite->renderer, sprite);
+    }
+
+    return true;
+}
+
+bool sprite_layer_fade_out(sprite_instance_t *sprite, float duration_ms) {
+    if (!sprite) {
+        return false;
+    }
+
+    if (duration_ms < 0.0f) {
+        duration_ms = 0.0f;
+    }
+
+    if (sprite->alpha > 0U) {
+        sprite->base_alpha = sprite->alpha;
+    }
+
+    sprite->fade_duration_ms = duration_ms;
+    sprite->fade_elapsed_ms = 0.0f;
+    sprite->fading_in = false;
+    sprite->fading_out = true;
+    sprite->visible = true;
+
+    if (duration_ms <= 0.0f) {
+        sprite->alpha = 0U;
+        sprite->visible = false;
+        sprite->fade_duration_ms = 0.0f;
+        sprite->fade_elapsed_ms = 0.0f;
+        sprite->fading_out = false;
+        sprite_instance_apply_alpha(sprite->renderer, sprite);
+    }
+
     return true;
 }
 
@@ -309,6 +398,26 @@ bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y) {
            y < sprite->y + sprite->height;
 }
 
+static void sprite_instance_apply_alpha(renderer_t *renderer,
+                                        sprite_instance_t *instance) {
+    size_t i;
+
+    if (!renderer || !instance) {
+        return;
+    }
+
+    if (instance->frames) {
+        for (i = 0U; i < instance->frame_count; ++i) {
+            if (instance->frames[i]) {
+                renderer_set_texture_alpha(renderer, instance->frames[i],
+                                           instance->alpha);
+            }
+        }
+    } else if (instance->tex) {
+        renderer_set_texture_alpha(renderer, instance->tex, instance->alpha);
+    }
+}
+
 void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
     size_t i;
 
@@ -318,7 +427,60 @@ void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
 
     for (i = 0U; i < layer->count; ++i) {
         sprite_instance_t *instance = &layer->sprites[i];
-        if (!instance || !instance->playing || instance->frame_count < 2U ||
+        if (!instance) {
+            continue;
+        }
+
+        if (instance->fading_in || instance->fading_out) {
+            instance->fade_elapsed_ms += delta_ms;
+            if (instance->fade_duration_ms <= 0.0f) {
+                if (instance->fading_in) {
+                    instance->alpha = instance->base_alpha;
+                    instance->visible = true;
+                } else {
+                    instance->alpha = 0U;
+                    instance->visible = false;
+                }
+                instance->fading_in = false;
+                instance->fading_out = false;
+                instance->fade_elapsed_ms = 0.0f;
+                instance->fade_duration_ms = 0.0f;
+                sprite_instance_apply_alpha(layer->renderer, instance);
+                continue;
+            }
+
+            if (instance->fade_elapsed_ms >= instance->fade_duration_ms) {
+                if (instance->fading_in) {
+                    instance->alpha = instance->base_alpha;
+                    instance->visible = true;
+                } else {
+                    instance->alpha = 0U;
+                    instance->visible = false;
+                }
+                instance->fading_in = false;
+                instance->fading_out = false;
+                instance->fade_elapsed_ms = 0.0f;
+                instance->fade_duration_ms = 0.0f;
+                sprite_instance_apply_alpha(layer->renderer, instance);
+                continue;
+            }
+
+            if (instance->fade_duration_ms > 0.0f) {
+                const float t =
+                    instance->fade_elapsed_ms / instance->fade_duration_ms;
+                if (instance->fading_in) {
+                    instance->alpha =
+                        (uint8_t)((float)instance->base_alpha * t);
+                } else {
+                    instance->alpha =
+                        (uint8_t)((float)instance->base_alpha * (1.0f - t));
+                }
+                instance->visible = true;
+                sprite_instance_apply_alpha(layer->renderer, instance);
+            }
+        }
+
+        if (!instance->playing || instance->frame_count < 2U ||
             instance->frame_duration_ms <= 0.0f) {
             continue;
         }
