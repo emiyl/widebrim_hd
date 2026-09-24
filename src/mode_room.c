@@ -72,10 +72,6 @@ static bool mode_room_on_move_mode_icon_click(void *user,
         if (clicked) {
             clicked = false;
             toggle_move_mode(impl);
-            fprintf(
-                stderr,
-                "widebrim: move mode icon clicked, in_move_mode is now %s\n",
-                impl->in_move_mode ? "true" : "false");
             return true;
         }
         break;
