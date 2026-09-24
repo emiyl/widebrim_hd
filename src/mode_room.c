@@ -6,6 +6,7 @@
 #include "bg_loader.h"
 
 #define MOVE_MODE_ICON_SIZE 84
+#define MOVE_MODE_TRANSITION 250.0f
 
 typedef struct {
     game_state_t *state;
@@ -13,7 +14,26 @@ typedef struct {
     sprite_instance_t *move_mode_sprite;
     bool done;
     bool in_move_mode;
+    bool room_touch_pending;
+    int room_touch_start_x;
+    int room_touch_start_y;
+    int room_touch_last_x;
+    int room_touch_last_y;
+    bool room_touch_dragged;
 } mode_room_impl_t;
+
+static void toggle_move_mode(mode_room_impl_t *impl) {
+    if (!impl) {
+        return;
+    }
+
+    impl->in_move_mode = !impl->in_move_mode;
+    if (impl->in_move_mode) {
+        sprite_layer_fade_out(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
+    } else {
+        sprite_layer_fade_in(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
+    }
+}
 
 static bool mode_room_on_move_mode_icon_click(void *user,
                                               const input_event_t *event,
@@ -51,10 +71,7 @@ static bool mode_room_on_move_mode_icon_click(void *user,
         }
         if (clicked) {
             clicked = false;
-            impl->in_move_mode = true;
-            if (impl->move_mode_sprite) {
-                sprite_layer_fade_out(impl->move_mode_sprite, 250.0f);
-            }
+            toggle_move_mode(impl);
             fprintf(
                 stderr,
                 "widebrim: move mode icon clicked, in_move_mode is now %s\n",
@@ -101,6 +118,28 @@ static bool mode_room_is_done(void *user) {
     return impl->done;
 }
 
+static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
+                                          int x, int y) {
+    (void)x;
+    (void)y;
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    if (!impl) {
+        return;
+    }
+
+    if (kind == BG_TOUCH_KIND_TAP && impl->in_move_mode) {
+        toggle_move_mode(impl);
+        return;
+    }
+
+    switch (kind) {
+    case BG_TOUCH_KIND_NONE:
+    case BG_TOUCH_KIND_TAP:
+    case BG_TOUCH_KIND_DRAG:
+        break;
+    }
+}
+
 static void mode_room_destroy(void *user) {
     if (!user) {
         fprintf(stderr,
@@ -109,6 +148,34 @@ static void mode_room_destroy(void *user) {
     }
 
     free(user);
+}
+
+static bool mode_room_handle_event(void *user, const input_event_t *event) {
+    if (!user) {
+        return false;
+    }
+
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    if (!impl) {
+        return false;
+    }
+
+    switch (event->type) {
+    case INPUT_EVENT_KEY_DOWN:
+        switch (event->data.key.key) {
+        case 'm':
+        case 'M':
+            toggle_move_mode(impl);
+            return true;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+
+    return false;
 }
 
 mode_handler_t mode_room_create(game_state_t *state,
@@ -136,10 +203,13 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->done = false;
     impl->in_move_mode = false;
 
+    bg_layer_set_touch_callback(controller->bg, mode_room_on_background_touch,
+                                impl);
+
     handler.layer.impl = impl;
     handler.layer.update = NULL;
     handler.layer.draw = NULL;
-    handler.layer.handle_event = NULL;
+    handler.layer.handle_event = mode_room_handle_event;
     handler.layer.on_quit = NULL;
     handler.layer.destroy = mode_room_destroy;
     handler.is_done = mode_room_is_done;

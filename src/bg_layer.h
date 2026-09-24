@@ -20,15 +20,36 @@ typedef struct {
     float scroll_speed_x;
 } bg_layer_texture_t;
 
+typedef enum {
+    BG_TOUCH_KIND_NONE = 0,
+    BG_TOUCH_KIND_TAP,
+    BG_TOUCH_KIND_DRAG
+} bg_touch_kind_t;
+
+typedef void (*bg_layer_touch_callback_t)(void *user, bg_touch_kind_t kind,
+                                          int x, int y);
+
 typedef struct {
     renderer_t *renderer;
     bg_layer_texture_t tex_main;
     bg_layer_texture_t tex_sub;
     bg_layer_texture_t tex_sub2;
+    bool touch_pending;
+    int touch_start_x;
+    int touch_start_y;
+    int touch_last_x;
+    int touch_last_y;
+    bool touch_dragged;
+    bg_layer_touch_callback_t touch_callback;
+    void *touch_user;
 } bg_layer_t;
 
 void bg_layer_init(bg_layer_t *bg_layer, renderer_t *renderer);
 void bg_layer_destroy(bg_layer_t *bg_layer);
+
+void bg_layer_set_touch_callback(bg_layer_t *bg_layer,
+                                 bg_layer_touch_callback_t callback,
+                                 void *user);
 
 void bg_layer_set_main_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
                             int height);

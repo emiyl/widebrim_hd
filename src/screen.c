@@ -74,9 +74,9 @@ void screen_collection_draw(screen_collection_t *sc, renderer_t *renderer) {
 
 bool screen_collection_handle_event(screen_collection_t *sc,
                                     const input_event_t *event) {
-    for (size_t i = 0; i < sc->count; ++i) {
-        if (sc->layers[i].handle_event &&
-            sc->layers[i].handle_event(sc->layers[i].impl, event)) {
+    for (size_t i = sc->count; i > 0U; --i) {
+        screen_layer_t *layer = &sc->layers[i - 1U];
+        if (layer->handle_event && layer->handle_event(layer->impl, event)) {
             return true;
         }
     }

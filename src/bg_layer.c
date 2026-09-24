@@ -25,6 +25,14 @@ void bg_layer_init(bg_layer_t *bg, renderer_t *renderer) {
     bg_layer_texture_init(&bg->tex_main);
     bg_layer_texture_init(&bg->tex_sub);
     bg_layer_texture_init(&bg->tex_sub2);
+    bg->touch_pending = false;
+    bg->touch_start_x = 0;
+    bg->touch_start_y = 0;
+    bg->touch_last_x = 0;
+    bg->touch_last_y = 0;
+    bg->touch_dragged = false;
+    bg->touch_callback = NULL;
+    bg->touch_user = NULL;
 }
 
 void bg_layer_destroy(bg_layer_t *bg) {
@@ -32,6 +40,17 @@ void bg_layer_destroy(bg_layer_t *bg) {
     bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
     bg_layer_texture_destroy(&bg->tex_sub2, bg->renderer);
     bg->renderer = NULL;
+}
+
+void bg_layer_set_touch_callback(bg_layer_t *bg_layer,
+                                 bg_layer_touch_callback_t callback,
+                                 void *user) {
+    if (!bg_layer) {
+        return;
+    }
+
+    bg_layer->touch_callback = callback;
+    bg_layer->touch_user = user;
 }
 
 static void bg_layer_texture_set_rgba(bg_layer_texture_t *tex,
@@ -204,12 +223,66 @@ static void bg_layer_draw(void *impl, renderer_t *renderer) {
     }
 }
 
+static bool bg_layer_handle_event(void *impl, const input_event_t *event) {
+    bg_layer_t *bg = (bg_layer_t *)impl;
+    if (!bg || !event) {
+        return false;
+    }
+
+    switch (event->type) {
+    case INPUT_EVENT_MOUSE_BUTTON_DOWN:
+        bg->touch_pending = true;
+        bg->touch_dragged = false;
+        bg->touch_start_x = event->data.mouse_button.x;
+        bg->touch_start_y = event->data.mouse_button.y;
+        bg->touch_last_x = bg->touch_start_x;
+        bg->touch_last_y = bg->touch_start_y;
+        return false;
+
+    case INPUT_EVENT_MOUSE_MOTION:
+        if (!bg->touch_pending) {
+            return false;
+        }
+
+        bg->touch_last_x = event->data.mouse_motion.x;
+        bg->touch_last_y = event->data.mouse_motion.y;
+
+        if (abs(bg->touch_last_x - bg->touch_start_x) > 18 ||
+            abs(bg->touch_last_y - bg->touch_start_y) > 18) {
+            bg->touch_dragged = true;
+            bg->touch_pending = false;
+            if (bg->touch_callback) {
+                bg->touch_callback(bg->touch_user, BG_TOUCH_KIND_DRAG,
+                                   bg->touch_last_x, bg->touch_last_y);
+            }
+        }
+        return false;
+
+    case INPUT_EVENT_MOUSE_BUTTON_UP:
+        if (!bg->touch_pending) {
+            return false;
+        }
+
+        if (!bg->touch_dragged && bg->touch_callback) {
+            bg->touch_callback(bg->touch_user, BG_TOUCH_KIND_TAP,
+                               bg->touch_start_x, bg->touch_start_y);
+        }
+
+        bg->touch_pending = false;
+        bg->touch_dragged = false;
+        return false;
+
+    default:
+        return false;
+    }
+}
+
 screen_layer_t bg_layer_as_screen_layer(bg_layer_t *bg) {
     screen_layer_t layer;
     layer.impl = (void *)bg;
     layer.update = bg_layer_update_impl;
     layer.draw = bg_layer_draw;
-    layer.handle_event = NULL;
+    layer.handle_event = bg_layer_handle_event;
     layer.on_quit = NULL;
     layer.destroy = NULL;
     return layer;
