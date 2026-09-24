@@ -26,6 +26,48 @@ static void mode_title_load_start_car_sprite(game_state_t *state,
     }
 }
 
+static void mode_title_load_title_sprite(game_state_t *state,
+                                         screen_controller_t *controller) {
+    if (!state || !controller) {
+        return;
+    }
+
+    const int title_width = 600;
+    const int title_height = 260;
+
+    int dest_x = (WB_SCREEN_WIDTH - title_width) / 2;
+    int dest_y = (WB_SCREEN_HEIGHT - title_height) / 2 - 40;
+
+    char *title_sprite_path;
+
+    switch (state->language) {
+    case LANGUAGE_EN:
+        title_sprite_path = "data-en/ani/title_logo.spr";
+        break;
+    case LANGUAGE_DE:
+        title_sprite_path = "data-de/ani/title_logo.spr";
+        break;
+    case LANGUAGE_ES:
+        title_sprite_path = "data-es/ani/title_logo.spr";
+        break;
+    case LANGUAGE_FR:
+        title_sprite_path = "data-fr/ani/title_logo.spr";
+        break;
+    case LANGUAGE_IT:
+        title_sprite_path = "data-it/ani/title_logo.spr";
+        break;
+    default:
+        title_sprite_path = "data-en/ani/title_logo.spr";
+        break;
+    }
+
+    if (!screen_controller_add_sprite_asset(controller, state,
+                                            title_sprite_path, dest_x, dest_y,
+                                            0, 255U, 0.0f, false)) {
+        fprintf(stderr, "widebrim: failed to add title sprite asset\n");
+    }
+}
+
 typedef struct {
     game_state_t *state;
     bool done;
@@ -125,6 +167,7 @@ mode_handler_t mode_title_create(game_state_t *state,
                    screen_controller_set_bg_sub2);
 
     mode_title_load_start_car_sprite(state, controller);
+    mode_title_load_title_sprite(state, controller);
 
     screen_controller_set_bg_sub_scroll(controller, -45.0f, true);
     screen_controller_set_bg_sub2_scroll(controller, -90.0f, true);

@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-int game_state_init(game_state_t *state, const char *assets_root) {
+int game_state_init(game_state_t *state, const char *assets_root,
+                    const char *language) {
     if (!state) {
         fprintf(stderr,
                 "widebrim: game_state_init called with NULL state pointer\n");
@@ -11,6 +12,7 @@ int game_state_init(game_state_t *state, const char *assets_root) {
     }
     game_state_reset(state);
     state->assets_root = assets_root;
+    state->language = language_string_as_enum(language);
     return 0;
 }
 
@@ -26,6 +28,7 @@ void game_state_destroy(game_state_t *state) {
 
 void game_state_reset(game_state_t *state) {
     const char *assets_root;
+    language_t language = LANGUAGE_EN;
 
     if (!state) {
         fprintf(stderr,
@@ -34,8 +37,10 @@ void game_state_reset(game_state_t *state) {
     }
 
     assets_root = state->assets_root;
+    language = state->language;
     memset(state, 0, sizeof(game_state_t));
     state->assets_root = assets_root;
+    state->language = language;
     state->current_mode = MODE_INVALID;
     state->next_mode = MODE_INVALID;
     state->place_num = 0;

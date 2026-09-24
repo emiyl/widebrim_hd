@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "language.h"
 #include "mode.h"
 
 typedef struct {
@@ -14,6 +15,7 @@ typedef struct {
 
 typedef struct {
     const char *assets_root;
+    language_t language;
     game_mode_t current_mode;
     game_mode_t next_mode;
     int place_num;
@@ -24,7 +26,8 @@ typedef struct {
     bool font_event_loaded;
 } game_state_t;
 
-int game_state_init(game_state_t *state, const char *assets_root);
+int game_state_init(game_state_t *state, const char *assets_root,
+                    const char *language);
 void game_state_destroy(game_state_t *state);
 
 void game_state_reset(game_state_t *state);
