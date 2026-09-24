@@ -29,6 +29,7 @@ struct sprite_instance_t {
     int height;
     uint8_t alpha;
     bool interactive;
+    bool visible;
     void *user;
     sprite_event_callback_t on_event;
 };
@@ -65,6 +66,7 @@ bool sprite_layer_set_frame(sprite_instance_t *sprite, size_t frame_index);
 bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing);
 bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
                                   sprite_event_callback_t on_event, void *user);
+bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible);
 bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y);
 bool sprite_layer_handle_event(sprite_layer_t *layer,
                                const input_event_t *event);

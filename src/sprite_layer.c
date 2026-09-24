@@ -32,6 +32,7 @@ static void sprite_instance_clear(sprite_layer_t *layer,
     instance->height = 0;
     instance->alpha = 255;
     instance->interactive = false;
+    instance->visible = false;
     instance->user = NULL;
     instance->on_event = NULL;
     instance->frame_count = 0U;
@@ -164,6 +165,8 @@ sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
     instance->width = width;
     instance->height = height;
     instance->alpha = alpha;
+    instance->interactive = false;
+    instance->visible = true;
     layer->count += 1U;
     return instance;
 }
@@ -219,6 +222,7 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
     instance->height = height;
     instance->alpha = alpha;
     instance->interactive = false;
+    instance->visible = true;
     instance->user = NULL;
     instance->on_event = NULL;
     layer->count += 1U;
@@ -284,6 +288,15 @@ bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
     sprite->interactive = interactive;
     sprite->user = user;
     sprite->on_event = on_event;
+    return true;
+}
+
+bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible) {
+    if (!sprite) {
+        return false;
+    }
+
+    sprite->visible = visible;
     return true;
 }
 
@@ -392,7 +405,8 @@ static void sprite_layer_draw(void *impl, renderer_t *renderer) {
         rect_t dst;
 
         if (!instance || !instance->tex ||
-            !renderer_texture_exists(renderer, instance->tex)) {
+            !renderer_texture_exists(renderer, instance->tex) ||
+            !instance->visible) {
             continue;
         }
 
