@@ -43,7 +43,9 @@ static void sdl_renderer_register_texture(sdl_renderer_t *self,
         return;
     }
     if (self->texture_registry_size == self->texture_registry_capacity) {
-        new_capacity = self->texture_registry_capacity * 2;
+        new_capacity = self->texture_registry_capacity == 0U
+                           ? 8U
+                           : self->texture_registry_capacity * 2U;
         grown = realloc(self->texture_registry,
                         new_capacity * sizeof(SDL_Texture *));
         if (!grown) {
@@ -54,6 +56,25 @@ static void sdl_renderer_register_texture(sdl_renderer_t *self,
         self->texture_registry_capacity = new_capacity;
     }
     self->texture_registry[self->texture_registry_size++] = tex;
+}
+
+static void sdl_renderer_unregister_texture(sdl_renderer_t *self,
+                                            SDL_Texture *tex) {
+    size_t i;
+
+    if (!self || !tex) {
+        return;
+    }
+
+    for (i = 0; i < self->texture_registry_size; ++i) {
+        if (self->texture_registry[i] == tex) {
+            memmove(&self->texture_registry[i], &self->texture_registry[i + 1],
+                    (self->texture_registry_size - i - 1U) *
+                        sizeof(*self->texture_registry));
+            self->texture_registry_size -= 1U;
+            return;
+        }
+    }
 }
 
 static void sdl_renderer_clear(renderer_t *self, uint8_t r, uint8_t g,
@@ -68,14 +89,15 @@ static void sdl_renderer_present(renderer_t *self) {
     SDL_RenderPresent(impl->renderer);
 }
 
-static void sdl_renderer_destroy_texture(renderer_t *_r,
+static void sdl_renderer_destroy_texture(renderer_t *self,
                                          renderer_texture_t *tex) {
-    (void)_r;
+    sdl_renderer_t *impl = (sdl_renderer_t *)self->impl;
     if (!tex) {
         fprintf(stderr, "widebrim: attempted to destroy a NULL texture\n");
         return;
     }
     if (tex->texture) {
+        sdl_renderer_unregister_texture(impl, tex->texture);
         SDL_DestroyTexture(tex->texture);
         tex->texture = NULL;
     } else {
