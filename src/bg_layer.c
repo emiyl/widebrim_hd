@@ -24,11 +24,13 @@ void bg_layer_init(bg_layer_t *bg, renderer_t *renderer) {
     bg->renderer = renderer;
     bg_layer_texture_init(&bg->tex_main);
     bg_layer_texture_init(&bg->tex_sub);
+    bg_layer_texture_init(&bg->tex_sub2);
 }
 
 void bg_layer_destroy(bg_layer_t *bg) {
     bg_layer_texture_destroy(&bg->tex_main, bg->renderer);
     bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
+    bg_layer_texture_destroy(&bg->tex_sub2, bg->renderer);
     bg->renderer = NULL;
 }
 
@@ -72,12 +74,21 @@ void bg_layer_set_sub_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
     bg_layer_texture_set_rgba(&bg->tex_sub, bg->renderer, rgba, width, height);
 }
 
+void bg_layer_set_sub2_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
+                            int height) {
+    bg_layer_texture_set_rgba(&bg->tex_sub2, bg->renderer, rgba, width, height);
+}
+
 void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness) {
     bg_layer_texture_set_darkness(&bg->tex_main, darkness);
 }
 
 void bg_layer_set_sub_darkness(bg_layer_t *bg, uint8_t darkness) {
     bg_layer_texture_set_darkness(&bg->tex_sub, darkness);
+}
+
+void bg_layer_set_sub2_darkness(bg_layer_t *bg, uint8_t darkness) {
+    bg_layer_texture_set_darkness(&bg->tex_sub2, darkness);
 }
 
 void bg_layer_set_main_shake(bg_layer_t *bg, float shake_remaining_ms) {
@@ -88,6 +99,10 @@ void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms) {
     bg_layer_texture_set_shake(&bg->tex_sub, shake_remaining_ms);
 }
 
+void bg_layer_set_sub2_shake(bg_layer_t *bg, float shake_remaining_ms) {
+    bg_layer_texture_set_shake(&bg->tex_sub2, shake_remaining_ms);
+}
+
 void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
                               bool repeating) {
     bg_layer_texture_set_scroll(&bg->tex_main, pixels_per_second, repeating);
@@ -96,6 +111,11 @@ void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
 void bg_layer_set_sub_scroll(bg_layer_t *bg, float pixels_per_second,
                              bool repeating) {
     bg_layer_texture_set_scroll(&bg->tex_sub, pixels_per_second, repeating);
+}
+
+void bg_layer_set_sub2_scroll(bg_layer_t *bg, float pixels_per_second,
+                              bool repeating) {
+    bg_layer_texture_set_scroll(&bg->tex_sub2, pixels_per_second, repeating);
 }
 
 static void bg_layer_texture_update(bg_layer_texture_t *tex, float delta_ms) {
@@ -115,6 +135,7 @@ static void bg_layer_update_impl(void *impl, float delta_ms) {
     bg_layer_t *bg = (bg_layer_t *)impl;
     bg_layer_texture_update(&bg->tex_main, delta_ms);
     bg_layer_texture_update(&bg->tex_sub, delta_ms);
+    bg_layer_texture_update(&bg->tex_sub2, delta_ms);
 }
 
 static void bg_layer_texture_draw(renderer_t *renderer, bg_layer_texture_t *tex,
@@ -177,6 +198,9 @@ static void bg_layer_draw(void *impl, renderer_t *renderer) {
     }
     if (renderer_texture_exists(renderer, bg->tex_sub.tex)) {
         bg_layer_texture_draw(renderer, &bg->tex_sub, WB_SCREEN_HEIGHT);
+    }
+    if (renderer_texture_exists(renderer, bg->tex_sub2.tex)) {
+        bg_layer_texture_draw(renderer, &bg->tex_sub2, WB_SCREEN_HEIGHT);
     }
 }
 

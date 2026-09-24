@@ -94,12 +94,16 @@ mode_handler_t mode_title_create(game_state_t *state,
 
     char *bg_path = "data/bg/select_title.png";
     char *sub_bg_path = "data/bg/start_select2.png";
+    char *sub_bg_overlay_path = "data/bg/start_select.png";
 
     bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
     bg_loader_load(state, controller, sub_bg_path,
                    screen_controller_set_bg_sub);
+    bg_loader_load(state, controller, sub_bg_overlay_path,
+                   screen_controller_set_bg_sub2);
 
-    screen_controller_set_bg_sub_scroll(controller, 30.0f, true);
+    screen_controller_set_bg_sub_scroll(controller, 45.0f, true);
+    screen_controller_set_bg_sub2_scroll(controller, 90.0f, true);
 
     screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);

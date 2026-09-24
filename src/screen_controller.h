@@ -25,6 +25,13 @@ static inline void screen_controller_set_bg_sub(screen_controller_t *sc,
     bg_layer_set_sub_darkness(sc->bg, 0);
 }
 
+static inline void screen_controller_set_bg_sub2(screen_controller_t *sc,
+                                                 const uint8_t *rgba, int w,
+                                                 int h) {
+    bg_layer_set_sub2_rgba(sc->bg, rgba, w, h);
+    bg_layer_set_sub2_darkness(sc->bg, 0);
+}
+
 static inline void screen_controller_set_bg_main_scroll(screen_controller_t *sc,
                                                         float pixels_per_second,
                                                         bool repeating) {
@@ -35,6 +42,12 @@ static inline void screen_controller_set_bg_sub_scroll(screen_controller_t *sc,
                                                        float pixels_per_second,
                                                        bool repeating) {
     bg_layer_set_sub_scroll(sc->bg, pixels_per_second, repeating);
+}
+
+static inline void screen_controller_set_bg_sub2_scroll(screen_controller_t *sc,
+                                                        float pixels_per_second,
+                                                        bool repeating) {
+    bg_layer_set_sub2_scroll(sc->bg, pixels_per_second, repeating);
 }
 
 static inline void screen_controller_fade_in(screen_controller_t *sc,
