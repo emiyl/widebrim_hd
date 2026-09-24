@@ -53,7 +53,7 @@ typedef struct sprite_sheet_t {
 } sprite_sheet_t;
 
 sprite_sheet_t *sprite_sheet_load(const char *path);
-bool sprite_sheet_load_from_assets(const char *assets_root,
+bool sprite_sheet_load_from_assets(const char *assets_root, language_t language,
                                    const char *rel_path,
                                    sprite_sheet_t **out_sheet);
 bool sprite_loader_load(game_state_t *state, const char *rel_path,

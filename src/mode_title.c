@@ -20,8 +20,8 @@ static void mode_title_load_start_car_sprite(game_state_t *state,
     dest_y = WB_SCREEN_HEIGHT + (WB_SCREEN_HEIGHT - start_car_height) / 2 + 150;
 
     if (!screen_controller_add_sprite_asset(controller, state,
-                                            "data/ani/start_car.spr", dest_x,
-                                            dest_y, 0, 255U, 100.0f, true)) {
+                                            "ani/start_car.spr", dest_x, dest_y,
+                                            0, 255U, 100.0f, true)) {
         fprintf(stderr, "widebrim: failed to add start_car sprite asset\n");
     }
 }
@@ -38,32 +38,9 @@ static void mode_title_load_title_sprite(game_state_t *state,
     int dest_x = (WB_SCREEN_WIDTH - title_width) / 2;
     int dest_y = (WB_SCREEN_HEIGHT - title_height) / 2 - 40;
 
-    char *title_sprite_path;
-
-    switch (state->language) {
-    case LANGUAGE_EN:
-        title_sprite_path = "data-en/ani/title_logo.spr";
-        break;
-    case LANGUAGE_DE:
-        title_sprite_path = "data-de/ani/title_logo.spr";
-        break;
-    case LANGUAGE_ES:
-        title_sprite_path = "data-es/ani/title_logo.spr";
-        break;
-    case LANGUAGE_FR:
-        title_sprite_path = "data-fr/ani/title_logo.spr";
-        break;
-    case LANGUAGE_IT:
-        title_sprite_path = "data-it/ani/title_logo.spr";
-        break;
-    default:
-        title_sprite_path = "data-en/ani/title_logo.spr";
-        break;
-    }
-
     if (!screen_controller_add_sprite_asset(controller, state,
-                                            title_sprite_path, dest_x, dest_y,
-                                            0, 255U, 0.0f, false)) {
+                                            "ani/title_logo.spr", dest_x,
+                                            dest_y, 0, 255U, 0.0f, false)) {
         fprintf(stderr, "widebrim: failed to add title sprite asset\n");
     }
 }
@@ -156,9 +133,9 @@ mode_handler_t mode_title_create(game_state_t *state,
     impl->state = state;
     impl->done = false;
 
-    char *bg_path = "data/bg/select_title.png";
-    char *sub_bg_path = "data/bg/start_select2.png";
-    char *sub_bg_overlay_path = "data/bg/start_select.png";
+    const char *bg_path = "bg/select_title.png";
+    const char *sub_bg_path = "bg/start_select2.png";
+    const char *sub_bg_overlay_path = "bg/start_select.png";
 
     bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
     bg_loader_load(state, controller, sub_bg_path,

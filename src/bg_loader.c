@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "language.h"
 #include "texture_loader.h"
 
 bool bg_loader_load(game_state_t *state, screen_controller_t *controller,
@@ -38,13 +39,12 @@ bool bg_loader_load(game_state_t *state, screen_controller_t *controller,
     }
 
     char full_path[1024];
-    int len = snprintf(full_path, sizeof(full_path), "%s/%s",
-                       state->assets_root, rel_path);
 
-    if (len < 0 || (size_t)len >= sizeof(full_path)) {
-        fprintf(
-            stderr,
-            "widebrim: Failed to construct full path for background image\n");
+    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
+                            full_path, sizeof(full_path))) {
+        fprintf(stderr,
+                "widebrim: Failed to resolve path for background image '%s'\n",
+                rel_path);
         return false;
     }
 

@@ -160,7 +160,7 @@ sprite_sheet_t *sprite_sheet_load(const char *path) {
     return sheet;
 }
 
-bool sprite_sheet_load_from_assets(const char *assets_root,
+bool sprite_sheet_load_from_assets(const char *assets_root, language_t language,
                                    const char *rel_path,
                                    sprite_sheet_t **out_sheet) {
     char normalized[SPRITE_PATH_MAX];
@@ -185,14 +185,16 @@ bool sprite_sheet_load_from_assets(const char *assets_root,
         suffix = NULL;
     }
 
-    if (suffix == NULL) {
-        snprintf(path, sizeof(path), "%s/%s.spr", assets_root, normalized);
-    } else if (strcmp(suffix, ".png") == 0) {
-        size_t suffix_offset = (size_t)(suffix - normalized);
-        snprintf(path, sizeof(path), "%s/%.*s.spr", assets_root,
-                 (int)suffix_offset, normalized);
-    } else {
-        snprintf(path, sizeof(path), "%s/%s", assets_root, normalized);
+    if (!asset_path_resolve(assets_root, language, normalized, path,
+                            sizeof(path))) {
+        return false;
+    }
+
+    if (suffix != NULL && strcmp(suffix, ".png") == 0) {
+        char *resolved_suffix = strrchr(path, '.');
+        if (resolved_suffix != NULL && strcmp(resolved_suffix, ".png") == 0) {
+            strcpy(resolved_suffix, ".spr");
+        }
     }
 
     sheet = sprite_sheet_load(path);
@@ -207,7 +209,6 @@ bool sprite_sheet_load_from_assets(const char *assets_root,
 bool sprite_loader_load(game_state_t *state, const char *rel_path,
                         sprite_sheet_t **out_sheet) {
     char full_path[SPRITE_PATH_MAX];
-    int len;
 
     if (!state) {
         fprintf(
@@ -232,11 +233,11 @@ bool sprite_loader_load(game_state_t *state, const char *rel_path,
         return false;
     }
 
-    len = snprintf(full_path, sizeof(full_path), "%s/%s", state->assets_root,
-                   rel_path);
-    if (len < 0 || (size_t)len >= sizeof(full_path)) {
+    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
+                            full_path, sizeof(full_path))) {
         fprintf(stderr,
-                "widebrim: Failed to construct full path for sprite asset\n");
+                "widebrim: Failed to resolve path for sprite asset '%s'\n",
+                rel_path);
         return false;
     }
 
@@ -247,8 +248,8 @@ bool sprite_loader_load(game_state_t *state, const char *rel_path,
         return *out_sheet != NULL;
     }
 
-    return sprite_sheet_load_from_assets(state->assets_root, rel_path,
-                                         out_sheet);
+    return sprite_sheet_load_from_assets(state->assets_root, state->language,
+                                         rel_path, out_sheet);
 }
 
 bool sprite_sheet_extract_frame_rgba(const sprite_sheet_t *sheet,
@@ -321,8 +322,8 @@ bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
         return false;
     }
 
-    if (snprintf(spritesheet_path, sizeof(spritesheet_path), "%s/%s",
-                 state->assets_root, rel_path) < 0) {
+    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
+                            spritesheet_path, sizeof(spritesheet_path))) {
         return false;
     }
 
@@ -374,8 +375,8 @@ bool sprite_loader_load_animation_rgba(game_state_t *state,
         return false;
     }
 
-    if (snprintf(spritesheet_path, sizeof(spritesheet_path), "%s/%s",
-                 state->assets_root, rel_path) < 0) {
+    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
+                            spritesheet_path, sizeof(spritesheet_path))) {
         return false;
     }
 
