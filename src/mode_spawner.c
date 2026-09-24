@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "mode_reset.h"
+#include "mode_room.h"
 #include "mode_title.h"
 
 static mode_handler_t
@@ -15,6 +16,8 @@ mode_spawner_create_handler(game_mode_t mode, game_state_t *state,
     switch (mode) {
     case MODE_RESET:
         return mode_reset_create(state, controller);
+    case MODE_ROOM:
+        return mode_room_create(state, controller);
     case MODE_TITLE:
         return mode_title_create(state, controller);
     default:
@@ -116,7 +119,8 @@ static void mode_spawner_ready_switch(mode_spawner_t *spawner,
     }
 
     if (fader_layer_is_view_obscured(&spawner->fader)) {
-        spawner->switch_pending = true;
+        spawner->switch_pending = false;
+        spawner->pending_target_mode = MODE_INVALID;
         mode_spawner_void_mode(spawner);
         mode_spawner_load_mode(spawner, target);
     } else if (!spawner->switch_pending) {

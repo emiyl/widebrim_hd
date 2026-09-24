@@ -55,6 +55,13 @@ static inline void screen_controller_set_bg_sub2_scroll(screen_controller_t *sc,
     bg_layer_set_sub2_scroll(sc->bg, pixels_per_second, repeating);
 }
 
+static inline void screen_controller_clear_bg_layer(screen_controller_t *sc) {
+    if (!sc || !sc->bg) {
+        return;
+    }
+    bg_layer_init(sc->bg, sc->renderer);
+}
+
 static inline sprite_instance_t *
 screen_controller_add_sprite_z(screen_controller_t *sc, const uint8_t *rgba,
                                int w, int h, int x, int y, int z,
@@ -110,6 +117,14 @@ static inline sprite_instance_t *screen_controller_add_sprite_asset(
     }
     free(frames);
     return sprite;
+}
+
+static inline void
+screen_controller_clear_sprite_layer(screen_controller_t *sc) {
+    if (!sc || !sc->sprite) {
+        return;
+    }
+    sprite_layer_clear(sc->sprite);
 }
 
 static inline bool

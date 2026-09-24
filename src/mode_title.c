@@ -172,7 +172,13 @@ static void mode_title_destroy(void *user) {
         return;
     }
 
-    free(user);
+    mode_title_impl_t *impl = (mode_title_impl_t *)user;
+    if (impl->controller) {
+        screen_controller_clear_sprite_layer(impl->controller);
+        screen_controller_clear_bg_layer(impl->controller);
+    }
+
+    free(impl);
 }
 
 static bool mode_title_advance(mode_title_impl_t *impl) {
@@ -182,9 +188,13 @@ static bool mode_title_advance(mode_title_impl_t *impl) {
         return false;
     }
 
+    if (impl->done) {
+        return false;
+    }
+
     fprintf(stderr,
-            "widebrim: mode_title_advance called, advancing to MODE_TITLE\n");
-    game_state_set_mode(impl->state, MODE_TITLE);
+            "widebrim: mode_title_advance called, advancing to MODE_ROOM\n");
+    game_state_set_mode(impl->state, MODE_ROOM);
 
     impl->done = true;
     return true;
