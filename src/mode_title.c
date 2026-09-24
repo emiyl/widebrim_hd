@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "bg_loader.h"
-#include "sprite_loader.h"
 
 static void mode_title_load_start_car_sprite(game_state_t *state,
                                              screen_controller_t *controller) {
