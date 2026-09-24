@@ -217,11 +217,13 @@ static void sdl_renderer_get_texture_size(renderer_t *self,
         *width = 0;
     if (height)
         *height = 0;
-    if (SDL_GetTextureSize(texture->texture, &fw, &fh) == 0) {
+    if (SDL_GetTextureSize(texture->texture, &fw, &fh)) {
         if (width)
             *width = (int)fw;
         if (height)
             *height = (int)fh;
+    } else {
+        fprintf(stderr, "widebrim: failed to get texture size\n");
     }
 }
 
