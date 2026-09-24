@@ -144,8 +144,8 @@ static void fader_layer_draw_rect(renderer_t *renderer_instance,
 
 static void fader_layer_draw_impl(void *impl, renderer_t *renderer_instance) {
     fader_layer_t *fader = (fader_layer_t *)impl;
-    fader_layer_draw_rect(renderer_instance, &fader->sub_fade, 0);
-    fader_layer_draw_rect(renderer_instance, &fader->main_fade,
+    fader_layer_draw_rect(renderer_instance, &fader->main_fade, 0);
+    fader_layer_draw_rect(renderer_instance, &fader->sub_fade,
                           WB_SCREEN_HEIGHT);
 }
 

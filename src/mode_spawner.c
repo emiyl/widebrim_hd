@@ -39,13 +39,14 @@ static void mode_spawner_void_mode(mode_spawner_t *spawner) {
     if (spawner->has_active_mode) {
         size_t active_index = spawner->layers.count;
 
-        if (active_index > 0U) {
+        if (active_index > 0U &&
+            spawner->layers.layers[active_index - 1U].impl == &spawner->fader) {
             active_index -= 1U;
         }
 
-        if (spawner->layers.count > 0U) {
-            screen_layer_t removed =
-                screen_collection_remove_at(&spawner->layers, active_index);
+        if (active_index > 0U) {
+            screen_layer_t removed = screen_collection_remove_at(
+                &spawner->layers, active_index - 1U);
             if (removed.destroy) {
                 removed.destroy(removed.impl);
             }
