@@ -19,9 +19,8 @@ static void sprite_instance_clear(sprite_layer_t *layer,
         }
         free(instance->frames);
         instance->frames = NULL;
-    }
-
-    if (instance->tex) {
+        instance->tex = NULL;
+    } else if (instance->tex) {
         renderer_destroy_texture(layer->renderer, instance->tex);
         instance->tex = NULL;
     }
