@@ -102,8 +102,8 @@ mode_handler_t mode_title_create(game_state_t *state,
     bg_loader_load(state, controller, sub_bg_overlay_path,
                    screen_controller_set_bg_sub2);
 
-    screen_controller_set_bg_sub_scroll(controller, 45.0f, true);
-    screen_controller_set_bg_sub2_scroll(controller, 90.0f, true);
+    screen_controller_set_bg_sub_scroll(controller, -45.0f, true);
+    screen_controller_set_bg_sub2_scroll(controller, -90.0f, true);
 
     screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);
