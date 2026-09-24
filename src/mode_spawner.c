@@ -2,6 +2,9 @@
 
 #include <stdio.h>
 
+#include "mode_reset.h"
+#include "mode_title.h"
+
 static mode_handler_t
 mode_spawner_create_handler(game_mode_t mode, game_state_t *state,
                             screen_controller_t *controller) {
@@ -10,6 +13,10 @@ mode_spawner_create_handler(game_mode_t mode, game_state_t *state,
     mode_handler_t invalid;
 
     switch (mode) {
+    case MODE_RESET:
+        return mode_reset_create(state, controller);
+    case MODE_TITLE:
+        return mode_title_create(state, controller);
     default:
         invalid.layer.impl = NULL;
         invalid.layer.update = NULL;

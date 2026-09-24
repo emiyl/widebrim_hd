@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 
-int game_state_init(game_state_t *state) {
+int game_state_init(game_state_t *state, const char *assets_root) {
     if (!state) {
         fprintf(stderr,
                 "widebrim: game_state_init called with NULL state pointer\n");
         return -1;
     }
     game_state_reset(state);
+    state->assets_root = assets_root;
     return 0;
 }
 
@@ -24,12 +25,17 @@ void game_state_destroy(game_state_t *state) {
 }
 
 void game_state_reset(game_state_t *state) {
+    const char *assets_root;
+
     if (!state) {
         fprintf(stderr,
                 "widebrim: game_state_reset called with NULL state pointer\n");
         return;
     }
+
+    assets_root = state->assets_root;
     memset(state, 0, sizeof(game_state_t));
+    state->assets_root = assets_root;
     state->current_mode = MODE_INVALID;
     state->next_mode = MODE_INVALID;
     state->place_num = 0;

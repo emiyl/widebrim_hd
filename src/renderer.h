@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,6 +23,7 @@ typedef struct renderer_vtable {
                                                     const uint8_t *rgba,
                                                     int width, int height);
     void (*destroy_texture)(renderer_t *self, renderer_texture_t *texture);
+    bool (*texture_exists)(renderer_t *self, renderer_texture_t *texture);
     void (*draw_texture)(renderer_t *self, renderer_texture_t *texture,
                          const rect_t *dst);
     void (*draw_rect)(renderer_t *self, const rect_t *rect, uint8_t r,
@@ -106,6 +108,14 @@ static inline void renderer_set_texture_alpha(renderer_t *self,
     if (self && self->vt && self->vt->set_texture_alpha) {
         self->vt->set_texture_alpha(self, texture, alpha);
     }
+}
+
+static inline bool renderer_texture_exists(renderer_t *self,
+                                           renderer_texture_t *texture) {
+    if (self && self->vt && self->vt->texture_exists) {
+        return self->vt->texture_exists(self, texture);
+    }
+    return false;
 }
 
 static inline void renderer_get_texture_size(renderer_t *self,

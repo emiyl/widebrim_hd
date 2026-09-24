@@ -4,12 +4,16 @@
 #include <stdbool.h>
 
 #include "clock.h"
+#include "game_state.h"
 #include "input.h"
+#include "mode_spawner.h"
 #include "window.h"
 
 typedef struct {
     window_t *window;
     input_t *input;
+    game_state_t state;
+    mode_spawner_t spawner;
     wb_clock_t clock;
     bool running;
 } runtime_t;

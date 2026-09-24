@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#include "bg_loader.h"
+
 typedef struct {
     game_state_t *state;
     bool done;
@@ -89,6 +91,15 @@ mode_handler_t mode_title_create(game_state_t *state,
 
     impl->state = state;
     impl->done = false;
+
+    char *bg_path = "data/bg/select_title.png";
+    char *sub_bg_path = "data/bg/start_select2.png";
+
+    bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
+    bg_loader_load(state, controller, sub_bg_path,
+                   screen_controller_set_bg_sub);
+    screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
+                              NULL);
 
     handler.layer.impl = impl;
     handler.layer.update = NULL;

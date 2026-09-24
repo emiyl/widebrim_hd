@@ -4,15 +4,12 @@
 #include <stdio.h>
 
 #include "bg_layer.h"
-#include "clock.h"
 #include "renderer.h"
-#include "window.h"
 
 #define TARGET_FRAMERATE 60.0
-#define WINDOW_SCALE 0.5
+#define WINDOW_SCALE 0.5f
 
 int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
-    (void)assets_root;
     (void)language;
 
     if (!rt) {
@@ -52,6 +49,17 @@ int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
         return -1;
     }
 
+    window_set_scale(rt->window, WINDOW_SCALE, WINDOW_SCALE);
+
+    if (game_state_init(&rt->state, assets_root) != 0) {
+        fprintf(stderr, "widebrim: Failed to initialize game state\n");
+        runtime_destroy(rt);
+        return -1;
+    }
+
+    mode_spawner_init(&rt->spawner, &rt->state, renderer);
+    game_state_set_mode(&rt->state, MODE_RESET);
+
     rt->running = true;
     return 0;
 }
@@ -86,12 +94,26 @@ void runtime_run(runtime_t *rt) {
     while (rt->running) {
         input_event_t event;
 
+        mode_spawner_update(&rt->spawner, (float)dt_ms);
+
+        renderer_clear(rt->spawner.controller.renderer, 0, 0, 0, 255);
+        mode_spawner_draw(&rt->spawner, rt->spawner.controller.renderer);
+        renderer_present(rt->spawner.controller.renderer);
+
         while (input_poll_event(rt->input, &event)) {
             window_convert_event_to_render_coordinates(rt->window, &event);
 
             switch (event.type) {
             case INPUT_EVENT_QUIT:
                 rt->running = false;
+                mode_spawner_on_quit(&rt->spawner);
+                break;
+            case INPUT_EVENT_MOUSE_BUTTON_DOWN:
+            case INPUT_EVENT_MOUSE_BUTTON_UP:
+            case INPUT_EVENT_MOUSE_MOTION:
+            case INPUT_EVENT_KEY_DOWN:
+            case INPUT_EVENT_KEY_UP:
+                mode_spawner_handle_event(&rt->spawner, &event);
                 break;
             default:
                 break;

@@ -13,6 +13,7 @@ typedef struct {
 } hint_coin_state_t;
 
 typedef struct {
+    const char *assets_root;
     game_mode_t current_mode;
     game_mode_t next_mode;
     int place_num;
@@ -23,7 +24,7 @@ typedef struct {
     bool font_event_loaded;
 } game_state_t;
 
-int game_state_init(game_state_t *state);
+int game_state_init(game_state_t *state, const char *assets_root);
 void game_state_destroy(game_state_t *state);
 
 void game_state_reset(game_state_t *state);

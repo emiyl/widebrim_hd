@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     if (assets_root == NULL) {
         assets_root = "assets";
         fprintf(stderr,
-                "widebrim: --assets <assets_path> not specified, defaulting to "
+                "widebrim: --assets <assets_root> not specified, defaulting to "
                 "'%s'\n",
                 assets_root);
     }

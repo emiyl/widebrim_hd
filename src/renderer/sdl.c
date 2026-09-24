@@ -85,6 +85,20 @@ static void sdl_renderer_destroy_texture(renderer_t *_r,
     free(tex);
 }
 
+static bool sdl_renderer_texture_exists(renderer_t *self,
+                                        renderer_texture_t *tex) {
+    sdl_renderer_t *impl = (sdl_renderer_t *)self->impl;
+    if (!tex || !tex->texture) {
+        return false;
+    }
+    for (size_t i = 0; i < impl->texture_registry_size; ++i) {
+        if (impl->texture_registry[i] == tex->texture) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static renderer_texture_t *
 sdl_renderer_create_texture_from_rgba(renderer_t *self, const uint8_t *rgba,
                                       int width, int height) {
@@ -216,6 +230,7 @@ static const renderer_vtable_t g_sdl_renderer_vtable = {
     .present = sdl_renderer_present,
     .create_texture_from_rgba = sdl_renderer_create_texture_from_rgba,
     .destroy_texture = sdl_renderer_destroy_texture,
+    .texture_exists = sdl_renderer_texture_exists,
     .draw_texture = sdl_renderer_draw_texture,
     .draw_rect = sdl_renderer_draw_rect,
     .fill_rect = sdl_renderer_fill_rect,

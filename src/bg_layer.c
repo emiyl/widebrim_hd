@@ -121,8 +121,12 @@ static void bg_layer_texture_draw(renderer_t *renderer, bg_layer_texture_t *tex,
 
 static void bg_layer_draw(void *impl, renderer_t *renderer) {
     bg_layer_t *bg = (bg_layer_t *)impl;
-    bg_layer_texture_draw(renderer, &bg->tex_main, 0);
-    bg_layer_texture_draw(renderer, &bg->tex_sub, WB_SCREEN_HEIGHT);
+    if (renderer_texture_exists(renderer, bg->tex_main.tex)) {
+        bg_layer_texture_draw(renderer, &bg->tex_main, 0);
+    }
+    if (renderer_texture_exists(renderer, bg->tex_sub.tex)) {
+        bg_layer_texture_draw(renderer, &bg->tex_sub, WB_SCREEN_HEIGHT);
+    }
 }
 
 screen_layer_t bg_layer_as_screen_layer(bg_layer_t *bg) {
