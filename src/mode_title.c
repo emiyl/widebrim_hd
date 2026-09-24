@@ -3,6 +3,26 @@
 #include <stdlib.h>
 
 #include "bg_loader.h"
+#include "sprite_loader.h"
+
+static void mode_title_load_start_car_sprite(game_state_t *state,
+                                             screen_controller_t *controller) {
+    int dest_x;
+    int dest_y;
+
+    if (!state || !controller) {
+        return;
+    }
+
+    dest_x = 0;
+    dest_y = 0;
+
+    if (!screen_controller_add_sprite_asset(controller, state,
+                                            "data/ani/start_car.spr", dest_x,
+                                            dest_y, 0, 255U, 100.0f, true)) {
+        fprintf(stderr, "widebrim: failed to add start_car sprite asset\n");
+    }
+}
 
 typedef struct {
     game_state_t *state;
@@ -101,6 +121,8 @@ mode_handler_t mode_title_create(game_state_t *state,
                    screen_controller_set_bg_sub);
     bg_loader_load(state, controller, sub_bg_overlay_path,
                    screen_controller_set_bg_sub2);
+
+    mode_title_load_start_car_sprite(state, controller);
 
     screen_controller_set_bg_sub_scroll(controller, -45.0f, true);
     screen_controller_set_bg_sub2_scroll(controller, -90.0f, true);

@@ -37,10 +37,18 @@ static void mode_spawner_void_mode(mode_spawner_t *spawner) {
     }
 
     if (spawner->has_active_mode) {
-        screen_layer_t removed =
-            screen_collection_remove_at(&spawner->layers, 1);
-        if (removed.destroy) {
-            removed.destroy(removed.impl);
+        size_t active_index = spawner->layers.count;
+
+        if (active_index > 0U) {
+            active_index -= 1U;
+        }
+
+        if (spawner->layers.count > 0U) {
+            screen_layer_t removed =
+                screen_collection_remove_at(&spawner->layers, active_index);
+            if (removed.destroy) {
+                removed.destroy(removed.impl);
+            }
         }
     }
 
@@ -124,13 +132,17 @@ void mode_spawner_init(mode_spawner_t *spawner, game_state_t *state,
 
     spawner->controller.renderer = renderer;
     spawner->controller.bg = &spawner->bg;
+    spawner->controller.sprite = &spawner->sprite;
     spawner->controller.fader = &spawner->fader;
     bg_layer_init(&spawner->bg, spawner->controller.renderer);
+    sprite_layer_init(&spawner->sprite, spawner->controller.renderer);
     fader_layer_init(&spawner->fader);
 
     screen_collection_init(&spawner->layers);
     screen_collection_add(&spawner->layers,
                           bg_layer_as_screen_layer(&spawner->bg));
+    screen_collection_add(&spawner->layers,
+                          sprite_layer_as_screen_layer(&spawner->sprite));
     screen_collection_add(&spawner->layers,
                           fader_layer_as_screen_layer(&spawner->fader));
 }
@@ -142,6 +154,7 @@ void mode_spawner_destroy(mode_spawner_t *spawner) {
     }
 
     bg_layer_destroy(&spawner->bg);
+    sprite_layer_destroy(&spawner->sprite);
     screen_collection_free(&spawner->layers);
     if (spawner->controller.renderer) {
         renderer_destroy(spawner->controller.renderer);

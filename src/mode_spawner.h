@@ -11,10 +11,12 @@
 #include "renderer.h"
 #include "screen.h"
 #include "screen_controller.h"
+#include "sprite_layer.h"
 
 typedef struct {
     screen_collection_t layers;
     bg_layer_t bg;
+    sprite_layer_t sprite;
     fader_layer_t fader;
     screen_controller_t controller;
     game_state_t *state;
