@@ -25,6 +25,18 @@ static inline void screen_controller_set_bg_sub(screen_controller_t *sc,
     bg_layer_set_sub_darkness(sc->bg, 0);
 }
 
+static inline void screen_controller_set_bg_main_scroll(screen_controller_t *sc,
+                                                        float pixels_per_second,
+                                                        bool repeating) {
+    bg_layer_set_main_scroll(sc->bg, pixels_per_second, repeating);
+}
+
+static inline void screen_controller_set_bg_sub_scroll(screen_controller_t *sc,
+                                                       float pixels_per_second,
+                                                       bool repeating) {
+    bg_layer_set_sub_scroll(sc->bg, pixels_per_second, repeating);
+}
+
 static inline void screen_controller_fade_in(screen_controller_t *sc,
                                              float duration_ms,
                                              fader_callback cb, void *user) {

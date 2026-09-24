@@ -1,11 +1,15 @@
 #include "bg_layer.h"
 
+#include <math.h>
 #include <stdlib.h>
 
 static void bg_layer_texture_init(bg_layer_texture_t *tex) {
     tex->tex = NULL;
     tex->darkness = 0;
     tex->shake_remaining_ms = 0.0f;
+    tex->repeating = false;
+    tex->scroll_x = 0.0f;
+    tex->scroll_speed_x = 0.0f;
 }
 
 static void bg_layer_texture_destroy(bg_layer_texture_t *tex,
@@ -48,6 +52,16 @@ static void bg_layer_texture_set_shake(bg_layer_texture_t *tex,
     tex->shake_remaining_ms = shake_remaining_ms;
 }
 
+static void bg_layer_texture_set_scroll(bg_layer_texture_t *tex,
+                                        float pixels_per_second,
+                                        bool repeating) {
+    tex->scroll_speed_x = pixels_per_second;
+    tex->repeating = repeating;
+    if (!repeating) {
+        tex->scroll_x = 0.0f;
+    }
+}
+
 void bg_layer_set_main_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
                             int height) {
     bg_layer_texture_set_rgba(&bg->tex_main, bg->renderer, rgba, width, height);
@@ -74,12 +88,26 @@ void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms) {
     bg_layer_texture_set_shake(&bg->tex_sub, shake_remaining_ms);
 }
 
+void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
+                              bool repeating) {
+    bg_layer_texture_set_scroll(&bg->tex_main, pixels_per_second, repeating);
+}
+
+void bg_layer_set_sub_scroll(bg_layer_t *bg, float pixels_per_second,
+                             bool repeating) {
+    bg_layer_texture_set_scroll(&bg->tex_sub, pixels_per_second, repeating);
+}
+
 static void bg_layer_texture_update(bg_layer_texture_t *tex, float delta_ms) {
     if (tex->shake_remaining_ms > 0.0f) {
         tex->shake_remaining_ms -= delta_ms;
         if (tex->shake_remaining_ms < 0.0f) {
             tex->shake_remaining_ms = 0.0f;
         }
+    }
+
+    if (tex->repeating && tex->tex) {
+        tex->scroll_x += (tex->scroll_speed_x * delta_ms) / 1000.0f;
     }
 }
 
@@ -93,6 +121,8 @@ static void bg_layer_texture_draw(renderer_t *renderer, bg_layer_texture_t *tex,
                                   int y_offset) {
     rect_t dst;
     int shake_x = 0, shake_y = 0;
+    int tex_w = 0, tex_h = 0;
+    float x = 0.0f;
 
     dst = (rect_t){.x = 0.0f,
                    .y = (float)y_offset,
@@ -106,8 +136,29 @@ static void bg_layer_texture_draw(renderer_t *renderer, bg_layer_texture_t *tex,
         dst.y += (float)shake_y;
     }
 
-    if (tex) {
-        renderer_draw_texture(renderer, tex->tex, &dst);
+    if (tex && tex->tex) {
+        if (tex->repeating) {
+            renderer_get_texture_size(renderer, tex->tex, &tex_w, &tex_h);
+            if (tex_w > 0) {
+                float offset_x = fmodf(tex->scroll_x, (float)tex_w);
+                if (offset_x < 0.0f) {
+                    offset_x += (float)tex_w;
+                }
+
+                for (x = -offset_x; x < WB_SCREEN_WIDTH + tex_w;
+                     x += (float)tex_w) {
+                    rect_t tile = {.x = x + (float)shake_x,
+                                   .y = (float)y_offset + (float)shake_y,
+                                   .w = (float)tex_w,
+                                   .h = (float)tex_h};
+                    renderer_draw_texture(renderer, tex->tex, &tile);
+                }
+            } else {
+                renderer_draw_texture(renderer, tex->tex, &dst);
+            }
+        } else {
+            renderer_draw_texture(renderer, tex->tex, &dst);
+        }
     }
 
     if (tex->darkness > 0) {

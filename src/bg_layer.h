@@ -15,6 +15,9 @@ typedef struct {
     renderer_texture_t *tex;
     uint8_t darkness;
     float shake_remaining_ms;
+    bool repeating;
+    float scroll_x;
+    float scroll_speed_x;
 } bg_layer_texture_t;
 
 typedef struct {
@@ -34,6 +37,10 @@ void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness);
 void bg_layer_set_sub_darkness(bg_layer_t *bg, uint8_t darkness);
 void bg_layer_set_main_shake(bg_layer_t *bg, float shake_remaining_ms);
 void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms);
+void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
+                              bool repeating);
+void bg_layer_set_sub_scroll(bg_layer_t *bg, float pixels_per_second,
+                             bool repeating);
 
 screen_layer_t bg_layer_as_screen_layer(bg_layer_t *bg_layer);
 
