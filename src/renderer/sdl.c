@@ -185,6 +185,7 @@ static void sdl_renderer_fill_rect(renderer_t *self, const rect_t *rect,
 
     uint8_t prev_r, prev_g, prev_b, prev_a;
     SDL_GetRenderDrawColor(impl->renderer, &prev_r, &prev_g, &prev_b, &prev_a);
+    SDL_SetRenderDrawBlendMode(impl->renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(impl->renderer, r, g, b, a);
     SDL_RenderFillRect(impl->renderer, &dst_rect);
     SDL_SetRenderDrawColor(impl->renderer, prev_r, prev_g, prev_b, prev_a);

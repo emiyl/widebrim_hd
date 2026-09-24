@@ -164,6 +164,8 @@ window_t *window_create_sdl(const char *title, int width, int height,
         return NULL;
     }
 
+    SDL_SetRenderDrawBlendMode(impl->renderer, SDL_BLENDMODE_BLEND);
+
     window->impl = impl;
     window->vt = &g_sdl_window_vtable;
     return window;
