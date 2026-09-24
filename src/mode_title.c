@@ -14,8 +14,11 @@ static void mode_title_load_start_car_sprite(game_state_t *state,
         return;
     }
 
-    dest_x = 0;
-    dest_y = 0;
+    const int start_car_width = 245;
+    const int start_car_height = 155;
+
+    dest_x = (WB_SCREEN_WIDTH - start_car_width) / 2;
+    dest_y = WB_SCREEN_HEIGHT + (WB_SCREEN_HEIGHT - start_car_height) / 2 + 150;
 
     if (!screen_controller_add_sprite_asset(controller, state,
                                             "data/ani/start_car.spr", dest_x,
