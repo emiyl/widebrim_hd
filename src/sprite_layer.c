@@ -115,29 +115,32 @@ void sprite_layer_destroy(sprite_layer_t *layer) {
     layer->renderer = NULL;
 }
 
-bool sprite_layer_add_rgba(sprite_layer_t *layer, const uint8_t *rgba,
-                           int width, int height, int x, int y, uint8_t alpha) {
+sprite_instance_t *sprite_layer_add_rgba(sprite_layer_t *layer,
+                                         const uint8_t *rgba, int width,
+                                         int height, int x, int y,
+                                         uint8_t alpha) {
     return sprite_layer_add_rgba_z(layer, rgba, width, height, x, y, 0, alpha);
 }
 
-bool sprite_layer_add_rgba_z(sprite_layer_t *layer, const uint8_t *rgba,
-                             int width, int height, int x, int y, int z,
-                             uint8_t alpha) {
+sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
+                                           const uint8_t *rgba, int width,
+                                           int height, int x, int y, int z,
+                                           uint8_t alpha) {
     sprite_instance_t *instance;
     renderer_texture_t *tex;
 
     if (!layer || !layer->renderer || !rgba || width <= 0 || height <= 0) {
-        return false;
+        return NULL;
     }
 
     if (!sprite_layer_ensure_capacity(layer, layer->count + 1U)) {
-        return false;
+        return NULL;
     }
 
     tex =
         renderer_create_texture_from_rgba(layer->renderer, rgba, width, height);
     if (!tex) {
-        return false;
+        return NULL;
     }
 
     if (alpha != 255U) {
@@ -160,31 +163,31 @@ bool sprite_layer_add_rgba_z(sprite_layer_t *layer, const uint8_t *rgba,
     instance->height = height;
     instance->alpha = alpha;
     layer->count += 1U;
-    return true;
+    return instance;
 }
 
-bool sprite_layer_add_animation(sprite_layer_t *layer,
-                                const uint8_t *const *frames,
-                                size_t frame_count, int width, int height,
-                                int x, int y, int z, uint8_t alpha,
-                                float frame_duration_ms, bool loop) {
+sprite_instance_t *
+sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
+                           size_t frame_count, int width, int height, int x,
+                           int y, int z, uint8_t alpha, float frame_duration_ms,
+                           bool loop) {
     sprite_instance_t *instance;
     size_t i;
 
     if (!layer || !layer->renderer || !frames || frame_count == 0U ||
         width <= 0 || height <= 0) {
-        return false;
+        return NULL;
     }
 
     if (!sprite_layer_ensure_capacity(layer, layer->count + 1U)) {
-        return false;
+        return NULL;
     }
 
     instance = &layer->sprites[layer->count];
     instance->frames =
         (renderer_texture_t **)calloc(frame_count, sizeof(*instance->frames));
     if (!instance->frames) {
-        return false;
+        return NULL;
     }
 
     for (i = 0U; i < frame_count; ++i) {
@@ -192,7 +195,7 @@ bool sprite_layer_add_animation(sprite_layer_t *layer,
             layer->renderer, frames[i], width, height);
         if (!instance->frames[i]) {
             sprite_instance_clear(layer, instance);
-            return false;
+            return NULL;
         }
         if (alpha != 255U) {
             renderer_set_texture_alpha(layer->renderer, instance->frames[i],
@@ -214,6 +217,27 @@ bool sprite_layer_add_animation(sprite_layer_t *layer,
     instance->height = height;
     instance->alpha = alpha;
     layer->count += 1U;
+    return instance;
+}
+
+bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y) {
+    if (!sprite) {
+        return false;
+    }
+
+    sprite->x = x;
+    sprite->y = y;
+    return true;
+}
+
+bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
+                                int area_height) {
+    if (!sprite || area_width <= 0 || area_height <= 0) {
+        return false;
+    }
+
+    sprite->x = (area_width - sprite->width) / 2;
+    sprite->y = (area_height - sprite->height) / 2;
     return true;
 }
 

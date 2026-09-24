@@ -37,16 +37,22 @@ void sprite_layer_destroy(sprite_layer_t *layer);
 void sprite_layer_clear(sprite_layer_t *layer);
 void sprite_layer_update(sprite_layer_t *layer, float delta_ms);
 
-bool sprite_layer_add_rgba(sprite_layer_t *layer, const uint8_t *rgba,
-                           int width, int height, int x, int y, uint8_t alpha);
-bool sprite_layer_add_rgba_z(sprite_layer_t *layer, const uint8_t *rgba,
-                             int width, int height, int x, int y, int z,
-                             uint8_t alpha);
-bool sprite_layer_add_animation(sprite_layer_t *layer,
-                                const uint8_t *const *frames,
-                                size_t frame_count, int width, int height,
-                                int x, int y, int z, uint8_t alpha,
-                                float frame_duration_ms, bool loop);
+sprite_instance_t *sprite_layer_add_rgba(sprite_layer_t *layer,
+                                         const uint8_t *rgba, int width,
+                                         int height, int x, int y,
+                                         uint8_t alpha);
+sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
+                                           const uint8_t *rgba, int width,
+                                           int height, int x, int y, int z,
+                                           uint8_t alpha);
+sprite_instance_t *
+sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
+                           size_t frame_count, int width, int height, int x,
+                           int y, int z, uint8_t alpha, float frame_duration_ms,
+                           bool loop);
+bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y);
+bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
+                                int area_height);
 
 screen_layer_t sprite_layer_as_screen_layer(sprite_layer_t *layer);
 

@@ -4,10 +4,14 @@
 
 #include "bg_loader.h"
 
+typedef struct {
+    game_state_t *state;
+    bool done;
+} mode_title_impl_t;
+
 static void mode_title_load_start_car_sprite(game_state_t *state,
                                              screen_controller_t *controller) {
-    int dest_x;
-    int dest_y;
+    sprite_instance_t *start_car = NULL;
 
     if (!state || !controller) {
         return;
@@ -16,39 +20,39 @@ static void mode_title_load_start_car_sprite(game_state_t *state,
     const int start_car_width = 245;
     const int start_car_height = 155;
 
-    dest_x = (WB_SCREEN_WIDTH - start_car_width) / 2;
-    dest_y = WB_SCREEN_HEIGHT + (WB_SCREEN_HEIGHT - start_car_height) / 2 + 150;
-
-    if (!screen_controller_add_sprite_asset(controller, state,
-                                            "ani/start_car.spr", dest_x, dest_y,
-                                            0, 255U, 100.0f, true)) {
+    start_car = screen_controller_add_sprite_asset(
+        controller, state, "ani/start_car.spr", 0, 0, 0, 255U, 100.0f, true);
+    if (!start_car) {
         fprintf(stderr, "widebrim: failed to add start_car sprite asset\n");
+        return;
     }
+
+    sprite_layer_center_sprite(start_car, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
+    sprite_layer_set_sprite_position(
+        start_car, start_car->x,
+        WB_SCREEN_HEIGHT + (WB_SCREEN_HEIGHT - start_car_height) / 2 + 150);
+    (void)start_car_width;
+    (void)start_car_height;
 }
 
 static void mode_title_load_title_sprite(game_state_t *state,
                                          screen_controller_t *controller) {
+    sprite_instance_t *title = NULL;
+
     if (!state || !controller) {
         return;
     }
 
-    const int title_width = 600;
-    const int title_height = 260;
-
-    int dest_x = (WB_SCREEN_WIDTH - title_width) / 2;
-    int dest_y = (WB_SCREEN_HEIGHT - title_height) / 2 - 40;
-
-    if (!screen_controller_add_sprite_asset(controller, state,
-                                            "ani/title_logo.spr", dest_x,
-                                            dest_y, 0, 255U, 0.0f, false)) {
+    title = screen_controller_add_sprite_asset(
+        controller, state, "ani/title_logo.spr", 0, 0, 0, 255U, 0.0f, false);
+    if (!title) {
         fprintf(stderr, "widebrim: failed to add title sprite asset\n");
+        return;
     }
-}
 
-typedef struct {
-    game_state_t *state;
-    bool done;
-} mode_title_impl_t;
+    sprite_layer_center_sprite(title, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
+    sprite_layer_set_sprite_position(title, title->x, title->y - 40);
+}
 
 static bool mode_title_is_done(void *user) {
     if (!user) {
