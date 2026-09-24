@@ -9,9 +9,12 @@ typedef struct {
     screen_controller_t *controller;
     sprite_instance_t *start_car_sprite;
     sprite_instance_t *title_sprite;
+
+    // Button sprites for user interaction
     sprite_instance_t *start_button;
     sprite_instance_t *continue_button;
     sprite_instance_t *bonus_button;
+    sprite_instance_t *active_click_sprite;
     bool done;
 } mode_title_impl_t;
 
@@ -28,21 +31,21 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
         return false;
     }
 
-    static bool clicked = false;
-
     switch (event->type) {
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
         if (sprite && sprite->frame_count > 1U) {
             sprite_layer_set_playing(sprite, false);
             sprite_layer_set_frame(sprite, 1U);
         }
-        clicked = true;
+        impl->active_click_sprite = sprite;
         return true;
     case INPUT_EVENT_MOUSE_BUTTON_UP:
-        if (clicked) {
-            clicked = false;
-            sprite_layer_set_playing(sprite, false);
-            sprite_layer_set_frame(sprite, 0U);
+        if (sprite == impl->active_click_sprite) {
+            impl->active_click_sprite = NULL;
+            if (sprite && sprite->frame_count > 1U) {
+                sprite_layer_set_playing(sprite, false);
+                sprite_layer_set_frame(sprite, 0U);
+            }
             return mode_title_advance(impl);
         }
         return false;
@@ -180,8 +183,8 @@ static bool mode_title_advance(mode_title_impl_t *impl) {
     }
 
     fprintf(stderr,
-            "widebrim: mode_title_advance called, advancing to MODE_RESET\n");
-    game_state_set_mode(impl->state, MODE_RESET);
+            "widebrim: mode_title_advance called, advancing to MODE_TITLE\n");
+    game_state_set_mode(impl->state, MODE_TITLE);
 
     impl->done = true;
     return true;
@@ -236,6 +239,7 @@ mode_handler_t mode_title_create(game_state_t *state,
     impl->done = false;
     impl->start_car_sprite = NULL;
     impl->title_sprite = NULL;
+    impl->active_click_sprite = NULL;
 
     const char *bg_path = "bg/select_title.png";
     const char *sub_bg_path = "bg/start_select2.png";

@@ -110,6 +110,11 @@ static void mode_spawner_ready_switch(mode_spawner_t *spawner,
         return;
     }
 
+    if (target == MODE_INVALID) {
+        fprintf(stderr, "widebrim: ignoring mode switch to MODE_INVALID\n");
+        return;
+    }
+
     if (fader_layer_is_view_obscured(&spawner->fader)) {
         spawner->switch_pending = true;
         mode_spawner_void_mode(spawner);

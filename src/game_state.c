@@ -41,8 +41,8 @@ void game_state_reset(game_state_t *state) {
     memset(state, 0, sizeof(game_state_t));
     state->assets_root = assets_root;
     state->language = language;
-    state->current_mode = MODE_INVALID;
-    state->next_mode = MODE_INVALID;
+    state->current_mode = MODE_RESET;
+    state->next_mode = MODE_RESET;
     state->place_num = 0;
     state->event_id = 0;
     state->first_touch_enabled = false;

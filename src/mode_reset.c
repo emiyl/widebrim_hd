@@ -46,6 +46,13 @@ mode_handler_t mode_reset_create(game_state_t *state,
     mode_reset_impl_t *impl =
         (mode_reset_impl_t *)malloc(sizeof(mode_reset_impl_t));
 
+    if (!state || !screen_controller) {
+        fprintf(stderr,
+                "widebrim: mode_reset_create called with invalid state or "
+                "screen_controller pointers\n");
+        exit(EXIT_FAILURE);
+    }
+
     impl->state = state;
     impl->done = false;
     game_state_reset(state);
