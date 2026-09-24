@@ -27,7 +27,7 @@ typedef struct {
 } game_state_t;
 
 int game_state_init(game_state_t *state, const char *assets_root,
-                    const char *language);
+                    language_t language);
 void game_state_destroy(game_state_t *state);
 
 void game_state_reset(game_state_t *state);

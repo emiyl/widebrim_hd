@@ -4,7 +4,7 @@
 #include <string.h>
 
 int game_state_init(game_state_t *state, const char *assets_root,
-                    const char *language) {
+                    language_t language) {
     if (!state) {
         fprintf(stderr,
                 "widebrim: game_state_init called with NULL state pointer\n");
@@ -12,7 +12,7 @@ int game_state_init(game_state_t *state, const char *assets_root,
     }
     game_state_reset(state);
     state->assets_root = assets_root;
-    state->language = language_string_as_enum(language);
+    state->language = language;
     return 0;
 }
 

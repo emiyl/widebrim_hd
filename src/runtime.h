@@ -19,7 +19,7 @@ typedef struct {
 } runtime_t;
 
 int runtime_init(runtime_t *runtime, const char *assets_root,
-                 const char *language);
+                 language_t language);
 void runtime_destroy(runtime_t *runtime);
 void runtime_run(runtime_t *runtime);
 

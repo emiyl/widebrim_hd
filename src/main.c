@@ -10,23 +10,30 @@ static void print_usage(const char *argv0) {
 
 int main(int argc, char *argv[]) {
     const char *assets_root = NULL;
-    const char *language = "en";
+    language_t language = LANGUAGE_UNKNOWN;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--assets") == 0 && i + 1 < argc) {
             assets_root = argv[i + 1];
         } else if (strcmp(argv[i], "--language") == 0 && i + 1 < argc) {
-            language = argv[i + 1];
+            language = language_string_as_enum(argv[i + 1]);
         } else if (strcmp(argv[i], "--help") == 0) {
             print_usage(argv[0]);
             return 1;
         }
     }
 
+    if (language == LANGUAGE_UNKNOWN) {
+        language = LANGUAGE_EN;
+        fprintf(stderr,
+                "widebrim: --language not specified or unknown, defaulting to "
+                "'en'\n");
+    }
+
     if (assets_root == NULL) {
         assets_root = "assets";
         fprintf(stderr,
-                "widebrim: --assets <assets_root> not specified, defaulting to "
+                "widebrim: --assets not specified, defaulting to "
                 "'%s'\n",
                 assets_root);
     }

@@ -9,7 +9,7 @@
 #define TARGET_FRAMERATE 60.0
 #define WINDOW_SCALE 0.5f
 
-int runtime_init(runtime_t *rt, const char *assets_root, const char *language) {
+int runtime_init(runtime_t *rt, const char *assets_root, language_t language) {
     if (!rt) {
         fprintf(stderr, "widebrim: Invalid runtime pointer\n");
         return -1;

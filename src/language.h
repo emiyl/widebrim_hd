@@ -4,7 +4,8 @@
 #include <string.h>
 
 typedef enum {
-    LANGUAGE_EN = 0,
+    LANGUAGE_UNKNOWN = -1,
+    LANGUAGE_EN,
     LANGUAGE_DE,
     LANGUAGE_ES,
     LANGUAGE_FR,
@@ -13,6 +14,9 @@ typedef enum {
 
 static inline language_t language_string_as_enum(const char *language) {
     if (!language) {
+        return LANGUAGE_UNKNOWN;
+    }
+    if (strcmp(language, "en") == 0) {
         return LANGUAGE_EN;
     }
     if (strcmp(language, "de") == 0) {
@@ -27,7 +31,7 @@ static inline language_t language_string_as_enum(const char *language) {
     if (strcmp(language, "it") == 0) {
         return LANGUAGE_IT;
     }
-    return LANGUAGE_EN;
+    return LANGUAGE_UNKNOWN;
 }
 
 #endif // LANGUAGE_H
