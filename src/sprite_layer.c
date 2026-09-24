@@ -32,6 +32,9 @@ static void sprite_instance_clear(sprite_layer_t *layer,
     instance->width = 0;
     instance->height = 0;
     instance->alpha = 255;
+    instance->interactive = false;
+    instance->user = NULL;
+    instance->on_event = NULL;
     instance->frame_count = 0U;
     instance->current_frame = 0U;
     instance->frame_duration_ms = 0.0f;
@@ -216,6 +219,9 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
     instance->width = width;
     instance->height = height;
     instance->alpha = alpha;
+    instance->interactive = false;
+    instance->user = NULL;
+    instance->on_event = NULL;
     layer->count += 1U;
     return instance;
 }
@@ -241,8 +247,59 @@ bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
     return true;
 }
 
+bool sprite_layer_set_frame(sprite_instance_t *sprite, size_t frame_index) {
+    if (!sprite || !sprite->frames || sprite->frame_count == 0U) {
+        return false;
+    }
+
+    if (frame_index >= sprite->frame_count) {
+        return false;
+    }
+
+    sprite->current_frame = frame_index;
+    sprite->elapsed_ms = 0.0f;
+    sprite->tex = sprite->frames[frame_index];
+    return true;
+}
+
+bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing) {
+    if (!sprite) {
+        return false;
+    }
+
+    sprite->playing = playing;
+    if (sprite->frame_count > 0U && sprite->frames &&
+        sprite->current_frame < sprite->frame_count) {
+        sprite->tex = sprite->frames[sprite->current_frame];
+    }
+    return true;
+}
+
+bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
+                                  sprite_event_callback_t on_event,
+                                  void *user) {
+    if (!sprite) {
+        return false;
+    }
+
+    sprite->interactive = interactive;
+    sprite->user = user;
+    sprite->on_event = on_event;
+    return true;
+}
+
+bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y) {
+    if (!sprite) {
+        return false;
+    }
+
+    return x >= sprite->x && x < sprite->x + sprite->width && y >= sprite->y &&
+           y < sprite->y + sprite->height;
+}
+
 void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
     size_t i;
+
     if (!layer) {
         return;
     }
@@ -270,6 +327,29 @@ void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
 
         instance->tex = instance->frames[instance->current_frame];
     }
+}
+
+bool sprite_layer_handle_event(sprite_layer_t *layer,
+                               const input_event_t *event) {
+    size_t i;
+
+    if (!layer || !event) {
+        return false;
+    }
+
+    for (i = layer->count; i > 0U; --i) {
+        sprite_instance_t *sprite = &layer->sprites[i - 1U];
+
+        if (!sprite->interactive || !sprite->on_event ||
+            !sprite_layer_contains_point(sprite, event->data.mouse_button.x,
+                                         event->data.mouse_button.y)) {
+            continue;
+        }
+
+        return sprite->on_event(sprite->user, event, sprite);
+    }
+
+    return false;
 }
 
 static void sprite_layer_update_impl(void *impl, float delta_ms) {
@@ -333,7 +413,8 @@ screen_layer_t sprite_layer_as_screen_layer(sprite_layer_t *layer) {
     screen_layer.impl = (void *)layer;
     screen_layer.update = sprite_layer_update_impl;
     screen_layer.draw = sprite_layer_draw;
-    screen_layer.handle_event = NULL;
+    screen_layer.handle_event =
+        (bool (*)(void *, const input_event_t *))sprite_layer_handle_event;
     screen_layer.on_quit = NULL;
     screen_layer.destroy = NULL;
     return screen_layer;
