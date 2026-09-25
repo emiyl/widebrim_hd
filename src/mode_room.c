@@ -271,12 +271,17 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
 static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
                              int32_t map_background_id, int32_t param3,
                              int32_t param4, int32_t param5) {
-    (void)map_text_id;
     (void)param3;
     (void)param4;
     (void)param5;
 
     char map_background_path[256];
+    char map_text_path[256];
+    char resolved_text_path[1024];
+    FILE *text_file = NULL;
+    char text_buffer[4096];
+    size_t text_size = 0U;
+
     snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.png",
              map_background_id);
 
@@ -284,6 +289,41 @@ static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
                         screen_controller_set_bg_main)) {
         fprintf(stderr, "widebrim: failed to load map background: %s\n",
                 map_background_path);
+    }
+
+    if (map_text_id <= 0) {
+        return;
+    }
+
+    snprintf(map_text_path, sizeof(map_text_path), "storytext/map%d.txt",
+             map_text_id);
+    if (!asset_path_resolve(self->state->assets_root, self->state->language,
+                            map_text_path, resolved_text_path,
+                            sizeof(resolved_text_path))) {
+        fprintf(stderr, "widebrim: failed to resolve map text asset: %s\n",
+                map_text_path);
+        return;
+    }
+
+    text_file = fopen(resolved_text_path, "rb");
+    if (!text_file) {
+        fprintf(stderr, "widebrim: failed to open map text asset: %s\n",
+                resolved_text_path);
+        return;
+    }
+
+    text_size = fread(text_buffer, 1U, sizeof(text_buffer) - 1U, text_file);
+    fclose(text_file);
+    text_buffer[text_size] = '\0';
+
+    if (text_size > 0U) {
+        size_t i;
+        for (i = 0U; i < text_size; ++i) {
+            if (text_buffer[i] == '\r') {
+                text_buffer[i] = ' ';
+            }
+        }
+        screen_controller_draw_text(self->controller, 16, 16, text_buffer);
     }
 }
 

@@ -5,13 +5,16 @@
 
 #include "bg_layer.h"
 #include "fader_layer.h"
+#include "game_state.h"
 #include "renderer.h"
 #include "sprite_layer.h"
 #include "sprite_loader.h"
+#include "text_layer.h"
 
 typedef struct {
     bg_layer_t *bg;
     sprite_layer_t *sprite;
+    text_layer_t *text;
     fader_layer_t *fader;
     renderer_t *renderer;
 } screen_controller_t;
@@ -157,6 +160,38 @@ static inline bool screen_controller_center_sprite(screen_controller_t *sc,
                                                    int area_height) {
     (void)sc;
     return sprite_layer_center_sprite(sprite, area_width, area_height);
+}
+
+static inline bool screen_controller_load_font(screen_controller_t *sc,
+                                               game_state_t *state,
+                                               const char *rel_path) {
+    char resolved[4096];
+
+    if (!sc || !sc->text || !state || !rel_path) {
+        return false;
+    }
+
+    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
+                            resolved, sizeof(resolved))) {
+        fprintf(stderr, "widebrim: failed to resolve font path for asset: %s\n",
+                rel_path);
+        return false;
+    }
+
+    return text_layer_load_font_file(sc->text, resolved);
+}
+
+static inline bool screen_controller_load_default_font(screen_controller_t *sc,
+                                                       game_state_t *state) {
+    return screen_controller_load_font(sc, state, "data/font/font.dat");
+}
+
+static inline bool screen_controller_draw_text(screen_controller_t *sc, int x,
+                                               int y, const char *text) {
+    if (!sc || !sc->text || !text) {
+        return false;
+    }
+    return text_layer_set_text(sc->text, x, y, text);
 }
 
 static inline void screen_controller_fade_in(screen_controller_t *sc,
