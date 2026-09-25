@@ -65,6 +65,8 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
                            size_t frame_count, int width, int height, int x,
                            int y, int z, uint8_t alpha, float frame_duration_ms,
                            bool loop);
+bool sprite_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
+                                  int *height);
 bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y);
 bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
                                 int area_height);

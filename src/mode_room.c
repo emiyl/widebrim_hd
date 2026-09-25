@@ -93,6 +93,29 @@ static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
                                  mode_room_on_move_mode_icon_click, impl);
 }
 
+static void mode_room_load_map_place_sprite(mode_room_impl_t *impl,
+                                            game_state_t *state,
+                                            screen_controller_t *controller) {
+    int x, y, w, h;
+
+    if (!impl) {
+        return;
+    }
+
+    impl->map_place_sprite = screen_controller_add_sprite_asset(
+        controller, state, "ani/map_place.spr", 0, 0, 0, 255, 0.0f, false);
+    if (!impl->map_place_sprite) {
+        fprintf(stderr, "widebrim: failed to load map place sprite\n");
+        return;
+    }
+
+    sprite_layer_get_sprite_size(impl->map_place_sprite, &w, &h);
+    x = WB_SCREEN_WIDTH - w;
+    y = 0;
+
+    sprite_layer_set_sprite_position(impl->map_place_sprite, x, y);
+}
+
 static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
                                               int room_num);
 
@@ -116,6 +139,10 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
 
     if (!impl->move_mode_sprite) {
         mode_room_load_move_mode_sprite(impl, impl->state, impl->controller);
+    }
+
+    if (!impl->map_place_sprite) {
+        mode_room_load_map_place_sprite(impl, impl->state, impl->controller);
     }
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {

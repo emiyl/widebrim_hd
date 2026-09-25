@@ -15,6 +15,7 @@ typedef struct mode_room_impl_t {
                    int32_t param5);
 
     sprite_instance_t *move_mode_sprite;
+    sprite_instance_t *map_place_sprite;
     bool in_move_mode;
     bool done;
 } mode_room_impl_t;

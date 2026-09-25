@@ -250,6 +250,17 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
     return instance;
 }
 
+bool sprite_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
+                                  int *height) {
+    if (!sprite || !width || !height) {
+        return false;
+    }
+
+    *width = sprite->width;
+    *height = sprite->height;
+    return true;
+}
+
 bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y) {
     if (!sprite) {
         return false;
