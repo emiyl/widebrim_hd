@@ -6,6 +6,7 @@ static bool gds_execute_default_command(gds_reader_t *reader,
                                         const gds_record_t *record,
                                         void *user_data) {
     (void)user_data;
+    bool should_break = false;
 
     while (gds_reader_remaining(reader) > 0U) {
         size_t saved_offset = reader->offset;
@@ -17,8 +18,17 @@ static bool gds_execute_default_command(gds_reader_t *reader,
             return false;
         }
 
-        if (next_record.type == GDS_RECORD_COMMAND) {
+        switch (next_record.type) {
+        case GDS_RECORD_COMMAND:
+        case GDS_RECORD_BREAKPOINT:
             reader->offset = saved_offset;
+            should_break = true;
+            break;
+        default:
+            break;
+        }
+
+        if (should_break) {
             break;
         }
     }
@@ -37,12 +47,14 @@ bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,
         return false;
     }
 
+    // Ensure that the record is of command type before executing it.
     if (record->type != GDS_RECORD_COMMAND) {
         fprintf(stderr, "gds: expected command record, got %s\n",
                 gds_record_type_to_string(record->type));
         return false;
     }
 
+    // If no handlers are provided, fall back to the default command execution.
     if (handlers == NULL || handler_count == 0U) {
         return gds_execute_default_command(reader, record, user_data);
     }
