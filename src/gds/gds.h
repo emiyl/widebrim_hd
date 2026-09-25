@@ -5,15 +5,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "gds_opcode.h"
 #include "gds_reader.h"
-#include "language.h"
 
 typedef enum {
     GDS_RECORD_COMMAND = 0,
-    GDS_RECORD_VALUE_1 = 1,
-    GDS_RECORD_VALUE_2 = 2,
-    GDS_RECORD_BYTES_1 = 3,
-    GDS_RECORD_BYTES_2 = 4,
+    GDS_RECORD_VALUE_S32 = 1,
+    GDS_RECORD_VALUE_F32 = 2,
+    GDS_RECORD_STRING = 3,
+    GDS_RECORD_BYTES = 4,
     GDS_RECORD_EMPTY_5 = 5,
     GDS_RECORD_VALUE_6 = 6,
     GDS_RECORD_VALUE_7 = 7,
@@ -21,15 +21,52 @@ typedef enum {
     GDS_RECORD_EMPTY_9 = 9,
     GDS_RECORD_EMPTY_10 = 10,
     GDS_RECORD_EMPTY_11 = 11,
-    GDS_RECORD_EMPTY_12 = 12
+    GDS_RECORD_BREAKPOINT = 12
 } gds_record_type_t;
+
+static inline char *gds_record_type_to_string(gds_record_type_t type) {
+    switch (type) {
+    case GDS_RECORD_COMMAND:
+        return "COMMAND";
+    case GDS_RECORD_VALUE_S32:
+        return "S32";
+    case GDS_RECORD_VALUE_F32:
+        return "F32";
+    case GDS_RECORD_STRING:
+        return "STRING";
+    case GDS_RECORD_BYTES:
+        return "BYTES";
+    case GDS_RECORD_EMPTY_5:
+        return "EMPTY_5";
+    case GDS_RECORD_VALUE_6:
+        return "VALUE_6";
+    case GDS_RECORD_VALUE_7:
+        return "VALUE_7";
+    case GDS_RECORD_EMPTY_8:
+        return "EMPTY_8";
+    case GDS_RECORD_EMPTY_9:
+        return "EMPTY_9";
+    case GDS_RECORD_EMPTY_10:
+        return "EMPTY_10";
+    case GDS_RECORD_EMPTY_11:
+        return "EMPTY_11";
+    case GDS_RECORD_BREAKPOINT:
+        return "BREAKPOINT";
+    default:
+        return "UNKNOWN_GDS_RECORD_TYPE";
+    }
+}
 
 typedef struct {
     uint16_t type;
 
     union {
-        uint16_t opcode;
-        uint32_t value;
+        gds_opcode_t opcode;
+        union {
+            int32_t s32;
+            uint32_t u32;
+            float f32;
+        } value;
         struct {
             const uint8_t *data;
             size_t size;

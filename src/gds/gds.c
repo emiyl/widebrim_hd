@@ -20,16 +20,18 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
 
     switch (type) {
     case GDS_RECORD_COMMAND:
-        return gds_reader_read_uint16(reader, &record->payload.opcode);
+        return gds_reader_read_opcode(reader, &record->payload.opcode);
 
-    case GDS_RECORD_VALUE_1:
-    case GDS_RECORD_VALUE_2:
+    case GDS_RECORD_VALUE_S32:
+        return gds_reader_read_int32(reader, &record->payload.value.s32);
+    case GDS_RECORD_VALUE_F32:
+        return gds_reader_read_float32(reader, &record->payload.value.f32);
     case GDS_RECORD_VALUE_6:
     case GDS_RECORD_VALUE_7:
-        return gds_reader_read_uint32(reader, &record->payload.value);
+        return gds_reader_read_uint32(reader, &record->payload.value.u32);
 
-    case GDS_RECORD_BYTES_1:
-    case GDS_RECORD_BYTES_2:
+    case GDS_RECORD_STRING:
+    case GDS_RECORD_BYTES:
         if (!gds_reader_read_uint16(reader, &size)) {
             return false;
         }
@@ -43,7 +45,7 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
     case GDS_RECORD_EMPTY_9:
     case GDS_RECORD_EMPTY_10:
     case GDS_RECORD_EMPTY_11:
-    case GDS_RECORD_EMPTY_12:
+    case GDS_RECORD_BREAKPOINT:
         return true;
 
     default:

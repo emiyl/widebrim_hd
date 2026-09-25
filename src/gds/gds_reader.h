@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "gds_opcode.h"
+
 typedef struct {
     const uint8_t *data;
     size_t size;
@@ -15,6 +17,9 @@ void gds_reader_init(gds_reader_t *reader, const void *data, size_t size);
 bool gds_reader_read_uint8(gds_reader_t *reader, uint8_t *value);
 bool gds_reader_read_uint16(gds_reader_t *reader, uint16_t *value);
 bool gds_reader_read_uint32(gds_reader_t *reader, uint32_t *value);
+bool gds_reader_read_opcode(gds_reader_t *reader, gds_opcode_t *value);
+bool gds_reader_read_int32(gds_reader_t *reader, int32_t *value);
+bool gds_reader_read_float32(gds_reader_t *reader, float *value);
 bool gds_reader_read_bytes(gds_reader_t *reader, const uint8_t **buffer,
                            size_t length);
 size_t gds_reader_remaining(const gds_reader_t *reader);

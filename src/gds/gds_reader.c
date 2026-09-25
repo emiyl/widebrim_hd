@@ -1,5 +1,6 @@
 #include "gds_reader.h"
 
+#include <stdio.h>
 #include <string.h>
 
 static bool gds_reader_can_read(const gds_reader_t *reader, size_t size) {
@@ -58,6 +59,44 @@ bool gds_reader_read_uint32(gds_reader_t *reader, uint32_t *value) {
     *value = (uint32_t)data[0] | ((uint32_t)data[1] << 8) |
              ((uint32_t)data[2] << 16) | ((uint32_t)data[3] << 24);
     reader->offset += sizeof(uint32_t);
+    return true;
+}
+
+bool gds_reader_read_opcode(gds_reader_t *reader, gds_opcode_t *value) {
+    uint16_t bits;
+
+    if (!gds_reader_read_uint16(reader, &bits)) {
+        return false;
+    }
+
+    if (!gds_is_valid_opcode((gds_opcode_t)bits)) {
+        fprintf(stderr, "gds: Invalid opcode: %u\n", bits);
+        return false;
+    }
+
+    *value = (gds_opcode_t)bits;
+    return true;
+}
+
+bool gds_reader_read_int32(gds_reader_t *reader, int32_t *value) {
+    uint32_t bits;
+
+    if (!gds_reader_read_uint32(reader, &bits)) {
+        return false;
+    }
+
+    memcpy(value, &bits, sizeof(bits));
+    return true;
+}
+
+bool gds_reader_read_float32(gds_reader_t *reader, float *value) {
+    uint32_t bits;
+
+    if (!gds_reader_read_uint32(reader, &bits)) {
+        return false;
+    }
+
+    memcpy(value, &bits, sizeof(bits));
     return true;
 }
 
