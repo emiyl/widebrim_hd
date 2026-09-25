@@ -149,8 +149,8 @@ static int text_layer_find_glyph_index(text_layer_t *layer,
 }
 
 static void text_layer_measure_text_bounds(text_layer_t *layer,
-                                          const char *text, int *width,
-                                          int *height) {
+                                           const char *text, int *width,
+                                           int *height) {
     const uint8_t *cursor;
     int line_width = 0;
     int max_line_width = 0;
@@ -214,7 +214,8 @@ static bool text_layer_ensure_instance_capacity(text_layer_t *layer,
         return true;
     }
 
-    new_capacity = layer->instance_capacity == 0U ? 4U : layer->instance_capacity;
+    new_capacity =
+        layer->instance_capacity == 0U ? 4U : layer->instance_capacity;
     while (new_capacity < required_count) {
         new_capacity *= 2U;
     }
@@ -427,14 +428,15 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
 }
 
 text_instance_t *text_layer_add_text(text_layer_t *layer, int x, int y,
-                                    const char *text) {
+                                     const char *text) {
     text_instance_t *instance = NULL;
 
     if (!layer) {
         return NULL;
     }
 
-    if (!text_layer_ensure_instance_capacity(layer, layer->instance_count + 1U)) {
+    if (!text_layer_ensure_instance_capacity(layer,
+                                             layer->instance_count + 1U)) {
         return NULL;
     }
 
@@ -450,10 +452,20 @@ text_instance_t *text_layer_add_text(text_layer_t *layer, int x, int y,
         snprintf(instance->text, sizeof(instance->text), "%s", text);
     }
     text_layer_measure_text_bounds(layer, instance->text, &instance->width,
-                                  &instance->height);
+                                   &instance->height);
     layer->instance_count += 1U;
     layer->has_text = true;
     return instance;
+}
+
+bool text_layer_get_text_position(text_instance_t *instance, int *x, int *y) {
+    if (!instance || !x || !y) {
+        return false;
+    }
+
+    *x = instance->x;
+    *y = instance->y;
+    return true;
 }
 
 bool text_layer_set_text_position(text_instance_t *instance, int x, int y) {
@@ -463,6 +475,19 @@ bool text_layer_set_text_position(text_instance_t *instance, int x, int y) {
 
     instance->x = x;
     instance->y = y;
+    return true;
+}
+
+bool text_layer_center_text_in_rect(text_instance_t *instance,
+                                    const rect_t *rect) {
+    if (!instance || !rect) {
+        return false;
+    }
+
+    instance->x =
+        (int)((rect->x + (rect->w / 2.0f)) - (instance->width / 2.0f));
+    instance->y =
+        (int)((rect->y + (rect->h / 2.0f)) - (instance->height / 2.0f));
     return true;
 }
 
@@ -480,7 +505,7 @@ bool text_layer_set_text_contents(text_instance_t *instance, const char *text) {
 
     snprintf(instance->text, sizeof(instance->text), "%s", text);
     text_layer_measure_text_bounds(instance->layer, instance->text,
-                                  &instance->width, &instance->height);
+                                   &instance->width, &instance->height);
     return true;
 }
 
@@ -512,7 +537,7 @@ bool text_layer_set_text(text_layer_t *layer, int x, int y, const char *text) {
     instance->layer = layer;
     snprintf(instance->text, sizeof(instance->text), "%s", text);
     text_layer_measure_text_bounds(layer, instance->text, &instance->width,
-                                  &instance->height);
+                                   &instance->height);
     layer->has_text = true;
     return true;
 }
@@ -564,12 +589,13 @@ bool text_layer_draw_text(text_layer_t *layer, int x, int y, const char *text) {
 }
 
 bool text_layer_draw_text_instance(text_layer_t *layer,
-                                  text_instance_t *instance) {
+                                   text_instance_t *instance) {
     if (!layer || !instance || !instance->visible || !instance->text[0]) {
         return false;
     }
 
-    return text_layer_draw_text(layer, instance->x, instance->y, instance->text);
+    return text_layer_draw_text(layer, instance->x, instance->y,
+                                instance->text);
 }
 
 static void text_layer_draw(void *impl, renderer_t *renderer) {

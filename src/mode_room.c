@@ -159,6 +159,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
 
 static void mode_room_reload_room_after_fade_out(void *user) {
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    text_layer_clear(impl->controller->text);
     mode_room_reset_room(impl);
 }
 
@@ -309,6 +310,8 @@ static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
     char text_buffer[4096];
     size_t text_size = 0U;
 
+    int text_x, text_y;
+
     snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.png",
              map_background_id);
 
@@ -345,12 +348,37 @@ static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
 
     if (text_size > 0U) {
         size_t i;
+        rect_t text_rect = {0.0f, 0.0f, 0.0f, 0.0f};
+        text_instance_t *text = NULL;
+
         for (i = 0U; i < text_size; ++i) {
             if (text_buffer[i] == '\r') {
                 text_buffer[i] = ' ';
             }
         }
-        screen_controller_draw_text(self->controller, 16, 16, text_buffer);
+
+        if (self->map_place_sprite) {
+            int sprite_w = 0;
+            int sprite_h = 0;
+            sprite_layer_get_sprite_size(self->map_place_sprite, &sprite_w,
+                                         &sprite_h);
+            text_rect.x = (float)self->map_place_sprite->x;
+            text_rect.y = (float)self->map_place_sprite->y;
+            text_rect.w = (float)sprite_w;
+            text_rect.h = (float)sprite_h;
+        } else {
+            text_rect.x = 16.0f;
+            text_rect.y = 16.0f;
+            text_rect.w = (float)WB_SCREEN_WIDTH - 32.0f;
+            text_rect.h = (float)WB_SCREEN_HEIGHT - 32.0f;
+        }
+
+        text = screen_controller_add_text(self->controller, 0, 0, text_buffer);
+        if (text) {
+            text_layer_center_text_in_rect(text, &text_rect);
+            text_layer_get_text_position(text, &text_x, &text_y);
+            text_layer_set_text_position(text, text_x, text_y - 7);
+        }
     }
 }
 
