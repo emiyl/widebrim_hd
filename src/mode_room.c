@@ -1,12 +1,13 @@
 #include "mode_room.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "bg_loader.h"
 
 #include "gds/gds.h"
-#include "gds/gds_dump.h"
+#include "gds/gds_exec.h"
 
 #define MOVE_MODE_ICON_SIZE 84
 #define MOVE_MODE_TRANSITION 250.0f
@@ -215,6 +216,44 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
     return false;
 }
 
+static bool mode_room_load_and_execute_script(game_state_t *state,
+                                              int room_num) {
+    char script_path[256];
+    char resolved_path[1024];
+    const uint8_t *script_payload = NULL;
+    size_t script_payload_size = 0U;
+
+    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
+             room_num);
+
+    if (!asset_path_resolve(state->assets_root, state->language, script_path,
+                            resolved_path, sizeof(resolved_path))) {
+        fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
+                script_path);
+        return false;
+    }
+
+    fprintf(stderr, "widebrim: Loading script for room %d: %s\n", room_num,
+            script_path);
+    if (!gds_load_from_file_path(resolved_path, &script_payload,
+                                 &script_payload_size)) {
+        fprintf(stderr, "widebrim: Failed to load script for room %d: %s\n",
+                room_num, script_path);
+        return false;
+    }
+
+    if (!gds_execute_script(script_payload, script_payload_size, NULL, 0U,
+                            NULL)) {
+        fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
+                room_num, script_path);
+        gds_free_payload(script_payload);
+        return false;
+    }
+
+    gds_free_payload(script_payload);
+    return true;
+}
+
 mode_handler_t mode_room_create(game_state_t *state,
                                 screen_controller_t *controller) {
     mode_handler_t handler = {0};
@@ -239,32 +278,9 @@ mode_handler_t mode_room_create(game_state_t *state,
                    screen_controller_set_bg_sub);
     mode_room_load_move_mode_sprite(impl, state, controller);
 
-    // Load script for the current room
-
-    char script_path[256];
-    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
-             room_num);
-
-    char resolved_path[1024];
-    if (!asset_path_resolve(state->assets_root, state->language, script_path,
-                            resolved_path, sizeof(resolved_path))) {
-        fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
-                script_path);
+    if (!mode_room_load_and_execute_script(state, room_num)) {
         return handler;
     }
-
-    const uint8_t *script_payload;
-    size_t script_payload_size;
-    fprintf(stderr, "widebrim: Loading script for room %d: %s\n", room_num,
-            script_path);
-    if (!gds_load_from_file_path(resolved_path, &script_payload,
-                                 &script_payload_size)) {
-        fprintf(stderr, "widebrim: Failed to load script for room %d: %s\n",
-                room_num, script_path);
-        return handler;
-    }
-    dump_gds(script_payload, script_payload_size);
-    gds_free_payload(script_payload);
 
     // Fade in the screen after loading the room assets and script
 
