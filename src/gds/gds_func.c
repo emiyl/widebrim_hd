@@ -24,7 +24,7 @@ static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
         impl->setmap(impl, map_text_id, map_background_id, param3, param4,
                      param5);
     else {
-        fprintf(stderr, "widebrim: setmap function pointer is NULL - is this "
+        fprintf(stderr, "gds: setmap function pointer is NULL - is this "
                         "called from a room?\n");
     }
 
