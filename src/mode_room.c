@@ -80,16 +80,19 @@ static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
         return;
     }
 
-    const int x = WB_SCREEN_WIDTH - MOVE_MODE_ICON_SIZE - 20;
-    const int y = WB_SCREEN_HEIGHT * 2 - MOVE_MODE_ICON_SIZE - 20;
-
     impl->move_mode_sprite = screen_controller_add_sprite_asset(
-        controller, state, "ani/movemode.spr", x, y, 0, 255, 0.0f, false);
+        controller, state, "ani/movemode.spr", 0, 0, 0, 255, 0.0f, false);
     if (!impl->move_mode_sprite) {
         fprintf(stderr, "widebrim: failed to load move mode sprite\n");
         return;
     }
 
+    int x, y;
+    object_layer_get_sprite_size(impl->move_mode_sprite, &x, &y);
+    x = WB_SCREEN_WIDTH - x - 20;
+    y = WB_SCREEN_HEIGHT * 2 - y - 20;
+
+    object_layer_set_sprite_position(impl->move_mode_sprite, x, y);
     object_layer_set_interactive(impl->move_mode_sprite, true,
                                  mode_room_on_move_mode_icon_click, impl);
 }
@@ -342,8 +345,8 @@ mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x, int32_t y,
 
 static void mode_room_add_text_obj(mode_room_impl_t *impl, int32_t x, int32_t y,
                                    int32_t width, int32_t height,
-                                   int32_t param6, int32_t text_id) {
-    (void)param6;
+                                   int32_t text_id, int32_t param7) {
+    (void)param7;
 
     if (!impl || !impl->controller) {
         return;

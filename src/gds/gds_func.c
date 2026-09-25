@@ -266,6 +266,11 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
         return false;
     }
 
+    printf("AddTextObj arguments:\n");
+    for (int i = 0; i < 7; ++i) {
+        printf("argv[%d] = %d\n", i, argv[i]);
+    }
+
     if (!impl) {
         fprintf(stderr, "gds: AddTextObj called without room context\n");
         return false;
