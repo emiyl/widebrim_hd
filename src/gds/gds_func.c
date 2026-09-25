@@ -4,7 +4,7 @@
 
 #include "mode_room.h"
 
-static bool gds_func_setmap(gds_reader_t *reader, const gds_record_t *command,
+static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
     (void)command;
     int32_t argv[5];
@@ -27,6 +27,24 @@ static bool gds_func_setmap(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+static bool gds_func_AddTextObj(gds_reader_t *reader,
+                                const gds_record_t *command, void *user_data) {
+    (void)reader;
+    (void)command;
+    (void)user_data;
+    int32_t argv[7];
+
+    if (!gds_read_s32_args(reader, argv, 7, "AddTextObj")) {
+        return false;
+    }
+
+    printf(
+        "AddTextObj command received with args: %d, %d, %d, %d, %d, %d, %d\n",
+        argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -34,7 +52,10 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
 
     switch (opcode) {
     case SCRIPT_CMD_SetMap:
-        *handler = gds_func_setmap;
+        *handler = gds_func_SetMap;
+        return true;
+    case SCRIPT_CMD_AddTextObj:
+        *handler = gds_func_AddTextObj;
         return true;
     default:
         *handler = NULL;
