@@ -16,8 +16,8 @@ typedef struct {
     game_state_t *state;
     screen_controller_t *controller;
     sprite_instance_t *move_mode_sprite;
-    bool done;
     bool in_move_mode;
+    bool done;
 } mode_room_impl_t;
 
 static void toggle_move_mode(mode_room_impl_t *impl) {
@@ -80,7 +80,7 @@ static bool mode_room_on_move_mode_icon_click(void *user,
     return false;
 }
 
-static bool mode_room_load_and_execute_script(game_state_t *state,
+static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
                                               int room_num);
 
 static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
@@ -126,7 +126,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
         mode_room_load_move_mode_sprite(impl, impl->state, impl->controller);
     }
 
-    if (!mode_room_load_and_execute_script(impl->state, room_num)) {
+    if (!mode_room_load_and_execute_script(impl, room_num)) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
     }
 
@@ -238,7 +238,7 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
     return false;
 }
 
-static bool mode_room_load_and_execute_script(game_state_t *state,
+static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
                                               int room_num) {
     char script_path[256];
     char resolved_path[1024];
@@ -248,8 +248,9 @@ static bool mode_room_load_and_execute_script(game_state_t *state,
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
              room_num);
 
-    if (!asset_path_resolve(state->assets_root, state->language, script_path,
-                            resolved_path, sizeof(resolved_path))) {
+    if (!asset_path_resolve(impl->state->assets_root, impl->state->language,
+                            script_path, resolved_path,
+                            sizeof(resolved_path))) {
         fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 script_path);
         return false;
@@ -264,7 +265,7 @@ static bool mode_room_load_and_execute_script(game_state_t *state,
         return false;
     }
 
-    if (!gds_execute_script(script_payload, script_payload_size, state)) {
+    if (!gds_execute_script(script_payload, script_payload_size, impl)) {
         fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
                 room_num, script_path);
         gds_free_payload(script_payload);

@@ -6,8 +6,8 @@
 
 static bool gds_execute_default_command(gds_reader_t *reader,
                                         const gds_record_t *record,
-                                        game_state_t *state) {
-    (void)state;
+                                        void *user_data) {
+    (void)user_data;
     bool should_break = false;
 
     while (gds_reader_remaining(reader) > 0U) {
@@ -39,7 +39,7 @@ static bool gds_execute_default_command(gds_reader_t *reader,
 }
 
 bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,
-                         game_state_t *state) {
+                         void *user_data) {
     gds_command_handler_fn handler = NULL;
 
     if (reader == NULL || record == NULL) {
@@ -55,13 +55,13 @@ bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,
     }
 
     if (gds_func_lookup(record->payload.opcode, &handler) && handler != NULL) {
-        return handler(reader, record, state);
+        return handler(reader, record, user_data);
     }
 
-    return gds_execute_default_command(reader, record, state);
+    return gds_execute_default_command(reader, record, user_data);
 }
 
-bool gds_execute_script(const uint8_t *data, size_t size, game_state_t *state) {
+bool gds_execute_script(const uint8_t *data, size_t size, void *user_data) {
     gds_reader_t reader;
     gds_record_t record;
 
@@ -98,7 +98,7 @@ bool gds_execute_script(const uint8_t *data, size_t size, game_state_t *state) {
             return false;
         }
 
-        if (!gds_execute_command(&reader, &record, state)) {
+        if (!gds_execute_command(&reader, &record, user_data)) {
             fprintf(stderr, "gds: failed to execute %s at offset %zu\n",
                     gds_opcode_to_string(record.payload.opcode), old_offset);
             return false;

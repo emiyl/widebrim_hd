@@ -3,9 +3,9 @@
 #include <stdio.h>
 
 static bool gds_func_setmap(gds_reader_t *reader, const gds_record_t *command,
-                            game_state_t *state) {
+                            void *user_data) {
     (void)command;
-    (void)state;
+    (void)user_data;
 
     gds_record_t record_argv[5];
     for (int i = 0; i < 5; i++) {
