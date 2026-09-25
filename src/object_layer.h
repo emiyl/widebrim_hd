@@ -66,11 +66,6 @@ void object_layer_destroy(object_layer_t *layer);
 void object_layer_clear(object_layer_t *layer);
 void object_layer_update(object_layer_t *layer, float delta_ms);
 
-void sprite_layer_init(sprite_layer_t *layer, renderer_t *renderer);
-void sprite_layer_destroy(sprite_layer_t *layer);
-void sprite_layer_clear(sprite_layer_t *layer);
-void sprite_layer_update(sprite_layer_t *layer, float delta_ms);
-
 sprite_instance_t *object_layer_add_rgba(object_layer_t *layer,
                                          const uint8_t *rgba, int width,
                                          int height, int x, int y,
@@ -81,20 +76,6 @@ sprite_instance_t *object_layer_add_rgba_z(object_layer_t *layer,
                                            uint8_t alpha);
 sprite_instance_t *
 object_layer_add_animation(object_layer_t *layer, const uint8_t *const *frames,
-                           size_t frame_count, int width, int height, int x,
-                           int y, int z, uint8_t alpha, float frame_duration_ms,
-                           bool loop);
-
-sprite_instance_t *sprite_layer_add_rgba(sprite_layer_t *layer,
-                                         const uint8_t *rgba, int width,
-                                         int height, int x, int y,
-                                         uint8_t alpha);
-sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
-                                           const uint8_t *rgba, int width,
-                                           int height, int x, int y, int z,
-                                           uint8_t alpha);
-sprite_instance_t *
-sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
                            size_t frame_count, int width, int height, int x,
                            int y, int z, uint8_t alpha, float frame_duration_ms,
                            bool loop);
@@ -115,23 +96,6 @@ bool object_layer_contains_point(sprite_instance_t *sprite, int x, int y);
 bool object_layer_handle_event(object_layer_t *layer,
                                const input_event_t *event);
 
-bool sprite_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
-                                  int *height);
-bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y);
-bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
-                                int area_height);
-bool sprite_layer_set_frame(sprite_instance_t *sprite, size_t frame_index);
-bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing);
-bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
-                                  object_event_callback_t on_event, void *user);
-bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible);
-bool sprite_layer_fade_in(sprite_instance_t *sprite, float duration_ms);
-bool sprite_layer_fade_out(sprite_instance_t *sprite, float duration_ms);
-bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y);
-bool sprite_layer_handle_event(sprite_layer_t *layer,
-                               const input_event_t *event);
-
 screen_layer_t object_layer_as_screen_layer(object_layer_t *layer);
-screen_layer_t sprite_layer_as_screen_layer(sprite_layer_t *layer);
 
 #endif // SPRITE_LAYER_H
