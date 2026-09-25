@@ -29,31 +29,36 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result) {
     size_t start = reader->offset;
     gds_record_t record;
 
-    if (result == NULL) {
+    if (reader == NULL || result == NULL) {
         return false;
     }
 
     if (gds_reader_remaining(reader) == 0U) {
-        *result = true;
-        return true;
+        fprintf(stderr, "gds: condition at end of stream is not valid\n");
+        return false;
     }
 
     if (!gds_read_record(reader, &record)) {
         reader->offset = start;
+        fprintf(stderr, "gds: failed to read condition record\n");
         return false;
     }
 
     switch (record.type) {
     case GDS_RECORD_COMMAND:
-        if (record.payload.opcode == SCRIPT_CMD_TRUE) {
+        switch (record.payload.opcode) {
+        case SCRIPT_CMD_TRUE:
             *result = true;
             return true;
-        }
-        if (record.payload.opcode == SCRIPT_CMD_FALSE) {
+        case SCRIPT_CMD_FALSE:
             *result = false;
             return true;
+        default:
+            reader->offset = start;
+            fprintf(stderr, "gds: unsupported condition opcode %s\n",
+                    gds_opcode_to_string(record.payload.opcode));
+            return false;
         }
-        break;
     case GDS_RECORD_VALUE_S32:
         *result = record.payload.value.s32 != 0;
         return true;
@@ -61,13 +66,18 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result) {
     case GDS_RECORD_VALUE_7:
         *result = record.payload.value.u32 != 0U;
         return true;
+    case GDS_RECORD_STRING:
+        *result = record.payload.bytes.size != 0U;
+        return true;
+    case GDS_RECORD_BYTES:
+        *result = record.payload.bytes.size != 0U;
+        return true;
     default:
-        break;
+        reader->offset = start;
+        fprintf(stderr, "gds: unsupported condition record type %s\n",
+                gds_record_type_to_string(record.type));
+        return false;
     }
-
-    reader->offset = start;
-    *result = true;
-    return true;
 }
 
 static bool gds_func_skip_to_next_clause(gds_reader_t *reader) {
