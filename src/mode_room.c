@@ -12,16 +12,6 @@
 #define MOVE_MODE_ICON_SIZE 84
 #define MOVE_MODE_TRANSITION 250.0f
 
-typedef struct {
-    // Game state and controller must be at the beginning of the struct
-    game_state_t *state;
-    screen_controller_t *controller;
-
-    sprite_instance_t *move_mode_sprite;
-    bool in_move_mode;
-    bool done;
-} mode_room_impl_t;
-
 static void toggle_move_mode(mode_room_impl_t *impl) {
     if (!impl) {
         return;
@@ -82,12 +72,6 @@ static bool mode_room_on_move_mode_icon_click(void *user,
     return false;
 }
 
-static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
-                                              int room_num);
-
-static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
-                                          int x, int y);
-
 static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
                                             game_state_t *state,
                                             screen_controller_t *controller) {
@@ -108,6 +92,12 @@ static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
     sprite_layer_set_interactive(impl->move_mode_sprite, true,
                                  mode_room_on_move_mode_icon_click, impl);
 }
+
+static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
+                                              int room_num);
+
+static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
+                                          int x, int y);
 
 static void mode_room_reset_room(mode_room_impl_t *impl) {
     if (!impl || !impl->state || !impl->controller) {

@@ -4,22 +4,6 @@
 
 #include "bg_loader.h"
 
-typedef struct {
-    // Game state and controller must be at the beginning of the struct
-    game_state_t *state;
-    screen_controller_t *controller;
-
-    sprite_instance_t *start_car_sprite;
-    sprite_instance_t *title_sprite;
-
-    // Button sprites for user interaction
-    sprite_instance_t *start_button;
-    sprite_instance_t *continue_button;
-    sprite_instance_t *bonus_button;
-    sprite_instance_t *active_click_sprite;
-    bool done;
-} mode_title_impl_t;
-
 static bool mode_title_advance(mode_title_impl_t *impl);
 
 static bool mode_title_on_sprite_click(void *user, const input_event_t *event,

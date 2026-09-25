@@ -3,14 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
-    // Game state and controller must be at the beginning of the struct
-    game_state_t *state;
-    screen_controller_t *controller;
-
-    bool done;
-} mode_reset_impl_t;
-
 static void mode_reset_on_fade_out_done(void *user) {
     if (!user) {
         fprintf(stderr, "widebrim: mode_reset_on_fade_out_done called with "
