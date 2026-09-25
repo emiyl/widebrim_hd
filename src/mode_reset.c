@@ -16,7 +16,8 @@ static void mode_reset_on_fade_out_done(void *user) {
     }
 
     mode_reset_impl_t *impl = (mode_reset_impl_t *)user;
-    game_state_set_mode(impl->state, MODE_TITLE);
+    game_state_set_mode(impl->state, MODE_ROOM);
+    game_state_set_place_num(impl->state, 3);
     impl->done = true;
 }
 

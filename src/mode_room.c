@@ -264,8 +264,7 @@ static bool mode_room_load_and_execute_script(game_state_t *state,
         return false;
     }
 
-    if (!gds_execute_script(script_payload, script_payload_size, NULL, 0U,
-                            NULL)) {
+    if (!gds_execute_script(script_payload, script_payload_size, NULL)) {
         fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
                 room_num, script_path);
         gds_free_payload(script_payload);

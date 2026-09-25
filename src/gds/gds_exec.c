@@ -1,5 +1,7 @@
 #include "gds_exec.h"
 
+#include "gds_func.h"
+
 #include <stdio.h>
 
 static bool gds_execute_default_command(gds_reader_t *reader,
@@ -37,9 +39,8 @@ static bool gds_execute_default_command(gds_reader_t *reader,
 }
 
 bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,
-                         const gds_command_handler_t *handlers,
-                         size_t handler_count, void *user_data) {
-    size_t i;
+                         void *user_data) {
+    gds_command_handler_fn handler = NULL;
 
     if (reader == NULL || record == NULL) {
         fprintf(stderr,
@@ -47,33 +48,20 @@ bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,
         return false;
     }
 
-    // Ensure that the record is of command type before executing it.
     if (record->type != GDS_RECORD_COMMAND) {
         fprintf(stderr, "gds: expected command record, got %s\n",
                 gds_record_type_to_string(record->type));
         return false;
     }
 
-    // If no handlers are provided, fall back to the default command execution.
-    if (handlers == NULL || handler_count == 0U) {
-        return gds_execute_default_command(reader, record, user_data);
-    }
-
-    for (i = 0U; i < handler_count; ++i) {
-        if (handlers[i].opcode == record->payload.opcode) {
-            if (handlers[i].handler == NULL) {
-                return true;
-            }
-            return handlers[i].handler(reader, record, user_data);
-        }
+    if (gds_func_lookup(record->payload.opcode, &handler) && handler != NULL) {
+        return handler(reader, record, user_data);
     }
 
     return gds_execute_default_command(reader, record, user_data);
 }
 
-bool gds_execute_script(const uint8_t *data, size_t size,
-                        const gds_command_handler_t *handlers,
-                        size_t handler_count, void *user_data) {
+bool gds_execute_script(const uint8_t *data, size_t size, void *user_data) {
     gds_reader_t reader;
     gds_record_t record;
 
@@ -98,7 +86,9 @@ bool gds_execute_script(const uint8_t *data, size_t size,
             record.type == GDS_RECORD_EMPTY_8 ||
             record.type == GDS_RECORD_EMPTY_9 ||
             record.type == GDS_RECORD_EMPTY_10 ||
-            record.type == GDS_RECORD_EMPTY_11) {
+            record.type == GDS_RECORD_EMPTY_11 ||
+            record.type == GDS_RECORD_VALUE_6 ||
+            record.type == GDS_RECORD_VALUE_7) {
             continue;
         }
 
@@ -108,8 +98,7 @@ bool gds_execute_script(const uint8_t *data, size_t size,
             return false;
         }
 
-        if (!gds_execute_command(&reader, &record, handlers, handler_count,
-                                 user_data)) {
+        if (!gds_execute_command(&reader, &record, user_data)) {
             fprintf(stderr, "gds: failed to execute %s at offset %zu\n",
                     gds_opcode_to_string(record.payload.opcode), old_offset);
             return false;
