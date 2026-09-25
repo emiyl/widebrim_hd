@@ -53,6 +53,29 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
     }
 }
 
+bool gds_read_s32_args(gds_reader_t *reader, int32_t *argv, size_t count,
+                       const char *function_name) {
+    for (size_t i = 0; i < count; i++) {
+        gds_record_t record;
+
+        if (!gds_read_record(reader, &record)) {
+            fprintf(stderr, "gds: %s expected %zu arguments\n", function_name,
+                    count);
+            return false;
+        }
+
+        if (record.type != GDS_RECORD_VALUE_S32) {
+            fprintf(stderr, "gds: %s argument %zu is not an integer\n",
+                    function_name, i);
+            return false;
+        }
+
+        argv[i] = record.payload.value.s32;
+    }
+
+    return true;
+}
+
 bool gds_extract_payload(const uint8_t *file, size_t file_size,
                          const uint8_t **payload, size_t *payload_size) {
     uint32_t size;

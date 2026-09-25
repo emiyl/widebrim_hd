@@ -75,6 +75,8 @@ typedef struct {
 } gds_record_t;
 
 bool gds_read_record(gds_reader_t *reader, gds_record_t *record);
+bool gds_read_s32_args(gds_reader_t *reader, int32_t *argv, size_t count,
+                       const char *function_name);
 bool gds_extract_payload(const uint8_t *file, size_t file_size,
                          const uint8_t **payload, size_t *payload_size);
 bool gds_load_from_file_path(const char *file_path, const uint8_t **payload,
