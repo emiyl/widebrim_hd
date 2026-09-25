@@ -6,14 +6,14 @@
 #include "bg_layer.h"
 #include "fader_layer.h"
 #include "game_state.h"
+#include "object_layer.h"
 #include "renderer.h"
-#include "sprite_layer.h"
 #include "sprite_loader.h"
 #include "text_layer.h"
 
 typedef struct {
     bg_layer_t *bg;
-    sprite_layer_t *sprite;
+    object_layer_t *object;
     text_layer_t *text;
     fader_layer_t *fader;
     renderer_t *renderer;
@@ -69,10 +69,10 @@ static inline sprite_instance_t *
 screen_controller_add_sprite_z(screen_controller_t *sc, const uint8_t *rgba,
                                int w, int h, int x, int y, int z,
                                uint8_t alpha) {
-    if (!sc || !sc->sprite) {
+    if (!sc || !sc->object) {
         return NULL;
     }
-    return sprite_layer_add_rgba_z(sc->sprite, rgba, w, h, x, y, z, alpha);
+    return object_layer_add_rgba_z(sc->object, rgba, w, h, x, y, z, alpha);
 }
 
 static inline sprite_instance_t *
@@ -85,10 +85,10 @@ static inline sprite_instance_t *screen_controller_add_sprite_animation(
     screen_controller_t *sc, const uint8_t *const *frames, size_t frame_count,
     int w, int h, int x, int y, int z, uint8_t alpha, float frame_duration_ms,
     bool loop) {
-    if (!sc || !sc->sprite) {
+    if (!sc || !sc->object) {
         return NULL;
     }
-    return sprite_layer_add_animation(sc->sprite, frames, frame_count, w, h, x,
+    return object_layer_add_animation(sc->object, frames, frame_count, w, h, x,
                                       y, z, alpha, frame_duration_ms, loop);
 }
 
@@ -102,7 +102,7 @@ static inline sprite_instance_t *screen_controller_add_sprite_asset(
     size_t i;
     sprite_instance_t *sprite = NULL;
 
-    if (!sc || !sc->sprite || !state || !rel_path) {
+    if (!sc || !sc->object || !state || !rel_path) {
         fprintf(stderr, "widebrim: one or more required arguments are NULL\n");
         return NULL;
     }
@@ -128,8 +128,8 @@ static inline sprite_instance_t *screen_controller_add_sprite_asset(
         return NULL;
     }
 
-    sprite = sprite_layer_add_animation(
-        sc->sprite, (const uint8_t *const *)frames, frame_count, frame_w,
+    sprite = object_layer_add_animation(
+        sc->object, (const uint8_t *const *)frames, frame_count, frame_w,
         frame_h, x, y, z, alpha, frame_duration_ms, loop);
 
     for (i = 0U; i < frame_count; ++i) {
@@ -140,18 +140,18 @@ static inline sprite_instance_t *screen_controller_add_sprite_asset(
 }
 
 static inline void
-screen_controller_clear_sprite_layer(screen_controller_t *sc) {
-    if (!sc || !sc->sprite) {
+screen_controller_clear_object_layer(screen_controller_t *sc) {
+    if (!sc || !sc->object) {
         return;
     }
-    sprite_layer_clear(sc->sprite);
+    object_layer_clear(sc->object);
 }
 
 static inline bool
 screen_controller_set_sprite_position(screen_controller_t *sc,
                                       sprite_instance_t *sprite, int x, int y) {
     (void)sc;
-    return sprite_layer_set_sprite_position(sprite, x, y);
+    return object_layer_set_sprite_position(sprite, x, y);
 }
 
 static inline bool screen_controller_center_sprite(screen_controller_t *sc,
@@ -159,7 +159,7 @@ static inline bool screen_controller_center_sprite(screen_controller_t *sc,
                                                    int area_width,
                                                    int area_height) {
     (void)sc;
-    return sprite_layer_center_sprite(sprite, area_width, area_height);
+    return object_layer_center_sprite(sprite, area_width, area_height);
 }
 
 static inline bool screen_controller_load_font(screen_controller_t *sc,

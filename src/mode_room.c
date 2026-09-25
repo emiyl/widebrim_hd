@@ -19,9 +19,9 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
 
     impl->in_move_mode = !impl->in_move_mode;
     if (impl->in_move_mode) {
-        sprite_layer_fade_out(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
+        object_layer_fade_out(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
     } else {
-        sprite_layer_fade_in(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
+        object_layer_fade_in(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
     }
 }
 
@@ -44,7 +44,7 @@ static bool mode_room_on_move_mode_icon_click(void *user,
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
         clicked = true;
         if (!sprite_is_offset) {
-            sprite_layer_set_sprite_position(
+            object_layer_set_sprite_position(
                 impl->move_mode_sprite,
                 impl->move_mode_sprite->x + clicked_offset,
                 impl->move_mode_sprite->y + clicked_offset);
@@ -53,7 +53,7 @@ static bool mode_room_on_move_mode_icon_click(void *user,
         break;
     case INPUT_EVENT_MOUSE_BUTTON_UP:
         if (sprite_is_offset) {
-            sprite_layer_set_sprite_position(
+            object_layer_set_sprite_position(
                 impl->move_mode_sprite,
                 impl->move_mode_sprite->x - clicked_offset,
                 impl->move_mode_sprite->y - clicked_offset);
@@ -89,7 +89,7 @@ static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
         return;
     }
 
-    sprite_layer_set_interactive(impl->move_mode_sprite, true,
+    object_layer_set_interactive(impl->move_mode_sprite, true,
                                  mode_room_on_move_mode_icon_click, impl);
 }
 
@@ -109,11 +109,11 @@ static void mode_room_load_map_place_sprite(mode_room_impl_t *impl,
         return;
     }
 
-    sprite_layer_get_sprite_size(impl->map_place_sprite, &w, &h);
+    object_layer_get_sprite_size(impl->map_place_sprite, &w, &h);
     x = WB_SCREEN_WIDTH - w;
     y = 0;
 
-    sprite_layer_set_sprite_position(impl->map_place_sprite, x, y);
+    object_layer_set_sprite_position(impl->map_place_sprite, x, y);
 }
 
 static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
@@ -360,7 +360,7 @@ static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
         if (self->map_place_sprite) {
             int sprite_w = 0;
             int sprite_h = 0;
-            sprite_layer_get_sprite_size(self->map_place_sprite, &sprite_w,
+            object_layer_get_sprite_size(self->map_place_sprite, &sprite_w,
                                          &sprite_h);
             text_rect.x = (float)self->map_place_sprite->x;
             text_rect.y = (float)self->map_place_sprite->y;

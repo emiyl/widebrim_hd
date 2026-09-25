@@ -17,8 +17,8 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
     switch (event->type) {
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
         if (sprite && sprite->frame_count > 1U) {
-            sprite_layer_set_playing(sprite, false);
-            sprite_layer_set_frame(sprite, 1U);
+            object_layer_set_playing(sprite, false);
+            object_layer_set_frame(sprite, 1U);
         }
         impl->active_click_sprite = sprite;
         return true;
@@ -31,8 +31,8 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
         impl->active_click_sprite = NULL;
 
         if (sprite && sprite->frame_count > 1U) {
-            sprite_layer_set_playing(sprite, false);
-            sprite_layer_set_frame(sprite, 0U);
+            object_layer_set_playing(sprite, false);
+            object_layer_set_frame(sprite, 0U);
         }
 
         if (sprite == impl->start_button) {
@@ -67,9 +67,9 @@ static void mode_title_load_start_car_sprite(mode_title_impl_t *impl,
         return;
     }
 
-    sprite_layer_center_sprite(impl->start_car_sprite, WB_SCREEN_WIDTH,
+    object_layer_center_sprite(impl->start_car_sprite, WB_SCREEN_WIDTH,
                                WB_SCREEN_HEIGHT);
-    sprite_layer_set_sprite_position(
+    object_layer_set_sprite_position(
         impl->start_car_sprite, impl->start_car_sprite->x,
         impl->start_car_sprite->y + WB_SCREEN_HEIGHT + 150);
 }
@@ -88,11 +88,11 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl,
         return;
     }
 
-    sprite_layer_center_sprite(impl->title_sprite, WB_SCREEN_WIDTH,
+    object_layer_center_sprite(impl->title_sprite, WB_SCREEN_WIDTH,
                                WB_SCREEN_HEIGHT);
-    sprite_layer_set_sprite_position(impl->title_sprite, impl->title_sprite->x,
+    object_layer_set_sprite_position(impl->title_sprite, impl->title_sprite->x,
                                      impl->title_sprite->y - 40);
-    sprite_layer_set_interactive(impl->title_sprite, true,
+    object_layer_set_interactive(impl->title_sprite, true,
                                  mode_title_on_sprite_click, impl);
 }
 
@@ -113,12 +113,12 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl,
         fprintf(stderr, "widebrim: failed to add start_button sprite asset\n");
         return;
     } else {
-        sprite_layer_center_sprite(impl->start_button, WB_SCREEN_WIDTH,
+        object_layer_center_sprite(impl->start_button, WB_SCREEN_WIDTH,
                                    WB_SCREEN_HEIGHT);
-        sprite_layer_set_sprite_position(impl->start_button,
+        object_layer_set_sprite_position(impl->start_button,
                                          impl->start_button->x,
                                          y_pos + index++ * offset);
-        sprite_layer_set_interactive(impl->start_button, true,
+        object_layer_set_interactive(impl->start_button, true,
                                      mode_title_on_sprite_click, impl);
     }
 
@@ -129,12 +129,12 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl,
         fprintf(stderr,
                 "widebrim: failed to add continue_button sprite asset\n");
     } else {
-        sprite_layer_center_sprite(impl->continue_button, WB_SCREEN_WIDTH,
+        object_layer_center_sprite(impl->continue_button, WB_SCREEN_WIDTH,
                                    WB_SCREEN_HEIGHT);
-        sprite_layer_set_sprite_position(impl->continue_button,
+        object_layer_set_sprite_position(impl->continue_button,
                                          impl->continue_button->x,
                                          y_pos + index++ * offset);
-        sprite_layer_set_interactive(impl->continue_button, true,
+        object_layer_set_interactive(impl->continue_button, true,
                                      mode_title_on_sprite_click, impl);
     }
 
@@ -143,12 +143,12 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl,
     if (!impl->bonus_button) {
         fprintf(stderr, "widebrim: failed to add bonus_button sprite asset\n");
     } else {
-        sprite_layer_center_sprite(impl->bonus_button, WB_SCREEN_WIDTH,
+        object_layer_center_sprite(impl->bonus_button, WB_SCREEN_WIDTH,
                                    WB_SCREEN_HEIGHT);
-        sprite_layer_set_sprite_position(impl->bonus_button,
+        object_layer_set_sprite_position(impl->bonus_button,
                                          impl->bonus_button->x,
                                          y_pos + index++ * offset);
-        sprite_layer_set_interactive(impl->bonus_button, true,
+        object_layer_set_interactive(impl->bonus_button, true,
                                      mode_title_on_sprite_click, impl);
     }
 }
@@ -173,7 +173,7 @@ static void mode_title_destroy(void *user) {
 
     mode_title_impl_t *impl = (mode_title_impl_t *)user;
     if (impl->controller) {
-        screen_controller_clear_sprite_layer(impl->controller);
+        screen_controller_clear_object_layer(impl->controller);
         screen_controller_clear_bg_layer(impl->controller);
     }
 
@@ -210,8 +210,8 @@ static bool mode_title_handle_event(void *user, const input_event_t *event) {
         return false;
     }
 
-    if (impl->controller && impl->controller->sprite &&
-        sprite_layer_handle_event(impl->controller->sprite, event)) {
+    if (impl->controller && impl->controller->object &&
+        object_layer_handle_event(impl->controller->object, event)) {
         return true;
     }
 

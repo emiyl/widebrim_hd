@@ -142,11 +142,11 @@ void mode_spawner_init(mode_spawner_t *spawner, game_state_t *state,
 
     spawner->controller.renderer = renderer;
     spawner->controller.bg = &spawner->bg;
-    spawner->controller.sprite = &spawner->sprite;
+    spawner->controller.object = &spawner->object;
     spawner->controller.text = &spawner->text;
     spawner->controller.fader = &spawner->fader;
     bg_layer_init(&spawner->bg, spawner->controller.renderer);
-    sprite_layer_init(&spawner->sprite, spawner->controller.renderer);
+    object_layer_init(&spawner->object, spawner->controller.renderer);
     text_layer_init(&spawner->text, spawner->controller.renderer);
     fader_layer_init(&spawner->fader);
 
@@ -154,7 +154,7 @@ void mode_spawner_init(mode_spawner_t *spawner, game_state_t *state,
     screen_collection_add(&spawner->layers,
                           bg_layer_as_screen_layer(&spawner->bg));
     screen_collection_add(&spawner->layers,
-                          sprite_layer_as_screen_layer(&spawner->sprite));
+                          object_layer_as_screen_layer(&spawner->object));
     screen_collection_add(&spawner->layers,
                           text_layer_as_screen_layer(&spawner->text));
     screen_collection_add(&spawner->layers,
@@ -173,7 +173,7 @@ void mode_spawner_destroy(mode_spawner_t *spawner) {
     }
 
     bg_layer_destroy(&spawner->bg);
-    sprite_layer_destroy(&spawner->sprite);
+    object_layer_destroy(&spawner->object);
     text_layer_destroy(&spawner->text);
     screen_collection_free(&spawner->layers);
     if (spawner->controller.renderer) {

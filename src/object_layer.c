@@ -84,7 +84,7 @@ static bool sprite_layer_ensure_capacity(sprite_layer_t *layer,
     return true;
 }
 
-void sprite_layer_init(sprite_layer_t *layer, renderer_t *renderer) {
+void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     if (!layer) {
         return;
     }
@@ -95,7 +95,11 @@ void sprite_layer_init(sprite_layer_t *layer, renderer_t *renderer) {
     layer->capacity = 0U;
 }
 
-void sprite_layer_clear(sprite_layer_t *layer) {
+void sprite_layer_init(sprite_layer_t *layer, renderer_t *renderer) {
+    object_layer_init(layer, renderer);
+}
+
+void object_layer_clear(object_layer_t *layer) {
     size_t i;
 
     if (!layer) {
@@ -114,12 +118,14 @@ void sprite_layer_clear(sprite_layer_t *layer) {
     layer->count = 0U;
 }
 
-void sprite_layer_destroy(sprite_layer_t *layer) {
+void sprite_layer_clear(sprite_layer_t *layer) { object_layer_clear(layer); }
+
+void object_layer_destroy(object_layer_t *layer) {
     if (!layer) {
         return;
     }
 
-    sprite_layer_clear(layer);
+    object_layer_clear(layer);
     free(layer->sprites);
     layer->sprites = NULL;
     layer->count = 0U;
@@ -127,14 +133,25 @@ void sprite_layer_destroy(sprite_layer_t *layer) {
     layer->renderer = NULL;
 }
 
+void sprite_layer_destroy(sprite_layer_t *layer) {
+    object_layer_destroy(layer);
+}
+
+sprite_instance_t *object_layer_add_rgba(object_layer_t *layer,
+                                         const uint8_t *rgba, int width,
+                                         int height, int x, int y,
+                                         uint8_t alpha) {
+    return object_layer_add_rgba_z(layer, rgba, width, height, x, y, 0, alpha);
+}
+
 sprite_instance_t *sprite_layer_add_rgba(sprite_layer_t *layer,
                                          const uint8_t *rgba, int width,
                                          int height, int x, int y,
                                          uint8_t alpha) {
-    return sprite_layer_add_rgba_z(layer, rgba, width, height, x, y, 0, alpha);
+    return object_layer_add_rgba(layer, rgba, width, height, x, y, alpha);
 }
 
-sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
+sprite_instance_t *object_layer_add_rgba_z(object_layer_t *layer,
                                            const uint8_t *rgba, int width,
                                            int height, int x, int y, int z,
                                            uint8_t alpha) {
@@ -186,8 +203,15 @@ sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
     return instance;
 }
 
+sprite_instance_t *sprite_layer_add_rgba_z(sprite_layer_t *layer,
+                                           const uint8_t *rgba, int width,
+                                           int height, int x, int y, int z,
+                                           uint8_t alpha) {
+    return object_layer_add_rgba_z(layer, rgba, width, height, x, y, z, alpha);
+}
+
 sprite_instance_t *
-sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
+object_layer_add_animation(object_layer_t *layer, const uint8_t *const *frames,
                            size_t frame_count, int width, int height, int x,
                            int y, int z, uint8_t alpha, float frame_duration_ms,
                            bool loop) {
@@ -250,7 +274,16 @@ sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
     return instance;
 }
 
-bool sprite_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
+sprite_instance_t *
+sprite_layer_add_animation(sprite_layer_t *layer, const uint8_t *const *frames,
+                           size_t frame_count, int width, int height, int x,
+                           int y, int z, uint8_t alpha, float frame_duration_ms,
+                           bool loop) {
+    return object_layer_add_animation(layer, frames, frame_count, width, height,
+                                      x, y, z, alpha, frame_duration_ms, loop);
+}
+
+bool object_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
                                   int *height) {
     if (!sprite || !width || !height) {
         return false;
@@ -261,7 +294,12 @@ bool sprite_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
     return true;
 }
 
-bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y) {
+bool sprite_layer_get_sprite_size(sprite_instance_t *sprite, int *width,
+                                  int *height) {
+    return object_layer_get_sprite_size(sprite, width, height);
+}
+
+bool object_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y) {
     if (!sprite) {
         return false;
     }
@@ -271,7 +309,11 @@ bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y) {
     return true;
 }
 
-bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
+bool sprite_layer_set_sprite_position(sprite_instance_t *sprite, int x, int y) {
+    return object_layer_set_sprite_position(sprite, x, y);
+}
+
+bool object_layer_center_sprite(sprite_instance_t *sprite, int area_width,
                                 int area_height) {
     if (!sprite || area_width <= 0 || area_height <= 0) {
         return false;
@@ -282,7 +324,12 @@ bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
     return true;
 }
 
-bool sprite_layer_set_frame(sprite_instance_t *sprite, size_t frame_index) {
+bool sprite_layer_center_sprite(sprite_instance_t *sprite, int area_width,
+                                int area_height) {
+    return object_layer_center_sprite(sprite, area_width, area_height);
+}
+
+bool object_layer_set_frame(sprite_instance_t *sprite, size_t frame_index) {
     if (!sprite || !sprite->frames || sprite->frame_count == 0U) {
         return false;
     }
@@ -297,7 +344,11 @@ bool sprite_layer_set_frame(sprite_instance_t *sprite, size_t frame_index) {
     return true;
 }
 
-bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing) {
+bool sprite_layer_set_frame(sprite_instance_t *sprite, size_t frame_index) {
+    return object_layer_set_frame(sprite, frame_index);
+}
+
+bool object_layer_set_playing(sprite_instance_t *sprite, bool playing) {
     if (!sprite) {
         return false;
     }
@@ -310,20 +361,30 @@ bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing) {
     return true;
 }
 
-bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
-                                  sprite_event_callback_t on_event,
+bool sprite_layer_set_playing(sprite_instance_t *sprite, bool playing) {
+    return object_layer_set_playing(sprite, playing);
+}
+
+bool object_layer_set_interactive(object_instance_t *object, bool interactive,
+                                  object_event_callback_t on_event,
                                   void *user) {
-    if (!sprite) {
+    if (!object) {
         return false;
     }
 
-    sprite->interactive = interactive;
-    sprite->user = user;
-    sprite->on_event = on_event;
+    object->interactive = interactive;
+    object->user = user;
+    object->on_event = on_event;
     return true;
 }
 
-bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible) {
+bool sprite_layer_set_interactive(sprite_instance_t *sprite, bool interactive,
+                                  object_event_callback_t on_event,
+                                  void *user) {
+    return object_layer_set_interactive(sprite, interactive, on_event, user);
+}
+
+bool object_layer_set_visible(sprite_instance_t *sprite, bool visible) {
     if (!sprite) {
         return false;
     }
@@ -338,7 +399,11 @@ bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible) {
     return true;
 }
 
-bool sprite_layer_fade_in(sprite_instance_t *sprite, float duration_ms) {
+bool sprite_layer_set_visible(sprite_instance_t *sprite, bool visible) {
+    return object_layer_set_visible(sprite, visible);
+}
+
+bool object_layer_fade_in(sprite_instance_t *sprite, float duration_ms) {
     if (!sprite) {
         return false;
     }
@@ -369,7 +434,11 @@ bool sprite_layer_fade_in(sprite_instance_t *sprite, float duration_ms) {
     return true;
 }
 
-bool sprite_layer_fade_out(sprite_instance_t *sprite, float duration_ms) {
+bool sprite_layer_fade_in(sprite_instance_t *sprite, float duration_ms) {
+    return object_layer_fade_in(sprite, duration_ms);
+}
+
+bool object_layer_fade_out(sprite_instance_t *sprite, float duration_ms) {
     if (!sprite) {
         return false;
     }
@@ -400,13 +469,21 @@ bool sprite_layer_fade_out(sprite_instance_t *sprite, float duration_ms) {
     return true;
 }
 
-bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y) {
+bool sprite_layer_fade_out(sprite_instance_t *sprite, float duration_ms) {
+    return object_layer_fade_out(sprite, duration_ms);
+}
+
+bool object_layer_contains_point(sprite_instance_t *sprite, int x, int y) {
     if (!sprite) {
         return false;
     }
 
     return x >= sprite->x && x < sprite->x + sprite->width && y >= sprite->y &&
            y < sprite->y + sprite->height;
+}
+
+bool sprite_layer_contains_point(sprite_instance_t *sprite, int x, int y) {
+    return object_layer_contains_point(sprite, x, y);
 }
 
 static void sprite_instance_apply_alpha(renderer_t *renderer,
@@ -429,7 +506,7 @@ static void sprite_instance_apply_alpha(renderer_t *renderer,
     }
 }
 
-void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
+void object_layer_update(object_layer_t *layer, float delta_ms) {
     size_t i;
 
     if (!layer) {
@@ -514,7 +591,11 @@ void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
     }
 }
 
-bool sprite_layer_handle_event(sprite_layer_t *layer,
+void sprite_layer_update(sprite_layer_t *layer, float delta_ms) {
+    object_layer_update(layer, delta_ms);
+}
+
+bool object_layer_handle_event(object_layer_t *layer,
                                const input_event_t *event) {
     size_t i;
 
@@ -523,26 +604,32 @@ bool sprite_layer_handle_event(sprite_layer_t *layer,
     }
 
     for (i = layer->count; i > 0U; --i) {
-        sprite_instance_t *sprite = &layer->sprites[i - 1U];
+        object_instance_t *object = &layer->sprites[i - 1U];
 
-        if (!sprite->interactive || !sprite->on_event ||
-            !sprite_layer_contains_point(sprite, event->data.mouse_button.x,
+        if (!object->interactive || !object->on_event ||
+            !object_layer_contains_point((sprite_instance_t *)object,
+                                         event->data.mouse_button.x,
                                          event->data.mouse_button.y)) {
             continue;
         }
 
-        return sprite->on_event(sprite->user, event, sprite);
+        return object->on_event(object->user, event, object);
     }
 
     return false;
 }
 
-static void sprite_layer_update_impl(void *impl, float delta_ms) {
-    sprite_layer_update((sprite_layer_t *)impl, delta_ms);
+bool sprite_layer_handle_event(sprite_layer_t *layer,
+                               const input_event_t *event) {
+    return object_layer_handle_event(layer, event);
 }
 
-static void sprite_layer_draw(void *impl, renderer_t *renderer) {
-    sprite_layer_t *layer = (sprite_layer_t *)impl;
+static void object_layer_update_impl(void *impl, float delta_ms) {
+    object_layer_update((object_layer_t *)impl, delta_ms);
+}
+
+static void object_layer_draw(void *impl, renderer_t *renderer) {
+    object_layer_t *layer = (object_layer_t *)impl;
     sprite_instance_t *sorted = NULL;
     size_t i;
 
@@ -593,15 +680,19 @@ static void sprite_layer_draw(void *impl, renderer_t *renderer) {
     free(sorted);
 }
 
-screen_layer_t sprite_layer_as_screen_layer(sprite_layer_t *layer) {
+screen_layer_t object_layer_as_screen_layer(object_layer_t *layer) {
     screen_layer_t screen_layer;
 
     screen_layer.impl = (void *)layer;
-    screen_layer.update = sprite_layer_update_impl;
-    screen_layer.draw = sprite_layer_draw;
+    screen_layer.update = object_layer_update_impl;
+    screen_layer.draw = object_layer_draw;
     screen_layer.handle_event =
-        (bool (*)(void *, const input_event_t *))sprite_layer_handle_event;
+        (bool (*)(void *, const input_event_t *))object_layer_handle_event;
     screen_layer.on_quit = NULL;
     screen_layer.destroy = NULL;
     return screen_layer;
+}
+
+screen_layer_t sprite_layer_as_screen_layer(sprite_layer_t *layer) {
+    return object_layer_as_screen_layer(layer);
 }
