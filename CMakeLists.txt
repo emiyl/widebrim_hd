@@ -46,6 +46,9 @@ target_include_directories(widebrim PRIVATE ${INCLUDE_DIRS})
 target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
 target_compile_options(widebrim PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 
+add_executable(obb_extract "${CMAKE_CURRENT_SOURCE_DIR}/tools/obb_extract.c")
+target_compile_options(obb_extract PRIVATE -pedantic-errors -Wall -Wextra -Werror)
+
 # Work around pkg-config library ordering on some platforms.
 if(APPLE)
     target_link_options(widebrim PRIVATE -Wl,-framework,CoreFoundation)
