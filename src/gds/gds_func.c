@@ -2,7 +2,32 @@
 
 #include <stdio.h>
 
+#include "gds_state.h"
 #include "mode_room.h"
+
+static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
+                          void *user_data) {
+    (void)reader;
+    (void)command;
+    if (user_data != NULL) {
+        *(bool *)user_data = true;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
+                           void *user_data) {
+    (void)reader;
+    (void)command;
+    if (user_data != NULL) {
+        *(bool *)user_data = false;
+    } else {
+        return false;
+    }
+    return true;
+}
 
 static bool gds_func_is_block_start(gds_opcode_t opcode) {
     switch (opcode) {
@@ -25,9 +50,13 @@ static bool gds_func_is_block_else(gds_opcode_t opcode) {
     }
 }
 
-static bool gds_func_read_condition(gds_reader_t *reader, bool *result) {
+static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
+                                    void *user_data) {
     size_t start = reader->offset;
     gds_record_t record;
+    gds_command_handler_fn handler = NULL;
+    game_state_t *game_state = (game_state_t *)user_data;
+    gds_state_t *gds = &game_state->gds;
 
     if (reader == NULL || result == NULL) {
         return false;
@@ -46,19 +75,21 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result) {
 
     switch (record.type) {
     case GDS_RECORD_COMMAND:
-        switch (record.payload.opcode) {
-        case SCRIPT_CMD_TRUE:
-            *result = true;
+        if (gds_func_lookup(record.payload.opcode, &handler) &&
+            handler != NULL) {
+            if (!handler(reader, &record, &gds->if_condition)) {
+                reader->offset = start;
+                fprintf(stderr, "gds: condition command %s failed\n",
+                        gds_opcode_to_string(record.payload.opcode));
+                return false;
+            }
+            *result = gds->if_condition;
             return true;
-        case SCRIPT_CMD_FALSE:
-            *result = false;
-            return true;
-        default:
-            reader->offset = start;
-            fprintf(stderr, "gds: unsupported condition opcode %s\n",
-                    gds_opcode_to_string(record.payload.opcode));
-            return false;
         }
+        reader->offset = start;
+        fprintf(stderr, "gds: unsupported condition opcode %s\n",
+                gds_opcode_to_string(record.payload.opcode));
+        return false;
     case GDS_RECORD_VALUE_S32:
         *result = record.payload.value.s32 != 0;
         return true;
@@ -125,7 +156,7 @@ static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
     (void)command;
     (void)user_data;
 
-    if (!gds_func_read_condition(reader, &condition)) {
+    if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
     }
 
@@ -143,7 +174,7 @@ static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
     (void)command;
     (void)user_data;
 
-    if (!gds_func_read_condition(reader, &condition)) {
+    if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
     }
 
@@ -169,7 +200,7 @@ static bool gds_func_WHILE(gds_reader_t *reader, const gds_record_t *command,
     (void)command;
     (void)user_data;
 
-    if (!gds_func_read_condition(reader, &condition)) {
+    if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
     }
 
@@ -187,7 +218,7 @@ static bool gds_func_Loop(gds_reader_t *reader, const gds_record_t *command,
     (void)command;
     (void)user_data;
 
-    if (!gds_func_read_condition(reader, &condition)) {
+    if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
     }
 
@@ -249,6 +280,12 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     }
 
     switch (opcode) {
+    case SCRIPT_CMD_TRUE:
+        *handler = gds_func_TRUE;
+        return true;
+    case SCRIPT_CMD_FALSE:
+        *handler = gds_func_FALSE;
+        return true;
     case SCRIPT_CMD_IF:
         *handler = gds_func_IF;
         return true;

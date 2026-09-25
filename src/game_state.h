@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "gds/gds_state.h"
 #include "language.h"
 #include "mode.h"
 
@@ -14,6 +15,7 @@ typedef struct {
 } hint_coin_state_t;
 
 typedef struct {
+    gds_state_t gds;
     const char *assets_root;
     language_t language;
     game_mode_t current_mode;

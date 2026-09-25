@@ -1,4 +1,5 @@
 #include "game_state.h"
+#include "gds/gds_state.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -10,6 +11,7 @@ int game_state_init(game_state_t *state, const char *assets_root,
                 "widebrim: game_state_init called with NULL state pointer\n");
         return -1;
     }
+    gds_state_init(&state->gds);
     game_state_reset(state);
     state->assets_root = assets_root;
     state->language = language;
@@ -50,6 +52,8 @@ void game_state_reset(game_state_t *state) {
     state->hint_coint_state.encountered = 0;
     state->hint_coint_state.available = 0;
     state->font_event_loaded = false;
+
+    gds_state_reset(&state->gds);
 }
 
 bool game_state_party_member_active(const game_state_t *state,
