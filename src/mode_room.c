@@ -80,6 +80,12 @@ static bool mode_room_on_move_mode_icon_click(void *user,
     return false;
 }
 
+static bool mode_room_load_and_execute_script(game_state_t *state,
+                                              int room_num);
+
+static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
+                                          int x, int y);
+
 static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
                                             game_state_t *state,
                                             screen_controller_t *controller) {
@@ -101,8 +107,7 @@ static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
                                  mode_room_on_move_mode_icon_click, impl);
 }
 
-static void mode_room_reload_room_after_fade_out(void *user) {
-    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+static void mode_room_reset_room(mode_room_impl_t *impl) {
     if (!impl || !impl->state || !impl->controller) {
         return;
     }
@@ -117,8 +122,25 @@ static void mode_room_reload_room_after_fade_out(void *user) {
                 room_num);
     }
 
+    if (!impl->move_mode_sprite) {
+        mode_room_load_move_mode_sprite(impl, impl->state, impl->controller);
+    }
+
+    if (!mode_room_load_and_execute_script(impl->state, room_num)) {
+        fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
+    }
+
     screen_controller_fade_in(impl->controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);
+    impl->done = false;
+    impl->in_move_mode = false;
+    bg_layer_set_touch_callback(impl->controller->bg,
+                                mode_room_on_background_touch, impl);
+}
+
+static void mode_room_reload_room_after_fade_out(void *user) {
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    mode_room_reset_room(impl);
 }
 
 static void mode_room_reload_room(mode_room_impl_t *impl) {
@@ -267,31 +289,7 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->state = state;
     impl->controller = controller;
 
-    int room_num = game_state_get_place_num(state);
-
-    // Load background and sprites for the current room
-
-    char bg_sub_path[256];
-    snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.png", room_num);
-
-    bg_loader_load(state, controller, bg_sub_path,
-                   screen_controller_set_bg_sub);
-    mode_room_load_move_mode_sprite(impl, state, controller);
-
-    if (!mode_room_load_and_execute_script(state, room_num)) {
-        return handler;
-    }
-
-    // Fade in the screen after loading the room assets and script
-
-    screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
-                              NULL);
-
-    impl->done = false;
-    impl->in_move_mode = false;
-
-    bg_layer_set_touch_callback(controller->bg, mode_room_on_background_touch,
-                                impl);
+    mode_room_reset_room(impl);
 
     handler.layer.impl = impl;
     handler.layer.update = NULL;
