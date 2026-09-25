@@ -4,7 +4,10 @@
 #include <stdlib.h>
 
 typedef struct {
+    // Game state and controller must be at the beginning of the struct
     game_state_t *state;
+    screen_controller_t *controller;
+
     bool done;
 } mode_reset_impl_t;
 
@@ -55,6 +58,7 @@ mode_handler_t mode_reset_create(game_state_t *state,
     }
 
     impl->state = state;
+    impl->controller = screen_controller;
     impl->done = false;
     game_state_reset(state);
     screen_controller_fade_out(screen_controller, FADER_DEFAULT_DURATION_MS,

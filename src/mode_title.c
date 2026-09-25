@@ -5,8 +5,10 @@
 #include "bg_loader.h"
 
 typedef struct {
+    // Game state and controller must be at the beginning of the struct
     game_state_t *state;
     screen_controller_t *controller;
+
     sprite_instance_t *start_car_sprite;
     sprite_instance_t *title_sprite;
 

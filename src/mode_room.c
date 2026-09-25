@@ -13,8 +13,10 @@
 #define MOVE_MODE_TRANSITION 250.0f
 
 typedef struct {
+    // Game state and controller must be at the beginning of the struct
     game_state_t *state;
     screen_controller_t *controller;
+
     sprite_instance_t *move_mode_sprite;
     bool in_move_mode;
     bool done;
