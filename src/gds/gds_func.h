@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 
-#include "game_state.h"
 #include "gds.h"
 
 typedef bool (*gds_command_handler_fn)(gds_reader_t *reader,

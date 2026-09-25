@@ -268,6 +268,25 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     return true;
 }
 
+static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
+                             int32_t map_background_id, int32_t param3,
+                             int32_t param4, int32_t param5) {
+    (void)map_text_id;
+    (void)param3;
+    (void)param4;
+    (void)param5;
+
+    char map_background_path[256];
+    snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.png",
+             map_background_id);
+
+    if (!bg_loader_load(self->state, self->controller, map_background_path,
+                        screen_controller_set_bg_main)) {
+        fprintf(stderr, "widebrim: failed to load map background: %s\n",
+                map_background_path);
+    }
+}
+
 mode_handler_t mode_room_create(game_state_t *state,
                                 screen_controller_t *controller) {
     mode_handler_t handler = {0};
@@ -280,6 +299,7 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->state = state;
     impl->controller = controller;
+    impl->setmap = mode_room_setmap;
 
     mode_room_reset_room(impl);
 

@@ -2,10 +2,11 @@
 
 #include <stdio.h>
 
+#include "mode_room.h"
+
 static bool gds_func_setmap(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
     (void)command;
-    (void)user_data;
 
     gds_record_t record_argv[5];
     for (int i = 0; i < 5; i++) {
@@ -24,8 +25,9 @@ static bool gds_func_setmap(gds_reader_t *reader, const gds_record_t *command,
         argv[i] = record_argv[i].payload.value.s32;
     }
 
-    printf("gds: SetMap arguments: %d, %d, %d, %d, %d\n", argv[0], argv[1],
-           argv[2], argv[3], argv[4]);
+    mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
+    if (impl->setmap)
+        impl->setmap(impl, argv[0], argv[1], argv[2], argv[3], argv[4]);
 
     return true;
 }
