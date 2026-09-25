@@ -1,4 +1,4 @@
-#include "sprite_layer.h"
+#include "object_layer.h"
 
 #include <stdlib.h>
 
@@ -93,10 +93,6 @@ void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     layer->sprites = NULL;
     layer->count = 0U;
     layer->capacity = 0U;
-}
-
-void sprite_layer_init(sprite_layer_t *layer, renderer_t *renderer) {
-    object_layer_init(layer, renderer);
 }
 
 void object_layer_clear(object_layer_t *layer) {
