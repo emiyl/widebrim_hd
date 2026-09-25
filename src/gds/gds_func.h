@@ -3,11 +3,12 @@
 
 #include <stdbool.h>
 
-#include "gds/gds.h"
+#include "game_state.h"
+#include "gds.h"
 
 typedef bool (*gds_command_handler_fn)(gds_reader_t *reader,
                                        const gds_record_t *command,
-                                       void *user_data);
+                                       game_state_t *state);
 
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler);
 
