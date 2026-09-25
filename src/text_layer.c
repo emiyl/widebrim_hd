@@ -148,6 +148,88 @@ static int text_layer_find_glyph_index(text_layer_t *layer,
     return -1;
 }
 
+static void text_layer_measure_text_bounds(text_layer_t *layer,
+                                          const char *text, int *width,
+                                          int *height) {
+    const uint8_t *cursor;
+    int line_width = 0;
+    int max_line_width = 0;
+    int line_count = 1;
+
+    if (!layer || !width || !height) {
+        return;
+    }
+
+    *width = 0;
+    *height = 0;
+    if (!text || !text[0]) {
+        return;
+    }
+
+    cursor = (const uint8_t *)text;
+    while (*cursor != '\0') {
+        int codepoint = text_layer_utf8_decode(&cursor);
+        int glyph_index;
+
+        if (codepoint == 0) {
+            continue;
+        }
+
+        if (codepoint == '\n') {
+            if (line_width > max_line_width) {
+                max_line_width = line_width;
+            }
+            line_width = 0;
+            line_count += 1;
+            continue;
+        }
+
+        glyph_index = text_layer_find_glyph_index(layer, (uint32_t)codepoint);
+        if (glyph_index < 0) {
+            line_width += 1;
+            continue;
+        }
+
+        line_width += layer->glyph_advances[glyph_index];
+    }
+
+    if (line_width > max_line_width) {
+        max_line_width = line_width;
+    }
+
+    *width = max_line_width;
+    *height = line_count * layer->cell_height;
+}
+
+static bool text_layer_ensure_instance_capacity(text_layer_t *layer,
+                                                size_t required_count) {
+    text_instance_t *next = NULL;
+    size_t new_capacity = 0U;
+
+    if (!layer) {
+        return false;
+    }
+
+    if (required_count <= layer->instance_capacity) {
+        return true;
+    }
+
+    new_capacity = layer->instance_capacity == 0U ? 4U : layer->instance_capacity;
+    while (new_capacity < required_count) {
+        new_capacity *= 2U;
+    }
+
+    next = (text_instance_t *)realloc(layer->instances,
+                                      new_capacity * sizeof(*next));
+    if (!next) {
+        return false;
+    }
+
+    layer->instances = next;
+    layer->instance_capacity = new_capacity;
+    return true;
+}
+
 void text_layer_init(text_layer_t *layer, renderer_t *renderer) {
     if (!layer) {
         return;
@@ -166,6 +248,24 @@ void text_layer_init(text_layer_t *layer, renderer_t *renderer) {
     layer->text_y = 0;
     layer->text[0] = '\0';
     layer->has_text = false;
+    layer->instances = NULL;
+    layer->instance_count = 0U;
+    layer->instance_capacity = 0U;
+}
+
+void text_layer_clear(text_layer_t *layer) {
+    if (!layer) {
+        return;
+    }
+
+    free(layer->instances);
+    layer->instances = NULL;
+    layer->instance_count = 0U;
+    layer->instance_capacity = 0U;
+    layer->text_x = 0;
+    layer->text_y = 0;
+    layer->text[0] = '\0';
+    layer->has_text = false;
 }
 
 void text_layer_destroy(text_layer_t *layer) {
@@ -174,6 +274,7 @@ void text_layer_destroy(text_layer_t *layer) {
     }
 
     text_layer_clear_glyphs(layer);
+    text_layer_clear(layer);
     layer->renderer = NULL;
 }
 
@@ -325,14 +426,93 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
     return layer->glyph_count > 0U;
 }
 
+text_instance_t *text_layer_add_text(text_layer_t *layer, int x, int y,
+                                    const char *text) {
+    text_instance_t *instance = NULL;
+
+    if (!layer) {
+        return NULL;
+    }
+
+    if (!text_layer_ensure_instance_capacity(layer, layer->instance_count + 1U)) {
+        return NULL;
+    }
+
+    instance = &layer->instances[layer->instance_count];
+    instance->x = x;
+    instance->y = y;
+    instance->width = 0;
+    instance->height = 0;
+    instance->visible = true;
+    instance->layer = layer;
+    instance->text[0] = '\0';
+    if (text) {
+        snprintf(instance->text, sizeof(instance->text), "%s", text);
+    }
+    text_layer_measure_text_bounds(layer, instance->text, &instance->width,
+                                  &instance->height);
+    layer->instance_count += 1U;
+    layer->has_text = true;
+    return instance;
+}
+
+bool text_layer_set_text_position(text_instance_t *instance, int x, int y) {
+    if (!instance) {
+        return false;
+    }
+
+    instance->x = x;
+    instance->y = y;
+    return true;
+}
+
+bool text_layer_set_text_contents(text_instance_t *instance, const char *text) {
+    if (!instance || !instance->layer) {
+        return false;
+    }
+
+    if (!text) {
+        instance->text[0] = '\0';
+        instance->width = 0;
+        instance->height = 0;
+        return true;
+    }
+
+    snprintf(instance->text, sizeof(instance->text), "%s", text);
+    text_layer_measure_text_bounds(instance->layer, instance->text,
+                                  &instance->width, &instance->height);
+    return true;
+}
+
+bool text_layer_set_visible(text_instance_t *instance, bool visible) {
+    if (!instance) {
+        return false;
+    }
+
+    instance->visible = visible;
+    return true;
+}
+
 bool text_layer_set_text(text_layer_t *layer, int x, int y, const char *text) {
+    text_instance_t *instance = NULL;
+
     if (!layer || !text) {
         return false;
     }
 
-    layer->text_x = x;
-    layer->text_y = y;
-    snprintf(layer->text, sizeof(layer->text), "%s", text);
+    if (layer->instance_count == 0U) {
+        instance = text_layer_add_text(layer, x, y, text);
+        return instance != NULL;
+    }
+
+    instance = &layer->instances[0];
+    instance->x = x;
+    instance->y = y;
+    instance->visible = true;
+    instance->layer = layer;
+    snprintf(instance->text, sizeof(instance->text), "%s", text);
+    text_layer_measure_text_bounds(layer, instance->text, &instance->width,
+                                  &instance->height);
     layer->has_text = true;
     return true;
 }
@@ -383,14 +563,28 @@ bool text_layer_draw_text(text_layer_t *layer, int x, int y, const char *text) {
     return true;
 }
 
+bool text_layer_draw_text_instance(text_layer_t *layer,
+                                  text_instance_t *instance) {
+    if (!layer || !instance || !instance->visible || !instance->text[0]) {
+        return false;
+    }
+
+    return text_layer_draw_text(layer, instance->x, instance->y, instance->text);
+}
+
 static void text_layer_draw(void *impl, renderer_t *renderer) {
     text_layer_t *layer = (text_layer_t *)impl;
+    size_t i;
 
-    if (!layer || !renderer || !layer->has_text) {
+    if (!layer || !renderer) {
         return;
     }
 
-    text_layer_draw_text(layer, layer->text_x, layer->text_y, layer->text);
+    for (i = 0U; i < layer->instance_count; ++i) {
+        if (layer->instances[i].visible) {
+            text_layer_draw_text_instance(layer, &layer->instances[i]);
+        }
+    }
 }
 
 static void text_layer_update(void *impl, float dt_ms) {

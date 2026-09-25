@@ -186,6 +186,36 @@ static inline bool screen_controller_load_default_font(screen_controller_t *sc,
     return screen_controller_load_font(sc, state, "data/font/font.dat");
 }
 
+static inline text_instance_t *screen_controller_add_text(screen_controller_t *sc,
+                                                          int x, int y,
+                                                          const char *text) {
+    if (!sc || !sc->text) {
+        return NULL;
+    }
+    return text_layer_add_text(sc->text, x, y, text);
+}
+
+static inline bool screen_controller_set_text_position(screen_controller_t *sc,
+                                                      text_instance_t *text,
+                                                      int x, int y) {
+    (void)sc;
+    return text_layer_set_text_position(text, x, y);
+}
+
+static inline bool screen_controller_set_text_contents(screen_controller_t *sc,
+                                                       text_instance_t *text,
+                                                       const char *string) {
+    (void)sc;
+    return text_layer_set_text_contents(text, string);
+}
+
+static inline bool screen_controller_set_text_visible(screen_controller_t *sc,
+                                                     text_instance_t *text,
+                                                     bool visible) {
+    (void)sc;
+    return text_layer_set_visible(text, visible);
+}
+
 static inline bool screen_controller_draw_text(screen_controller_t *sc, int x,
                                                int y, const char *text) {
     if (!sc || !sc->text || !text) {

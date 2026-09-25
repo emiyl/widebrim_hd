@@ -174,6 +174,7 @@ void mode_spawner_destroy(mode_spawner_t *spawner) {
 
     bg_layer_destroy(&spawner->bg);
     sprite_layer_destroy(&spawner->sprite);
+    text_layer_destroy(&spawner->text);
     screen_collection_free(&spawner->layers);
     if (spawner->controller.renderer) {
         renderer_destroy(spawner->controller.renderer);
