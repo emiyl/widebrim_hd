@@ -1,4 +1,4 @@
-#include "mode_reset.h"
+#include "reset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

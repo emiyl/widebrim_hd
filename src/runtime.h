@@ -6,7 +6,7 @@
 #include "clock.h"
 #include "game_state.h"
 #include "input.h"
-#include "mode_spawner.h"
+#include "spawner.h"
 #include "window.h"
 
 typedef struct {

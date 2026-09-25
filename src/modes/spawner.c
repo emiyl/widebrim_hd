@@ -1,10 +1,10 @@
-#include "mode_spawner.h"
+#include "spawner.h"
 
 #include <stdio.h>
 
-#include "mode_reset.h"
-#include "mode_room.h"
-#include "mode_title.h"
+#include "reset/reset.h"
+#include "room/room.h"
+#include "title/title.h"
 
 static mode_handler_t
 mode_spawner_create_handler(game_mode_t mode, game_state_t *state,

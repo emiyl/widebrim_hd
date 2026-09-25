@@ -1,4 +1,4 @@
-#include "mode_room.h"
+#include "room.h"
 
 #include <inttypes.h>
 #include <stdio.h>

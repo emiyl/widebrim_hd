@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "gds_state.h"
-#include "mode_room.h"
+#include "room/room.h"
 
 static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {

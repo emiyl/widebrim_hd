@@ -1,4 +1,4 @@
-#include "mode_title.h"
+#include "title.h"
 
 #include <stdlib.h>
 
