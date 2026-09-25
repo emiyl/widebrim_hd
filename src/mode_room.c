@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "bg_loader.h"
+#include "text_loader.h"
 
 #include "gds/gds.h"
 #include "gds/gds_exec.h"
@@ -117,10 +118,64 @@ static void mode_room_load_map_place_sprite(mode_room_impl_t *impl,
 }
 
 static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
-                                              int room_num);
+                                              int room_num) {
+    char script_path[256];
+    char resolved_path[1024];
+    const uint8_t *script_payload = NULL;
+    size_t script_payload_size = 0U;
+
+    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
+             room_num);
+
+    if (!asset_path_resolve(impl->state->assets_root, impl->state->language,
+                            script_path, resolved_path,
+                            sizeof(resolved_path))) {
+        fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
+                script_path);
+        return false;
+    }
+
+    fprintf(stderr, "widebrim: Loading script for room %d: %s\n", room_num,
+            script_path);
+    if (!gds_load_from_file_path(resolved_path, &script_payload,
+                                 &script_payload_size)) {
+        fprintf(stderr, "widebrim: Failed to load script for room %d: %s\n",
+                room_num, script_path);
+        return false;
+    }
+
+    if (!gds_execute_script(script_payload, script_payload_size, impl)) {
+        fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
+                room_num, script_path);
+        gds_free_payload(script_payload);
+        return false;
+    }
+
+    gds_free_payload(script_payload);
+    return true;
+}
 
 static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
-                                          int x, int y);
+                                          int x, int y) {
+    (void)x;
+    (void)y;
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    if (!impl) {
+        return;
+    }
+
+    if (kind == BG_TOUCH_KIND_TAP && impl->in_move_mode) {
+        toggle_move_mode(impl);
+        return;
+    }
+
+    switch (kind) {
+    case BG_TOUCH_KIND_NONE:
+    case BG_TOUCH_KIND_TAP:
+    case BG_TOUCH_KIND_DRAG:
+        break;
+    }
+}
 
 static void mode_room_reset_room(mode_room_impl_t *impl) {
     if (!impl || !impl->state || !impl->controller) {
@@ -172,6 +227,135 @@ static void mode_room_reload_room(mode_room_impl_t *impl) {
                                mode_room_reload_room_after_fade_out, impl);
 }
 
+static bool mode_room_on_textobj_click(void *user, const input_event_t *event,
+                                       sprite_instance_t *sprite) {
+    typedef struct {
+        mode_room_impl_t *impl;
+        int32_t text_id;
+    } room_text_click_t;
+
+    room_text_click_t *click = (room_text_click_t *)user;
+    (void)sprite;
+
+    if (!click || !click->impl || !event) {
+        return false;
+    }
+
+    if (event->type != INPUT_EVENT_MOUSE_BUTTON_DOWN &&
+        event->type != INPUT_EVENT_MOUSE_BUTTON_UP) {
+        return false;
+    }
+
+    if (click->impl->popup_text && click->impl->popup_text->visible) {
+        screen_controller_set_text_visible(click->impl->controller,
+                                           click->impl->popup_text, false);
+        return true;
+    }
+
+    {
+        char text_buffer[4096];
+        text_instance_t *popup = NULL;
+        rect_t rect = {0.0f, 0.0f, (float)WB_SCREEN_WIDTH,
+                       (float)WB_SCREEN_HEIGHT};
+
+        if (!text_loader_load_room_text(click->impl->state, click->text_id,
+                                        text_buffer, sizeof(text_buffer))) {
+            fprintf(
+                stderr,
+                "widebrim: failed to load room text object asset for id %d\n",
+                click->text_id);
+            return false;
+        }
+
+        if (!click->impl->popup_text) {
+            popup = screen_controller_add_text(click->impl->controller, 0, 0,
+                                               text_buffer);
+            if (!popup) {
+                fprintf(stderr,
+                        "widebrim: failed to create popup text for id %d\n",
+                        click->text_id);
+                return false;
+            }
+            click->impl->popup_text = popup;
+        } else {
+            popup = click->impl->popup_text;
+            screen_controller_set_text_contents(click->impl->controller, popup,
+                                                text_buffer);
+        }
+
+        text_layer_center_text_in_rect(popup, &rect);
+        text_layer_set_visible(popup, true);
+        return true;
+    }
+}
+
+static sprite_instance_t *
+mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x, int32_t y,
+                           int32_t width, int32_t height, int32_t text_id) {
+    typedef struct {
+        mode_room_impl_t *impl;
+        int32_t text_id;
+    } room_text_click_t;
+
+    uint8_t *transparent = NULL;
+    sprite_instance_t *sprite = NULL;
+    room_text_click_t *click = NULL;
+
+    if (!impl || !impl->controller || width <= 0 || height <= 0) {
+        return NULL;
+    }
+
+    transparent = (uint8_t *)calloc((size_t)width * (size_t)height * 4U,
+                                    sizeof(*transparent));
+    if (!transparent) {
+        fprintf(
+            stderr,
+            "widebrim: failed to allocate transparent hitbox for textobj\n");
+        return NULL;
+    }
+
+    click = (room_text_click_t *)malloc(sizeof(*click));
+    if (!click) {
+        free(transparent);
+        fprintf(stderr,
+                "widebrim: failed to allocate textobj callback state\n");
+        return NULL;
+    }
+
+    click->impl = impl;
+    click->text_id = text_id;
+
+    sprite = screen_controller_add_sprite_z(impl->controller, transparent,
+                                            width, height, x, y, 0, 0U);
+    free(transparent);
+    if (!sprite) {
+        free(click);
+        fprintf(stderr, "widebrim: failed to create textobj hitbox\n");
+        return NULL;
+    }
+
+    object_layer_set_visible(sprite, false);
+    object_layer_set_interactive(sprite, true, mode_room_on_textobj_click,
+                                 click);
+    return sprite;
+}
+
+static void mode_room_add_text_obj(mode_room_impl_t *impl, int32_t x, int32_t y,
+                                   int32_t width, int32_t height,
+                                   int32_t param6, int32_t text_id) {
+    (void)param6;
+
+    if (!impl || !impl->controller) {
+        return;
+    }
+
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    mode_room_add_textobj_area(impl, x, y, width, height, text_id);
+}
+
 static bool mode_room_is_done(void *user) {
     if (!user) {
         fprintf(stderr,
@@ -181,28 +365,6 @@ static bool mode_room_is_done(void *user) {
 
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
     return impl->done;
-}
-
-static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
-                                          int x, int y) {
-    (void)x;
-    (void)y;
-    mode_room_impl_t *impl = (mode_room_impl_t *)user;
-    if (!impl) {
-        return;
-    }
-
-    if (kind == BG_TOUCH_KIND_TAP && impl->in_move_mode) {
-        toggle_move_mode(impl);
-        return;
-    }
-
-    switch (kind) {
-    case BG_TOUCH_KIND_NONE:
-    case BG_TOUCH_KIND_TAP:
-    case BG_TOUCH_KIND_DRAG:
-        break;
-    }
 }
 
 static void mode_room_destroy(void *user) {
@@ -223,6 +385,18 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
     if (!impl) {
         return false;
+    }
+
+    if (event->type == INPUT_EVENT_MOUSE_BUTTON_DOWN && impl->popup_text &&
+        impl->popup_text->visible) {
+        screen_controller_set_text_visible(impl->controller, impl->popup_text,
+                                           false);
+        return true;
+    }
+
+    if (impl->controller && impl->controller->object &&
+        object_layer_handle_event(impl->controller->object, event)) {
+        return true;
     }
 
     int place_num = game_state_get_place_num(impl->state);
@@ -258,44 +432,6 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
     return false;
 }
 
-static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
-                                              int room_num) {
-    char script_path[256];
-    char resolved_path[1024];
-    const uint8_t *script_payload = NULL;
-    size_t script_payload_size = 0U;
-
-    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
-             room_num);
-
-    if (!asset_path_resolve(impl->state->assets_root, impl->state->language,
-                            script_path, resolved_path,
-                            sizeof(resolved_path))) {
-        fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
-                script_path);
-        return false;
-    }
-
-    fprintf(stderr, "widebrim: Loading script for room %d: %s\n", room_num,
-            script_path);
-    if (!gds_load_from_file_path(resolved_path, &script_payload,
-                                 &script_payload_size)) {
-        fprintf(stderr, "widebrim: Failed to load script for room %d: %s\n",
-                room_num, script_path);
-        return false;
-    }
-
-    if (!gds_execute_script(script_payload, script_payload_size, impl)) {
-        fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
-                room_num, script_path);
-        gds_free_payload(script_payload);
-        return false;
-    }
-
-    gds_free_payload(script_payload);
-    return true;
-}
-
 static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
                              int32_t map_background_id, int32_t param3,
                              int32_t param4, int32_t param5) {
@@ -305,10 +441,7 @@ static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
 
     char map_background_path[256];
     char map_text_path[256];
-    char resolved_text_path[1024];
-    FILE *text_file = NULL;
     char text_buffer[4096];
-    size_t text_size = 0U;
 
     int text_x, text_y;
 
@@ -327,31 +460,19 @@ static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
 
     snprintf(map_text_path, sizeof(map_text_path), "storytext/map%d.txt",
              map_text_id);
-    if (!asset_path_resolve(self->state->assets_root, self->state->language,
-                            map_text_path, resolved_text_path,
-                            sizeof(resolved_text_path))) {
-        fprintf(stderr, "widebrim: failed to resolve map text asset: %s\n",
+    if (!text_loader_load_path(self->state, map_text_path, text_buffer,
+                               sizeof(text_buffer))) {
+        fprintf(stderr, "widebrim: failed to load map text asset: %s\n",
                 map_text_path);
         return;
     }
 
-    text_file = fopen(resolved_text_path, "rb");
-    if (!text_file) {
-        fprintf(stderr, "widebrim: failed to open map text asset: %s\n",
-                resolved_text_path);
-        return;
-    }
-
-    text_size = fread(text_buffer, 1U, sizeof(text_buffer) - 1U, text_file);
-    fclose(text_file);
-    text_buffer[text_size] = '\0';
-
-    if (text_size > 0U) {
+    if (strlen(text_buffer) > 0U) {
         size_t i;
         rect_t text_rect = {0.0f, 0.0f, 0.0f, 0.0f};
         text_instance_t *text = NULL;
 
-        for (i = 0U; i < text_size; ++i) {
+        for (i = 0U; i < strlen(text_buffer); ++i) {
             if (text_buffer[i] == '\r') {
                 text_buffer[i] = ' ';
             }
@@ -395,6 +516,8 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->state = state;
     impl->controller = controller;
     impl->setmap = mode_room_setmap;
+    impl->add_text_obj = mode_room_add_text_obj;
+    impl->popup_text = NULL;
 
     mode_room_reset_room(impl);
 

@@ -258,19 +258,28 @@ static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
 
 static bool gds_func_AddTextObj(gds_reader_t *reader,
                                 const gds_record_t *command, void *user_data) {
-    (void)reader;
     (void)command;
-    (void)user_data;
     int32_t argv[7];
+    mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
 
     if (!gds_read_s32_args(reader, argv, 7, "AddTextObj")) {
         return false;
     }
 
-    printf(
-        "AddTextObj command received with args: %d, %d, %d, %d, %d, %d, %d\n",
-        argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+    if (!impl) {
+        fprintf(stderr, "gds: AddTextObj called without room context\n");
+        return false;
+    }
 
+    if (!impl->add_text_obj) {
+        fprintf(stderr,
+                "gds: add_text_obj function pointer is NULL - is this called "
+                "from a room?\n");
+        return false;
+    }
+
+    impl->add_text_obj(impl, argv[0], argv[1], argv[2], argv[3], argv[4],
+                       argv[6]);
     return true;
 }
 
