@@ -14,12 +14,6 @@ typedef struct {
     sprite_instance_t *move_mode_sprite;
     bool done;
     bool in_move_mode;
-    bool room_touch_pending;
-    int room_touch_start_x;
-    int room_touch_start_y;
-    int room_touch_last_x;
-    int room_touch_last_y;
-    bool room_touch_dragged;
 } mode_room_impl_t;
 
 static void toggle_move_mode(mode_room_impl_t *impl) {
@@ -103,6 +97,35 @@ static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
                                  mode_room_on_move_mode_icon_click, impl);
 }
 
+static void mode_room_reload_room_after_fade_out(void *user) {
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    if (!impl || !impl->state || !impl->controller) {
+        return;
+    }
+
+    int room_num = game_state_get_place_num(impl->state);
+    char bg_sub_path[256];
+    snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.png", room_num);
+
+    if (!bg_loader_load(impl->state, impl->controller, bg_sub_path,
+                        screen_controller_set_bg_sub)) {
+        fprintf(stderr, "widebrim: failed to reload room %d background\n",
+                room_num);
+    }
+
+    screen_controller_fade_in(impl->controller, FADER_DEFAULT_DURATION_MS, NULL,
+                              NULL);
+}
+
+static void mode_room_reload_room(mode_room_impl_t *impl) {
+    if (!impl || !impl->state || !impl->controller) {
+        return;
+    }
+
+    screen_controller_fade_out(impl->controller, FADER_DEFAULT_DURATION_MS,
+                               mode_room_reload_room_after_fade_out, impl);
+}
+
 static bool mode_room_is_done(void *user) {
     if (!user) {
         fprintf(stderr,
@@ -156,12 +179,27 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
         return false;
     }
 
+    int place_num = game_state_get_place_num(impl->state);
+
     switch (event->type) {
     case INPUT_EVENT_KEY_DOWN:
         switch (event->data.key.key) {
         case 'm':
         case 'M':
             toggle_move_mode(impl);
+            return true;
+        case 'q':
+            if (place_num > 1) {
+                game_state_set_place_num(impl->state, place_num - 1);
+                mode_room_reload_room(impl);
+                printf("widebrim: moved to room %d\n", place_num - 1);
+                return true;
+            }
+            break;
+        case 'w':
+            game_state_set_place_num(impl->state, place_num + 1);
+            mode_room_reload_room(impl);
+            printf("widebrim: moved to room %d\n", place_num + 1);
             return true;
         default:
             break;
@@ -183,6 +221,9 @@ mode_handler_t mode_room_create(game_state_t *state,
         exit(EXIT_FAILURE);
     }
 
+    impl->state = state;
+    impl->controller = controller;
+
     int room_num = game_state_get_place_num(state);
     char bg_sub_path[256];
     snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.png", room_num);
@@ -194,8 +235,6 @@ mode_handler_t mode_room_create(game_state_t *state,
     screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);
 
-    impl->state = state;
-    impl->controller = controller;
     impl->done = false;
     impl->in_move_mode = false;
 
