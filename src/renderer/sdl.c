@@ -280,6 +280,9 @@ renderer_t *renderer_create_sdl(void *sdl_Renderer) {
     }
 
     impl->renderer = (SDL_Renderer *)sdl_Renderer;
+    impl->texture_registry = NULL;
+    impl->texture_registry_size = 0U;
+    impl->texture_registry_capacity = 0U;
     renderer->impl = impl;
     renderer->vt = &g_sdl_renderer_vtable;
 

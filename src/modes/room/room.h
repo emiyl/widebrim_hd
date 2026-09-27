@@ -3,6 +3,7 @@
 
 #include "game_state.h"
 #include "mode.h"
+#include "object.h"
 #include "screen_controller.h"
 
 typedef struct mode_room_impl_t {
@@ -17,8 +18,8 @@ typedef struct mode_room_impl_t {
                          int32_t x, int32_t y, int32_t width, int32_t height,
                          int32_t text_id, int32_t param7);
 
-    sprite_instance_t *move_mode_sprite;
-    sprite_instance_t *map_place_sprite;
+    object_t *move_mode_btn;
+    object_t *map_place;
     text_instance_t *popup_text;
     bool in_move_mode;
     bool done;

@@ -354,16 +354,17 @@ bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
     return ok;
 }
 
-bool sprite_loader_load_animation_rgba(game_state_t *state,
-                                       const char *rel_path,
-                                       uint8_t ***out_frames,
-                                       size_t *out_frame_count, int *out_width,
-                                       int *out_height) {
+bool sprite_loader_load_animation_rgba(
+    game_state_t *state, const char *rel_path, uint8_t ***out_frames,
+    size_t *out_frame_count, int **out_frame_widths, int **out_frame_heights,
+    int *out_width, int *out_height) {
     char spritesheet_path[SPRITE_PATH_MAX];
     char *suffix;
     texture_data_t *spritesheet = NULL;
     sprite_sheet_t *sheet = NULL;
     uint8_t **frames = NULL;
+    int *frame_widths = NULL;
+    int *frame_heights = NULL;
     size_t frame_count = 0U;
     int width = 0;
     int height = 0;
@@ -371,12 +372,17 @@ bool sprite_loader_load_animation_rgba(game_state_t *state,
     size_t index;
 
     if (!state || !state->assets_root || !rel_path || !out_frames ||
-        !out_frame_count || !out_width || !out_height) {
+        !out_frame_count || !out_frame_widths || !out_frame_heights ||
+        !out_width || !out_height) {
+        fprintf(stderr, "widebrim: invalid arguments to "
+                        "sprite_loader_load_animation_rgba\n");
         return false;
     }
 
     if (!asset_path_resolve(state->assets_root, state->language, rel_path,
                             spritesheet_path, sizeof(spritesheet_path))) {
+        fprintf(stderr, "widebrim: failed to resolve asset path for %s\n",
+                rel_path);
         return false;
     }
 
@@ -391,11 +397,15 @@ bool sprite_loader_load_animation_rgba(game_state_t *state,
 
     spritesheet = texture_load_rgba(spritesheet_path);
     if (!spritesheet) {
+        fprintf(stderr, "widebrim: failed to load spritesheet from %s\n",
+                spritesheet_path);
         return false;
     }
 
     if (!sprite_loader_load(state, rel_path, &sheet)) {
         texture_free(spritesheet);
+        fprintf(stderr, "widebrim: failed to load sprite sheet for %s\n",
+                rel_path);
         return false;
     }
 
@@ -403,37 +413,42 @@ bool sprite_loader_load_animation_rgba(game_state_t *state,
     if (frame_count == 0U) {
         sprite_sheet_free(sheet);
         texture_free(spritesheet);
+        fprintf(stderr, "widebrim: sprite sheet for %s has no frames\n",
+                rel_path);
         return false;
     }
 
     frames = calloc(frame_count, sizeof(*frames));
-    if (!frames) {
+    frame_widths = calloc(frame_count, sizeof(*frame_widths));
+    frame_heights = calloc(frame_count, sizeof(*frame_heights));
+    if (!frames || !frame_widths || !frame_heights) {
+        free(frames);
+        free(frame_widths);
+        free(frame_heights);
         sprite_sheet_free(sheet);
         texture_free(spritesheet);
+        fprintf(stderr,
+                "widebrim: failed to allocate memory for sprite frames\n");
         return false;
     }
 
     for (index = 0U; index < frame_count; ++index) {
-        int frame_w = 0;
-        int frame_h = 0;
-
-        if (!sprite_sheet_extract_frame_rgba(sheet, spritesheet, index,
-                                             &frames[index], &frame_w,
-                                             &frame_h)) {
+        if (!sprite_sheet_extract_frame_rgba(
+                sheet, spritesheet, index, &frames[index], &frame_widths[index],
+                &frame_heights[index])) {
             goto cleanup;
         }
-
         if (index == 0U) {
-            width = frame_w;
-            height = frame_h;
-        } else if (frame_w != width || frame_h != height) {
-            goto cleanup;
+            width = frame_widths[index];
+            height = frame_heights[index];
         }
     }
 
     ok = true;
     *out_frames = frames;
     *out_frame_count = frame_count;
+    *out_frame_widths = frame_widths;
+    *out_frame_heights = frame_heights;
     *out_width = width;
     *out_height = height;
 
@@ -444,7 +459,11 @@ cleanup:
             frames[index] = NULL;
         }
         free(frames);
+        free(frame_widths);
+        free(frame_heights);
         frames = NULL;
+        frame_widths = NULL;
+        frame_heights = NULL;
     }
 
     sprite_sheet_free(sheet);

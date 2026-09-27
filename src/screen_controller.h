@@ -8,7 +8,6 @@
 #include "game_state.h"
 #include "object_layer.h"
 #include "renderer.h"
-#include "sprite_loader.h"
 #include "text_layer.h"
 
 typedef struct {
@@ -65,101 +64,12 @@ static inline void screen_controller_clear_bg_layer(screen_controller_t *sc) {
     bg_layer_init(sc->bg, sc->renderer);
 }
 
-static inline sprite_instance_t *
-screen_controller_add_sprite_z(screen_controller_t *sc, const uint8_t *rgba,
-                               int w, int h, int x, int y, int z,
-                               uint8_t alpha) {
-    if (!sc || !sc->object) {
-        return NULL;
-    }
-    return object_layer_add_rgba_z(sc->object, rgba, w, h, x, y, z, alpha);
-}
-
-static inline sprite_instance_t *
-screen_controller_add_sprite(screen_controller_t *sc, const uint8_t *rgba,
-                             int w, int h, int x, int y) {
-    return screen_controller_add_sprite_z(sc, rgba, w, h, x, y, 0, 255U);
-}
-
-static inline sprite_instance_t *screen_controller_add_sprite_animation(
-    screen_controller_t *sc, const uint8_t *const *frames, size_t frame_count,
-    int w, int h, int x, int y, int z, uint8_t alpha, float frame_duration_ms,
-    bool loop) {
-    if (!sc || !sc->object) {
-        return NULL;
-    }
-    return object_layer_add_animation(sc->object, frames, frame_count, w, h, x,
-                                      y, z, alpha, frame_duration_ms, loop);
-}
-
-static inline sprite_instance_t *screen_controller_add_sprite_asset(
-    screen_controller_t *sc, game_state_t *state, const char *rel_path, int x,
-    int y, int z, uint8_t alpha, float frame_duration_ms, bool loop) {
-    uint8_t **frames = NULL;
-    size_t frame_count = 0U;
-    int frame_w = 0;
-    int frame_h = 0;
-    size_t i;
-    sprite_instance_t *sprite = NULL;
-
-    if (!sc || !sc->object || !state || !rel_path) {
-        fprintf(stderr, "widebrim: one or more required arguments are NULL\n");
-        return NULL;
-    }
-
-    if (!sprite_loader_load_animation_rgba(state, rel_path, &frames,
-                                           &frame_count, &frame_w, &frame_h)) {
-        uint8_t *single_frame = NULL;
-        int single_w = 0;
-        int single_h = 0;
-
-        if (sprite_loader_load_frame_rgba(state, rel_path, 0U, &single_frame,
-                                          &single_w, &single_h)) {
-            sprite = screen_controller_add_sprite_z(sc, single_frame, single_w,
-                                                    single_h, x, y, z, alpha);
-            free(single_frame);
-            return sprite;
-        }
-
-        fprintf(stderr,
-                "widebrim: sprite_loader_load_animation_rgba failed for asset: "
-                "%s\n",
-                rel_path);
-        return NULL;
-    }
-
-    sprite = object_layer_add_animation(
-        sc->object, (const uint8_t *const *)frames, frame_count, frame_w,
-        frame_h, x, y, z, alpha, frame_duration_ms, loop);
-
-    for (i = 0U; i < frame_count; ++i) {
-        free(frames[i]);
-    }
-    free(frames);
-    return sprite;
-}
-
 static inline void
 screen_controller_clear_object_layer(screen_controller_t *sc) {
     if (!sc || !sc->object) {
         return;
     }
     object_layer_clear(sc->object);
-}
-
-static inline bool
-screen_controller_set_sprite_position(screen_controller_t *sc,
-                                      sprite_instance_t *sprite, int x, int y) {
-    (void)sc;
-    return object_layer_set_sprite_position(sprite, x, y);
-}
-
-static inline bool screen_controller_center_sprite(screen_controller_t *sc,
-                                                   sprite_instance_t *sprite,
-                                                   int area_width,
-                                                   int area_height) {
-    (void)sc;
-    return object_layer_center_sprite(sprite, area_width, area_height);
 }
 
 static inline bool screen_controller_load_font(screen_controller_t *sc,

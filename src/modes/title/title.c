@@ -3,11 +3,12 @@
 #include <stdlib.h>
 
 #include "bg_loader.h"
+#include "safe.h"
 
 static bool mode_title_advance(mode_title_impl_t *impl);
 
 static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
-                                       sprite_instance_t *sprite) {
+                                       object_t *obj) {
     mode_title_impl_t *impl = (mode_title_impl_t *)user;
 
     if (!impl || !event) {
@@ -16,32 +17,32 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
 
     switch (event->type) {
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
-        if (sprite && sprite->frame_count > 1U) {
-            object_layer_set_playing(sprite, false);
-            object_layer_set_frame(sprite, 1U);
+        if (obj && obj->sprite->frame_count > 1U) {
+            sprite_set_playing(obj->sprite, false);
+            sprite_set_frame(obj->sprite, 1U);
         }
-        impl->active_click_sprite = sprite;
+        impl->active_click_btn = obj;
         return true;
 
     case INPUT_EVENT_MOUSE_BUTTON_UP: {
-        if (sprite != impl->active_click_sprite) {
+        if (obj != impl->active_click_btn) {
             return false;
         }
 
-        impl->active_click_sprite = NULL;
+        impl->active_click_btn = NULL;
 
-        if (sprite && sprite->frame_count > 1U) {
-            object_layer_set_playing(sprite, false);
-            object_layer_set_frame(sprite, 0U);
+        if (obj && obj->sprite->frame_count > 1U) {
+            sprite_set_playing(obj->sprite, false);
+            sprite_set_frame(obj->sprite, 0U);
         }
 
-        if (sprite == impl->start_button) {
+        if (obj == impl->start_btn) {
             printf("widebrim: start button clicked\n");
         }
-        if (sprite == impl->continue_button) {
+        if (obj == impl->continue_btn) {
             return mode_title_advance(impl);
         }
-        if (sprite == impl->bonus_button) {
+        if (obj == impl->bonus_btn) {
             printf("widebrim: bonus button clicked\n");
         }
 
@@ -53,104 +54,136 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
     }
 }
 
-static void mode_title_load_start_car_sprite(mode_title_impl_t *impl,
-                                             game_state_t *state,
-                                             screen_controller_t *controller) {
-    if (!impl || !state || !controller) {
+static void mode_title_load_start_car(mode_title_impl_t *impl) {
+    if (!impl) {
         return;
     }
 
-    impl->start_car_sprite = screen_controller_add_sprite_asset(
-        controller, state, "ani/start_car.spr", 0, 0, 0, 255U, 100.0f, true);
-    if (!impl->start_car_sprite) {
-        fprintf(stderr, "widebrim: failed to add start_car sprite asset\n");
+    renderer_t *renderer = impl->controller->renderer;
+    game_state_t *state = impl->state;
+
+    object_t *car = impl->start_car;
+    object_init(car);
+
+    if (!car) {
+        fprintf(stderr, "widebrim: failed to initialize start_car object\n");
         return;
     }
 
-    object_layer_center_sprite(impl->start_car_sprite, WB_SCREEN_WIDTH,
-                               WB_SCREEN_HEIGHT);
-    object_layer_set_sprite_position(
-        impl->start_car_sprite, impl->start_car_sprite->x,
-        impl->start_car_sprite->y + WB_SCREEN_HEIGHT + 150);
+    sprite_t *spr = car->sprite;
+    sprite_new(spr, renderer, state, "start_car", 100.0f, true);
+
+    if (!spr) {
+        fprintf(stderr, "widebrim: failed to create start_car sprite\n");
+        return;
+    }
+
+    int spr_w, spr_h;
+    sprite_get_size(spr, renderer, &spr_w, &spr_h);
+    object_set_size(car, spr_w, spr_h);
+
+    object_center_position(car, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
+    object_set_position(car, car->x, car->y + WB_SCREEN_HEIGHT + 150);
 }
 
-static void mode_title_load_title_sprite(mode_title_impl_t *impl,
-                                         game_state_t *state,
-                                         screen_controller_t *controller) {
-    if (!impl || !state || !controller) {
+static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
+    if (!impl) {
         return;
     }
 
-    impl->title_sprite = screen_controller_add_sprite_asset(
-        controller, state, "ani/title_logo.spr", 0, 0, 0, 255U, 0.0f, false);
-    if (!impl->title_sprite) {
+    renderer_t *renderer = impl->controller->renderer;
+    game_state_t *state = impl->state;
+
+    object_t *logo = impl->title_logo;
+    object_init(logo);
+
+    if (!logo) {
+        fprintf(stderr, "widebrim: failed to initialize title_logo object\n");
+        return;
+    }
+
+    sprite_t *spr = logo->sprite;
+    sprite_new(spr, renderer, state, "title_logo", 0.0f, false);
+
+    if (!spr) {
         fprintf(stderr, "widebrim: failed to add title sprite asset\n");
         return;
     }
 
-    object_layer_center_sprite(impl->title_sprite, WB_SCREEN_WIDTH,
-                               WB_SCREEN_HEIGHT);
-    object_layer_set_sprite_position(impl->title_sprite, impl->title_sprite->x,
-                                     impl->title_sprite->y - 40);
-    object_layer_set_interactive(impl->title_sprite, true,
-                                 mode_title_on_sprite_click, impl);
+    int spr_w, spr_h;
+    sprite_get_size(spr, renderer, &spr_w, &spr_h);
+    object_set_size(logo, spr_w, spr_h);
+
+    object_center_position(logo, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
+    object_set_position(logo, logo->x, logo->y - 40);
+    object_set_interactive(logo, true, mode_title_on_sprite_click, impl);
 }
 
-static void mode_title_load_button_sprites(mode_title_impl_t *impl,
-                                           game_state_t *state,
-                                           screen_controller_t *controller) {
-    if (!impl || !state || !controller) {
+static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
+    if (!impl) {
         return;
     }
+
+    game_state_t *state = impl->state;
+    screen_controller_t *controller = impl->controller;
+
+    object_t *buttons[3] = {impl->start_btn, impl->continue_btn,
+                            impl->bonus_btn};
+    const char *sprite_names[3] = {"startbutton", "continuebutton",
+                                   "secretbutton"};
 
     int y_pos = WB_SCREEN_HEIGHT + 160;
     const int offset = 75;
-    int index = 0;
 
-    impl->start_button = screen_controller_add_sprite_asset(
-        controller, state, "ani/startbutton.spr", 0, 0, 0, 255U, 0.0f, false);
-    if (!impl->start_button) {
-        fprintf(stderr, "widebrim: failed to add start_button sprite asset\n");
-        return;
-    } else {
-        object_layer_center_sprite(impl->start_button, WB_SCREEN_WIDTH,
-                                   WB_SCREEN_HEIGHT);
-        object_layer_set_sprite_position(impl->start_button,
-                                         impl->start_button->x,
-                                         y_pos + index++ * offset);
-        object_layer_set_interactive(impl->start_button, true,
-                                     mode_title_on_sprite_click, impl);
-    }
+    for (int i = 0; i < 3; i++) {
+        object_init(buttons[i]);
+        if (!buttons[i]) {
+            fprintf(stderr, "widebrim: failed to initialize button object\n");
+            return;
+        }
 
-    impl->continue_button = screen_controller_add_sprite_asset(
-        controller, state, "ani/continuebutton.spr", 0, 0, 0, 255U, 0.0f,
-        false);
-    if (!impl->continue_button) {
-        fprintf(stderr,
-                "widebrim: failed to add continue_button sprite asset\n");
-    } else {
-        object_layer_center_sprite(impl->continue_button, WB_SCREEN_WIDTH,
-                                   WB_SCREEN_HEIGHT);
-        object_layer_set_sprite_position(impl->continue_button,
-                                         impl->continue_button->x,
-                                         y_pos + index++ * offset);
-        object_layer_set_interactive(impl->continue_button, true,
-                                     mode_title_on_sprite_click, impl);
-    }
+        sprite_new(buttons[i]->sprite, controller->renderer, state,
+                   sprite_names[i], 0.0f, false);
+        if (!buttons[i]->sprite) {
+            fprintf(stderr,
+                    "widebrim: failed to create sprite for button object\n");
+            return;
+        }
 
-    impl->bonus_button = screen_controller_add_sprite_asset(
-        controller, state, "ani/secretbutton.spr", 0, 0, 0, 255U, 0.0f, false);
-    if (!impl->bonus_button) {
-        fprintf(stderr, "widebrim: failed to add bonus_button sprite asset\n");
-    } else {
-        object_layer_center_sprite(impl->bonus_button, WB_SCREEN_WIDTH,
-                                   WB_SCREEN_HEIGHT);
-        object_layer_set_sprite_position(impl->bonus_button,
-                                         impl->bonus_button->x,
-                                         y_pos + index++ * offset);
-        object_layer_set_interactive(impl->bonus_button, true,
-                                     mode_title_on_sprite_click, impl);
+        int spr_w, spr_h;
+        sprite_get_size(buttons[i]->sprite, controller->renderer, &spr_w,
+                        &spr_h);
+        object_set_size(buttons[i], spr_w, spr_h);
+
+        object_center_position(buttons[i], WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
+        object_set_position(buttons[i], buttons[i]->x, y_pos + i * offset);
+        object_set_interactive(buttons[i], true, mode_title_on_sprite_click,
+                               impl);
     }
+}
+
+static void mode_title_load_sprites(mode_title_impl_t *impl) {
+    mode_title_load_start_car(impl);
+    mode_title_load_title_sprite(impl);
+    mode_title_load_button_sprites(impl);
+}
+
+static void mode_title_load_bg(mode_title_impl_t *impl) {
+    const char *bg_path = "bg/select_title.png";
+    const char *sub_bg_path = "bg/start_select2.png";
+    const char *sub_bg_overlay_path = "bg/start_select.png";
+
+    game_state_t *state = impl->state;
+    screen_controller_t *controller = impl->controller;
+
+    bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
+    bg_loader_load(state, controller, sub_bg_path,
+                   screen_controller_set_bg_sub);
+    bg_loader_load(state, controller, sub_bg_overlay_path,
+                   screen_controller_set_bg_sub2);
+
+    screen_controller_set_bg_sub_scroll(controller, -45.0f, true);
+    screen_controller_set_bg_sub2_scroll(controller, -90.0f, true);
 }
 
 static bool mode_title_is_done(void *user) {
@@ -222,7 +255,7 @@ mode_handler_t mode_title_create(game_state_t *state,
                                  screen_controller_t *controller) {
     mode_handler_t handler;
     mode_title_impl_t *impl =
-        (mode_title_impl_t *)malloc(sizeof(mode_title_impl_t));
+        (mode_title_impl_t *)smalloc(sizeof(mode_title_impl_t));
 
     if (!impl) {
         fprintf(stderr,
@@ -245,26 +278,21 @@ mode_handler_t mode_title_create(game_state_t *state,
     impl->state = state;
     impl->controller = controller;
     impl->done = false;
-    impl->start_car_sprite = NULL;
-    impl->title_sprite = NULL;
-    impl->active_click_sprite = NULL;
 
-    const char *bg_path = "bg/select_title.png";
-    const char *sub_bg_path = "bg/start_select2.png";
-    const char *sub_bg_overlay_path = "bg/start_select.png";
+    object_t **objects[] = {&impl->start_car, &impl->title_logo,
+                            &impl->start_btn, &impl->continue_btn,
+                            &impl->bonus_btn};
 
-    bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
-    bg_loader_load(state, controller, sub_bg_path,
-                   screen_controller_set_bg_sub);
-    bg_loader_load(state, controller, sub_bg_overlay_path,
-                   screen_controller_set_bg_sub2);
+    for (size_t i = 0; i < sizeof(objects) / sizeof(objects[0]); i++) {
+        *objects[i] = smalloc(sizeof(object_t));
 
-    mode_title_load_start_car_sprite(impl, state, controller);
-    mode_title_load_title_sprite(impl, state, controller);
-    mode_title_load_button_sprites(impl, state, controller);
+        if (*objects[i]) {
+            object_layer_add_object(controller->object, *objects[i]);
+        }
+    }
 
-    screen_controller_set_bg_sub_scroll(controller, -45.0f, true);
-    screen_controller_set_bg_sub2_scroll(controller, -90.0f, true);
+    mode_title_load_bg(impl);
+    mode_title_load_sprites(impl);
 
     screen_controller_fade_in(controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);

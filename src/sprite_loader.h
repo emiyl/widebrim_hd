@@ -61,11 +61,10 @@ bool sprite_loader_load(game_state_t *state, const char *rel_path,
 bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
                                    size_t frame_index, uint8_t **out_rgba,
                                    int *out_width, int *out_height);
-bool sprite_loader_load_animation_rgba(game_state_t *state,
-                                       const char *rel_path,
-                                       uint8_t ***out_frames,
-                                       size_t *out_frame_count, int *out_width,
-                                       int *out_height);
+bool sprite_loader_load_animation_rgba(
+    game_state_t *state, const char *rel_path, uint8_t ***out_frames,
+    size_t *out_frame_count, int **out_frame_widths, int **out_frame_heights,
+    int *out_width, int *out_height);
 bool sprite_sheet_extract_frame_rgba(const sprite_sheet_t *sheet,
                                      const texture_data_t *spritesheet,
                                      size_t frame_index, uint8_t **out_rgba,

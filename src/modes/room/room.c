@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 #include "bg_loader.h"
-#include "text_loader.h"
+#include "map.h"
+#include "safe.h"
 #include "textobj.h"
 
 #include "gds/gds.h"
@@ -20,16 +21,18 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
 
     impl->in_move_mode = !impl->in_move_mode;
     if (impl->in_move_mode) {
-        object_layer_fade_out(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
+        object_fade_out(impl->move_mode_btn, impl->controller->renderer,
+                        MOVE_MODE_TRANSITION);
     } else {
-        object_layer_fade_in(impl->move_mode_sprite, MOVE_MODE_TRANSITION);
+        object_fade_in(impl->move_mode_btn, impl->controller->renderer,
+                       MOVE_MODE_TRANSITION);
     }
 }
 
 static bool mode_room_on_move_mode_icon_click(void *user,
                                               const input_event_t *event,
-                                              sprite_instance_t *sprite) {
-    (void)sprite;
+                                              object_t *obj) {
+    (void)obj;
     if (!user) {
         fprintf(stderr, "widebrim: mode_room_on_move_mode_icon_click called "
                         "with NULL user pointer\n");
@@ -45,19 +48,17 @@ static bool mode_room_on_move_mode_icon_click(void *user,
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
         clicked = true;
         if (!sprite_is_offset) {
-            object_layer_set_sprite_position(
-                impl->move_mode_sprite,
-                impl->move_mode_sprite->x + clicked_offset,
-                impl->move_mode_sprite->y + clicked_offset);
+            object_set_position(impl->move_mode_btn,
+                                impl->move_mode_btn->x + clicked_offset,
+                                impl->move_mode_btn->y + clicked_offset);
             sprite_is_offset = true;
         }
         break;
     case INPUT_EVENT_MOUSE_BUTTON_UP:
         if (sprite_is_offset) {
-            object_layer_set_sprite_position(
-                impl->move_mode_sprite,
-                impl->move_mode_sprite->x - clicked_offset,
-                impl->move_mode_sprite->y - clicked_offset);
+            object_set_position(impl->move_mode_btn,
+                                impl->move_mode_btn->x - clicked_offset,
+                                impl->move_mode_btn->y - clicked_offset);
             sprite_is_offset = false;
         }
         if (clicked) {
@@ -73,51 +74,39 @@ static bool mode_room_on_move_mode_icon_click(void *user,
     return false;
 }
 
-static void mode_room_load_move_mode_sprite(mode_room_impl_t *impl,
-                                            game_state_t *state,
-                                            screen_controller_t *controller) {
+static void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
     if (!impl) {
         return;
     }
 
-    impl->move_mode_sprite = screen_controller_add_sprite_asset(
-        controller, state, "ani/movemode.spr", 0, 0, 0, 255, 0.0f, false);
-    if (!impl->move_mode_sprite) {
-        fprintf(stderr, "widebrim: failed to load move mode sprite\n");
+    renderer_t *renderer = impl->controller->renderer;
+    game_state_t *state = impl->state;
+
+    object_t *btn = impl->move_mode_btn;
+    object_init(btn);
+
+    if (!btn) {
+        fprintf(stderr, "widebrim: failed to create move mode button\n");
         return;
     }
 
-    int x, y;
-    object_layer_get_sprite_size(impl->move_mode_sprite, &x, &y);
-    x = WB_SCREEN_WIDTH - x - 20;
-    y = WB_SCREEN_HEIGHT * 2 - y - 20;
+    sprite_t *spr = btn->sprite;
+    sprite_new(spr, renderer, state, "movemode", 0.0f, false);
 
-    object_layer_set_sprite_position(impl->move_mode_sprite, x, y);
-    object_layer_set_interactive(impl->move_mode_sprite, true,
-                                 mode_room_on_move_mode_icon_click, impl);
-}
-
-static void mode_room_load_map_place_sprite(mode_room_impl_t *impl,
-                                            game_state_t *state,
-                                            screen_controller_t *controller) {
-    int x, y, w, h;
-
-    if (!impl) {
+    if (!spr) {
+        fprintf(stderr,
+                "widebrim: failed to create sprite for move mode button\n");
         return;
     }
 
-    impl->map_place_sprite = screen_controller_add_sprite_asset(
-        controller, state, "ani/map_place.spr", 0, 0, 0, 255, 0.0f, false);
-    if (!impl->map_place_sprite) {
-        fprintf(stderr, "widebrim: failed to load map place sprite\n");
-        return;
-    }
+    int spr_w, spr_h;
+    sprite_get_size(spr, renderer, &spr_w, &spr_h);
+    int x = WB_SCREEN_WIDTH - spr_w - 20;
+    int y = WB_SCREEN_HEIGHT * 2 - spr_h - 20;
 
-    object_layer_get_sprite_size(impl->map_place_sprite, &w, &h);
-    x = WB_SCREEN_WIDTH - w;
-    y = 0;
-
-    object_layer_set_sprite_position(impl->map_place_sprite, x, y);
+    object_set_size(btn, spr_w, spr_h);
+    object_set_position(btn, x, y);
+    object_set_interactive(btn, true, mode_room_on_move_mode_icon_click, impl);
 }
 
 static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
@@ -195,13 +184,8 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
                 room_num);
     }
 
-    if (!impl->move_mode_sprite) {
-        mode_room_load_move_mode_sprite(impl, impl->state, impl->controller);
-    }
-
-    if (!impl->map_place_sprite) {
-        mode_room_load_map_place_sprite(impl, impl->state, impl->controller);
-    }
+    mode_room_load_move_mode_btn(impl);
+    mode_room_load_map_place(impl);
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
@@ -246,6 +230,19 @@ static void mode_room_destroy(void *user) {
         fprintf(stderr,
                 "widebrim: mode_room_destroy called with NULL user pointer\n");
         return;
+    }
+
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+
+    object_layer_clear(impl->controller->object);
+
+    if (impl->move_mode_btn) {
+        free(impl->move_mode_btn);
+        impl->move_mode_btn = NULL;
+    }
+    if (impl->map_place) {
+        free(impl->map_place);
+        impl->map_place = NULL;
     }
 
     free(user);
@@ -306,86 +303,10 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
     return false;
 }
 
-static void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
-                             int32_t map_background_id, int32_t param3,
-                             int32_t param4, int32_t param5) {
-    (void)param3;
-    (void)param4;
-    (void)param5;
-
-    char map_background_path[256];
-    char map_text_path[256];
-    char text_buffer[4096];
-
-    int text_x, text_y;
-
-    snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.png",
-             map_background_id);
-
-    if (!bg_loader_load(self->state, self->controller, map_background_path,
-                        screen_controller_set_bg_main)) {
-        fprintf(stderr, "widebrim: failed to load map background: %s\n",
-                map_background_path);
-    }
-
-    if (map_text_id <= 0) {
-        return;
-    }
-
-    snprintf(map_text_path, sizeof(map_text_path), "storytext/map%d.txt",
-             map_text_id);
-    if (!text_loader_load_path(self->state, map_text_path, text_buffer,
-                               sizeof(text_buffer))) {
-        fprintf(stderr, "widebrim: failed to load map text asset: %s\n",
-                map_text_path);
-        return;
-    }
-
-    if (strlen(text_buffer) > 0U) {
-        size_t i;
-        rect_t text_rect = {0.0f, 0.0f, 0.0f, 0.0f};
-        text_instance_t *text = NULL;
-
-        for (i = 0U; i < strlen(text_buffer); ++i) {
-            if (text_buffer[i] == '\r') {
-                text_buffer[i] = ' ';
-            }
-        }
-
-        if (self->map_place_sprite) {
-            int sprite_w = 0;
-            int sprite_h = 0;
-            object_layer_get_sprite_size(self->map_place_sprite, &sprite_w,
-                                         &sprite_h);
-            text_rect.x = (float)self->map_place_sprite->x;
-            text_rect.y = (float)self->map_place_sprite->y;
-            text_rect.w = (float)sprite_w;
-            text_rect.h = (float)sprite_h;
-        } else {
-            text_rect.x = 16.0f;
-            text_rect.y = 16.0f;
-            text_rect.w = (float)WB_SCREEN_WIDTH - 32.0f;
-            text_rect.h = (float)WB_SCREEN_HEIGHT - 32.0f;
-        }
-
-        text = screen_controller_add_text(self->controller, 0, 0, text_buffer);
-        if (text) {
-            text_layer_center_text_in_rect(text, &text_rect);
-            text_layer_get_text_position(text, &text_x, &text_y);
-            text_layer_set_text_position(text, text_x, text_y - 7);
-        }
-    }
-}
-
 mode_handler_t mode_room_create(game_state_t *state,
                                 screen_controller_t *controller) {
     mode_handler_t handler = {0};
-    mode_room_impl_t *impl = malloc(sizeof(mode_room_impl_t));
-    if (!impl) {
-        fprintf(stderr,
-                "widebrim: Failed to allocate memory for mode_room_impl_t\n");
-        exit(EXIT_FAILURE);
-    }
+    mode_room_impl_t *impl = smalloc(sizeof(mode_room_impl_t));
 
     impl->state = state;
     impl->controller = controller;
@@ -393,7 +314,13 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->add_text_obj = mode_room_add_text_obj;
     impl->popup_text = NULL;
 
+    impl->move_mode_btn = smalloc(sizeof(object_t));
+    impl->map_place = smalloc(sizeof(object_t));
+
     mode_room_reset_room(impl);
+
+    object_layer_add_object(impl->controller->object, impl->map_place);
+    object_layer_add_object(impl->controller->object, impl->move_mode_btn);
 
     handler.layer.impl = impl;
     handler.layer.update = NULL;

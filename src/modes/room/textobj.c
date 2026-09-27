@@ -6,14 +6,14 @@
 #include "text_loader.h"
 
 static bool mode_room_on_textobj_click(void *user, const input_event_t *event,
-                                       sprite_instance_t *sprite) {
+                                       object_t *obj) {
+    (void)obj;
     typedef struct {
         mode_room_impl_t *impl;
         int32_t text_id;
     } room_text_click_t;
 
     room_text_click_t *click = (room_text_click_t *)user;
-    (void)sprite;
 
     if (!click || !click->impl || !event) {
         return false;
@@ -67,55 +67,18 @@ static bool mode_room_on_textobj_click(void *user, const input_event_t *event,
     }
 }
 
-static sprite_instance_t *
-mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x, int32_t y,
-                           int32_t width, int32_t height, int32_t text_id) {
-    typedef struct {
-        mode_room_impl_t *impl;
-        int32_t text_id;
-    } room_text_click_t;
+static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
+                                       int32_t y, int32_t width, int32_t height,
+                                       int32_t text_id) {
+    (void)text_id;
 
-    uint8_t *transparent = NULL;
-    sprite_instance_t *sprite = NULL;
-    room_text_click_t *click = NULL;
+    object_t object = {0};
+    object_init(&object);
+    object_set_position(&object, x, y);
+    object_set_size(&object, width, height);
 
-    if (!impl || !impl->controller || width <= 0 || height <= 0) {
-        return NULL;
-    }
-
-    transparent = (uint8_t *)calloc((size_t)width * (size_t)height * 4U,
-                                    sizeof(*transparent));
-    if (!transparent) {
-        fprintf(
-            stderr,
-            "widebrim: failed to allocate transparent hitbox for textobj\n");
-        return NULL;
-    }
-
-    click = (room_text_click_t *)malloc(sizeof(*click));
-    if (!click) {
-        free(transparent);
-        fprintf(stderr,
-                "widebrim: failed to allocate textobj callback state\n");
-        return NULL;
-    }
-
-    click->impl = impl;
-    click->text_id = text_id;
-
-    sprite = screen_controller_add_sprite_z(impl->controller, transparent,
-                                            width, height, x, y, 0, 0U);
-    free(transparent);
-    if (!sprite) {
-        free(click);
-        fprintf(stderr, "widebrim: failed to create textobj hitbox\n");
-        return NULL;
-    }
-
-    object_layer_set_visible(sprite, false);
-    object_layer_set_interactive(sprite, true, mode_room_on_textobj_click,
-                                 click);
-    return sprite;
+    object_set_visible(&object, true);
+    object_set_interactive(&object, true, mode_room_on_textobj_click, impl);
 }
 
 void mode_room_add_text_obj(mode_room_impl_t *impl, int32_t type_or_flag,

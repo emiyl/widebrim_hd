@@ -7,7 +7,6 @@
 #include "stb_image.h"
 
 texture_data_t *texture_load_rgba(const char *path) {
-
     texture_data_t *tex;
     int original_channels;
 

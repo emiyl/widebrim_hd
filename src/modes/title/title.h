@@ -10,14 +10,17 @@ typedef struct {
     game_state_t *state;
     screen_controller_t *controller;
 
-    sprite_instance_t *start_car_sprite;
-    sprite_instance_t *title_sprite;
+    object_t *start_car;
+    object_t *title_logo;
 
     // Button sprites for user interaction
-    sprite_instance_t *start_button;
-    sprite_instance_t *continue_button;
-    sprite_instance_t *bonus_button;
-    sprite_instance_t *active_click_sprite;
+    object_t *start_btn;
+    object_t *continue_btn;
+    object_t *bonus_btn;
+
+    // Currently active button that has been clicked by the user
+    object_t *active_click_btn;
+
     bool done;
 } mode_title_impl_t;
 
