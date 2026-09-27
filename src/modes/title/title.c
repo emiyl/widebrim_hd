@@ -118,7 +118,8 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
 
     object_center_position(logo, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
     object_set_position(logo, logo->x, logo->y - 40);
-    object_set_interactive(logo, true, mode_title_on_sprite_click, impl);
+    object_set_interactive(logo, true);
+    object_set_interaction_callback(logo, mode_title_on_sprite_click, impl);
     sprite_take_object_position(spr, logo);
 }
 
@@ -160,8 +161,9 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
 
         object_center_position(buttons[i], WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
         object_set_position(buttons[i], buttons[i]->x, y_pos + i * offset);
-        object_set_interactive(buttons[i], true, mode_title_on_sprite_click,
-                               impl);
+        object_set_interactive(buttons[i], true);
+        object_set_interaction_callback(buttons[i], mode_title_on_sprite_click,
+                                        impl);
         sprite_take_object_position(buttons[i]->sprite, buttons[i]);
     }
 }

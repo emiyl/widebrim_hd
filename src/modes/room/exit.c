@@ -95,7 +95,8 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
     }
 
     object_set_visible(exit, false);
-    object_set_interactive(exit, false, room_exit_on_event, impl);
+    object_set_interaction_callback(exit, room_exit_on_event, impl);
+    object_set_interactive(exit, false);
     object_layer_add_object(impl->controller->object, exit);
 
     impl->exit_count++;

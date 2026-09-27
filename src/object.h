@@ -46,8 +46,10 @@ bool object_set_position(object_t *object, int x, int y);
 bool object_set_size(object_t *object, int width, int height);
 bool object_contains_point(object_t *inst, int x, int y);
 
-bool object_set_interactive(object_t *inst, bool interactive,
-                            object_event_callback_t on_event, void *user);
+bool object_set_interaction_callback(object_t *inst,
+                                     object_event_callback_t on_event,
+                                     void *user);
+bool object_set_interactive(object_t *inst, bool interactive);
 bool object_set_visible(object_t *object, bool visible);
 
 void object_init(object_t *object);

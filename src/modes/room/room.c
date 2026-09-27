@@ -29,7 +29,7 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
             if (!exit) {
                 continue;
             }
-            object_set_interactive(exit, true, room_exit_on_event, impl);
+            object_set_interactive(exit, true);
             object_fade_in(exit, impl->controller->renderer,
                            MOVE_MODE_TRANSITION);
         }
@@ -41,7 +41,7 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
             if (!exit) {
                 continue;
             }
-            object_set_interactive(exit, false, room_exit_on_event, impl);
+            object_set_interactive(exit, false);
             object_fade_out(exit, impl->controller->renderer,
                             MOVE_MODE_TRANSITION);
         }
@@ -117,7 +117,9 @@ static void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
     object_set_size(btn, spr_w, spr_h);
     object_set_position(btn, x, y);
     sprite_take_object_position(spr, btn);
-    object_set_interactive(btn, true, mode_room_on_move_mode_icon_click, impl);
+    object_set_interactive(btn, true);
+    object_set_interaction_callback(btn, mode_room_on_move_mode_icon_click,
+                                    impl);
 }
 
 static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,

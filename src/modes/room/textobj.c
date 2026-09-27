@@ -18,32 +18,26 @@ static bool mode_room_textobj_on_click(void *user, const input_event_t *event,
 
     switch (event->type) {
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
-        tobj_impl->mouse_down = true;
-        tobj_impl->clicked = false;
+        inst->clicked = true;
         break;
     case INPUT_EVENT_MOUSE_BUTTON_UP:
-        if (tobj_impl->mouse_down) {
-            tobj_impl->mouse_down = false;
-            tobj_impl->clicked = true;
+        if (inst->clicked) {
+            inst->clicked = false;
+
+            game_state_t *game_state = impl->state;
+            int32_t text_id = tobj_impl->text_id;
+            text_loader_load_room_text(game_state, text_id, tobj_impl->text,
+                                       256);
+
+            fprintf(stderr, "Room text: %s\n", tobj_impl->text);
+            return true;
         }
         break;
     default:
         break;
     }
 
-    if (!tobj_impl->clicked) {
-        return false;
-    } else {
-        tobj_impl->clicked = false;
-    }
-
-    game_state_t *game_state = impl->state;
-    int32_t text_id = tobj_impl->text_id;
-    text_loader_load_room_text(game_state, text_id, tobj_impl->text, 256);
-
-    fprintf(stderr, "Room text: %s\n", tobj_impl->text);
-
-    return false;
+    return true;
 }
 
 static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
@@ -65,12 +59,7 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
         return;
     }
 
-    *tobj_impl = (tobj_impl_t){
-        .text_id = text_id,
-        .text = "",
-        .mouse_down = false,
-        .clicked = false,
-    };
+    *tobj_impl = (tobj_impl_t){.text_id = text_id, .text = ""};
 
     object->self_vars = tobj_impl;
 
@@ -78,7 +67,8 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
     sprite_take_object_position(object->sprite, object);
     object_set_size(object, width, height);
     object_set_visible(object, false);
-    object_set_interactive(object, true, mode_room_textobj_on_click, impl);
+    object_set_interactive(object, true);
+    object_set_interaction_callback(object, mode_room_textobj_on_click, impl);
 
     object_layer_add_object(impl->controller->object, object);
 }

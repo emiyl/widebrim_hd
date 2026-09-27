@@ -74,15 +74,25 @@ bool object_contains_point(object_t *inst, int x, int y) {
            y <= inst->y + inst->height;
 }
 
-bool object_set_interactive(object_t *inst, bool interactive,
-                            object_event_callback_t on_event, void *user) {
+bool object_set_interaction_callback(object_t *inst,
+                                     object_event_callback_t on_event,
+                                     void *user) {
+    if (!inst) {
+        return false;
+    }
+
+    inst->user = user;
+    inst->on_event = on_event;
+
+    return true;
+}
+
+bool object_set_interactive(object_t *inst, bool interactive) {
     if (!inst) {
         return false;
     }
 
     inst->interactive = interactive;
-    inst->user = user;
-    inst->on_event = on_event;
     return true;
 }
 

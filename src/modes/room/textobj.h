@@ -9,8 +9,6 @@
 typedef struct tobj_impl_t {
     int32_t text_id;
     char text[256];
-    bool mouse_down;
-    bool clicked;
 } tobj_impl_t;
 
 void mode_room_add_text_obj(mode_room_impl_t *impl, int32_t type_or_flag,
