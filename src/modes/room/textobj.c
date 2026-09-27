@@ -8,6 +8,12 @@
 
 static bool mode_room_textobj_on_click(void *user, const input_event_t *event,
                                        object_t *inst) {
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+
+    if (!impl) {
+        return false;
+    }
+
     tobj_impl_t *tobj_impl = (tobj_impl_t *)inst->self_vars;
 
     switch (event->type) {
@@ -31,9 +37,7 @@ static bool mode_room_textobj_on_click(void *user, const input_event_t *event,
         tobj_impl->clicked = false;
     }
 
-    mode_room_impl_t *impl = (mode_room_impl_t *)user;
     game_state_t *game_state = impl->state;
-
     int32_t text_id = tobj_impl->text_id;
     text_loader_load_room_text(game_state, text_id, tobj_impl->text, 256);
 

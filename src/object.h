@@ -13,7 +13,8 @@ typedef enum object_kind_t {
     OBJECT_KIND_NONE = 0,
     OBJECT_KIND_BTN,
     OBJECT_KIND_TOBJ,
-    OBJECT_KIND_BG
+    OBJECT_KIND_BG,
+    OBJECT_KIND_EXIT
 } object_kind_t;
 
 struct object_t {
@@ -31,6 +32,7 @@ struct object_t {
     bool fading_out;
     bool interactive;
     bool visible;
+    bool clicked;
     void *user;
     void *self_vars;
     object_event_callback_t on_event;
@@ -42,6 +44,7 @@ bool object_center_position(object_t *object, int screen_width,
                             int screen_height);
 bool object_set_position(object_t *object, int x, int y);
 bool object_set_size(object_t *object, int width, int height);
+bool object_contains_point(object_t *inst, int x, int y);
 
 bool object_set_interactive(object_t *inst, bool interactive,
                             object_event_callback_t on_event, void *user);

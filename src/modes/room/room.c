@@ -25,14 +25,24 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
         object_fade_out(impl->move_mode_btn, impl->controller->renderer,
                         MOVE_MODE_TRANSITION);
         for (int i = 0; i < impl->exit_count; i++) {
-            object_fade_in(impl->exits[i].object, impl->controller->renderer,
+            object_t *exit = impl->exits[i];
+            if (!exit) {
+                continue;
+            }
+            object_set_interactive(exit, true, room_exit_on_event, impl);
+            object_fade_in(exit, impl->controller->renderer,
                            MOVE_MODE_TRANSITION);
         }
     } else {
         object_fade_in(impl->move_mode_btn, impl->controller->renderer,
                        MOVE_MODE_TRANSITION);
         for (int i = 0; i < impl->exit_count; i++) {
-            object_fade_out(impl->exits[i].object, impl->controller->renderer,
+            object_t *exit = impl->exits[i];
+            if (!exit) {
+                continue;
+            }
+            object_set_interactive(exit, false, room_exit_on_event, impl);
+            object_fade_out(exit, impl->controller->renderer,
                             MOVE_MODE_TRANSITION);
         }
     }
@@ -148,28 +158,6 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     return true;
 }
 
-static void mode_room_on_background_touch(void *user, bg_touch_kind_t kind,
-                                          int x, int y) {
-    (void)x;
-    (void)y;
-    mode_room_impl_t *impl = (mode_room_impl_t *)user;
-    if (!impl) {
-        return;
-    }
-
-    if (kind == BG_TOUCH_KIND_TAP && impl->in_move_mode) {
-        toggle_move_mode(impl);
-        return;
-    }
-
-    switch (kind) {
-    case BG_TOUCH_KIND_NONE:
-    case BG_TOUCH_KIND_TAP:
-    case BG_TOUCH_KIND_DRAG:
-        break;
-    }
-}
-
 static void mode_room_reset_room(mode_room_impl_t *impl) {
     if (!impl || !impl->state || !impl->controller) {
         return;
@@ -198,8 +186,6 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
                               NULL);
     impl->done = false;
     impl->in_move_mode = false;
-    bg_layer_set_touch_callback(impl->controller->bg,
-                                mode_room_on_background_touch, impl);
 }
 
 static void mode_room_reload_room_after_fade_out(void *user) {
@@ -268,6 +254,32 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
         return true;
     }
 
+    if (event->type == INPUT_EVENT_MOUSE_BUTTON_UP && impl->in_move_mode) {
+        bool clicked_empty_bg = true;
+        for (int i = 0; i < impl->exit_count; ++i) {
+            object_t *exit = impl->exits[i];
+            if (exit && exit->visible &&
+                object_contains_point(exit, event->data.mouse_button.x,
+                                      event->data.mouse_button.y)) {
+                clicked_empty_bg = false;
+                break;
+            }
+        }
+
+        if (clicked_empty_bg && impl->move_mode_btn &&
+            impl->move_mode_btn->visible &&
+            object_contains_point(impl->move_mode_btn,
+                                  event->data.mouse_button.x,
+                                  event->data.mouse_button.y)) {
+            clicked_empty_bg = false;
+        }
+
+        if (clicked_empty_bg) {
+            toggle_move_mode(impl);
+            return true;
+        }
+    }
+
     int place_num = game_state_get_place_num(impl->state);
 
     switch (event->type) {
@@ -316,6 +328,9 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));
+    for (int i = 0; i < 8; i++) {
+        impl->exits[i] = smalloc(sizeof(object_t));
+    }
 
     mode_room_load_move_mode_btn(impl);
     mode_room_load_map_place(impl);

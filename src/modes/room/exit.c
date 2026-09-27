@@ -8,32 +8,67 @@
 #include "safe.h"
 #include "sprite.h"
 
+bool room_exit_on_event(void *user, const input_event_t *event,
+                        object_t *object) {
+    if (!user || !event || !object) {
+        return false;
+    }
+
+    mode_room_impl_t *impl = (mode_room_impl_t *)user;
+    if (!impl) {
+        return false;
+    }
+
+    switch (event->type) {
+    case INPUT_EVENT_MOUSE_BUTTON_DOWN:
+        printf("widebrim: room_exit_on_event mouse button down\n");
+        object->clicked = true;
+        break;
+    case INPUT_EVENT_MOUSE_BUTTON_UP:
+        if (object->clicked) {
+            object->clicked = false;
+            printf("widebrim: exit clicked\n");
+        }
+        break;
+    default:
+        break;
+    }
+
+    return true;
+}
+
 void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
                    int32_t target_map_id, int32_t x, int32_t y, int32_t width,
                    int32_t height, int32_t param7, int32_t param8) {
     (void)param7;
     (void)param8;
 
-    room_exit_t *new_exit = &impl->exits[impl->exit_count];
-    new_exit->exit_sprite_id = exit_sprite_id;
-    new_exit->target_map_id = target_map_id;
+    if (impl->exit_count >= 8) {
+        fprintf(stderr,
+                "widebrim: [room_add_exit] maximum number of exits reached\n");
+        return;
+    }
 
-    new_exit->object = smalloc(sizeof(object_t));
-    object_t *object = new_exit->object;
-    object_init(object);
+    room_exit_impl_t exit_data = {
+        .target_map_id = target_map_id,
+    };
 
-    if (!object) {
+    object_t *exit = impl->exits[impl->exit_count];
+    object_init_kind(exit, OBJECT_KIND_EXIT);
+    exit->self_vars = &exit_data;
+
+    if (!exit) {
         fprintf(stderr,
                 "widebrim: [room_add_exit] failed to allocate object\n");
         return;
     }
 
-    object->x = x;
-    object->y = y + WB_SCREEN_HEIGHT;
-    object->width = width;
-    object->height = height;
+    exit->x = x;
+    exit->y = y + WB_SCREEN_HEIGHT;
+    exit->width = width;
+    exit->height = height;
 
-    sprite_t *sprite = object->sprite;
+    sprite_t *sprite = exit->sprite;
     if (!sprite) {
         fprintf(stderr,
                 "widebrim: [room_add_exit] failed to allocate sprite\n");
@@ -56,11 +91,12 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
 
     if (has_sprite) {
         sprite_new(sprite, renderer, state, sprite_filename, 0.0f, false);
-        sprite_take_object_position(sprite, object);
+        sprite_take_object_position(sprite, exit);
     }
 
-    object_set_visible(object, false);
-    object_layer_add_object(impl->controller->object, new_exit->object);
+    object_set_visible(exit, false);
+    object_set_interactive(exit, false, room_exit_on_event, impl);
+    object_layer_add_object(impl->controller->object, exit);
 
     impl->exit_count++;
 }
