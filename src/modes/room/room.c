@@ -258,13 +258,6 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
         return false;
     }
 
-    if (event->type == INPUT_EVENT_MOUSE_BUTTON_DOWN && impl->popup_text &&
-        impl->popup_text->visible) {
-        screen_controller_set_text_visible(impl->controller, impl->popup_text,
-                                           false);
-        return true;
-    }
-
     if (impl->controller && impl->controller->object &&
         object_layer_handle_event(impl->controller->object, event)) {
         return true;
@@ -312,7 +305,6 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->controller = controller;
     impl->setmap = mode_room_setmap;
     impl->add_text_obj = mode_room_add_text_obj;
-    impl->popup_text = NULL;
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));

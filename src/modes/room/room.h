@@ -20,7 +20,7 @@ typedef struct mode_room_impl_t {
 
     object_t *move_mode_btn;
     object_t *map_place;
-    text_instance_t *popup_text;
+
     bool in_move_mode;
     bool done;
 } mode_room_impl_t;
