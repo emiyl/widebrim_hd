@@ -253,6 +253,10 @@ void object_draw(object_t *inst, renderer_t *renderer) {
         return;
     }
 
+    if (!inst->visible) {
+        return;
+    }
+
     if (!inst->sprite) {
         fprintf(stderr, "widebrim: object sprite is NULL in object_draw\n");
         return;
@@ -261,10 +265,6 @@ void object_draw(object_t *inst, renderer_t *renderer) {
     if (!renderer_texture_exists(renderer, inst->sprite->tex)) {
         fprintf(stderr,
                 "widebrim: object texture does not exist in object_draw\n");
-        return;
-    }
-
-    if (!inst->visible) {
         return;
     }
 
