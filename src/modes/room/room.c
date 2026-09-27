@@ -91,7 +91,7 @@ static void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
     object_clear(btn, renderer);
 
     sprite_t *spr = btn->sprite;
-    sprite_new(spr, renderer, state, "movemode", 0.0f, false);
+    sprite_new(spr, renderer, state, "movemode.spr", 0.0f, false);
 
     if (!spr) {
         fprintf(stderr,

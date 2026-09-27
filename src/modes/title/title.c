@@ -71,7 +71,7 @@ static void mode_title_load_start_car(mode_title_impl_t *impl) {
     }
 
     sprite_t *spr = car->sprite;
-    sprite_new(spr, renderer, state, "start_car", 100.0f, true);
+    sprite_new(spr, renderer, state, "start_car.spr", 100.0f, true);
 
     if (!spr) {
         fprintf(stderr, "widebrim: failed to create start_car sprite\n");
@@ -103,7 +103,7 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
     }
 
     sprite_t *spr = logo->sprite;
-    sprite_new(spr, renderer, state, "title_logo", 0.0f, false);
+    sprite_new(spr, renderer, state, "title_logo.spr", 0.0f, false);
 
     if (!spr) {
         fprintf(stderr, "widebrim: failed to add title sprite asset\n");
@@ -129,8 +129,8 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
 
     object_t *buttons[3] = {impl->start_btn, impl->continue_btn,
                             impl->bonus_btn};
-    const char *sprite_names[3] = {"startbutton", "continuebutton",
-                                   "secretbutton"};
+    const char *sprite_names[3] = {"startbutton.spr", "continuebutton.spr",
+                                   "secretbutton.spr"};
 
     int y_pos = WB_SCREEN_HEIGHT + 160;
     const int offset = 75;

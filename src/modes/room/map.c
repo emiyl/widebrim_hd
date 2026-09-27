@@ -22,7 +22,7 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
     object_clear(map_place, renderer);
 
     sprite_t *spr = map_place->sprite;
-    sprite_new(spr, renderer, state, "map_place", 0.0f, false);
+    sprite_new(spr, renderer, state, "map_place.spr", 0.0f, false);
 
     sprite_get_size(spr, renderer, &w, &h);
     x = WB_SCREEN_WIDTH - w;

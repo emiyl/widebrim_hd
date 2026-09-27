@@ -213,7 +213,7 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
     }
 
     char sprite_path[256];
-    snprintf(sprite_path, sizeof(sprite_path), "ani/%s.spr", sprite_name);
+    snprintf(sprite_path, sizeof(sprite_path), "ani/%s", sprite_name);
 
     sprite_loader_load_animation_rgba(
         state, sprite_path, &frames, &sprite->frame_count, &frame_widths,
