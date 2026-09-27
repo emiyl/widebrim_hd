@@ -1,6 +1,7 @@
 #include "spawner.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "reset/reset.h"
 #include "room/room.h"
@@ -133,12 +134,15 @@ static void mode_spawner_ready_switch(mode_spawner_t *spawner,
 
 void mode_spawner_init(mode_spawner_t *spawner, game_state_t *state,
                        renderer_t *renderer) {
+    if (!spawner) {
+        fprintf(stderr, "widebrim: spawner is NULL\n");
+        return;
+    }
+
+    memset(spawner, 0, sizeof(*spawner));
     spawner->state = state;
-    spawner->has_active_mode = false;
     spawner->current_active_mode = MODE_INVALID;
     spawner->pending_target_mode = MODE_INVALID;
-    spawner->switch_pending = false;
-    spawner->should_quit = false;
 
     spawner->controller.renderer = renderer;
     spawner->controller.bg = &spawner->bg;

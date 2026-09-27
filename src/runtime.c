@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "bg_layer.h"
 #include "renderer.h"
@@ -15,9 +16,7 @@ int runtime_init(runtime_t *rt, const char *assets_root, language_t language) {
         return -1;
     }
 
-    rt->window = NULL;
-    rt->input = NULL;
-    rt->running = false;
+    memset(rt, 0, sizeof(*rt));
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         fprintf(stderr, "widebrim: SDL_Init failed: %s\n", SDL_GetError());

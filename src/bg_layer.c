@@ -14,14 +14,27 @@ static void bg_layer_texture_init(bg_layer_texture_t *tex) {
 
 static void bg_layer_texture_destroy(bg_layer_texture_t *tex,
                                      renderer_t *renderer) {
-    if (tex->tex) {
-        renderer_destroy_texture(renderer, tex->tex);
-        tex->tex = NULL;
+    if (!tex || !renderer || !tex->tex) {
+        return;
     }
+    renderer_destroy_texture(renderer, tex->tex);
+    tex->tex = NULL;
 }
 
 void bg_layer_init(bg_layer_t *bg, renderer_t *renderer) {
+    if (!bg) {
+        return;
+    }
+
     bg->renderer = renderer;
+
+    if (bg->tex_main.tex)
+        bg_layer_texture_destroy(&bg->tex_main, bg->renderer);
+    if (bg->tex_sub.tex)
+        bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
+    if (bg->tex_sub2.tex)
+        bg_layer_texture_destroy(&bg->tex_sub2, bg->renderer);
+
     bg_layer_texture_init(&bg->tex_main);
     bg_layer_texture_init(&bg->tex_sub);
     bg_layer_texture_init(&bg->tex_sub2);
@@ -36,6 +49,10 @@ void bg_layer_init(bg_layer_t *bg, renderer_t *renderer) {
 }
 
 void bg_layer_destroy(bg_layer_t *bg) {
+    if (!bg) {
+        return;
+    }
+
     bg_layer_texture_destroy(&bg->tex_main, bg->renderer);
     bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
     bg_layer_texture_destroy(&bg->tex_sub2, bg->renderer);
