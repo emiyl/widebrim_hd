@@ -35,6 +35,8 @@ typedef struct mode_room_impl_t {
     bool done;
 } mode_room_impl_t;
 
+void mode_room_reload_room(mode_room_impl_t *impl);
+
 mode_handler_t mode_room_create(game_state_t *state,
                                 screen_controller_t *controller);
 

@@ -27,7 +27,19 @@ bool room_exit_on_event(void *user, const input_event_t *event,
     case INPUT_EVENT_MOUSE_BUTTON_UP:
         if (object->clicked) {
             object->clicked = false;
-            printf("widebrim: exit clicked\n");
+
+            room_exit_impl_t *exit_data = (room_exit_impl_t *)object->self_vars;
+            if (!exit_data) {
+                fprintf(stderr, "widebrim: [room_exit_on_event] missing exit "
+                                "target data\n");
+                return true;
+            }
+
+            printf("widebrim: exit clicked -> room %d\n",
+                   exit_data->target_map_id);
+            game_state_set_place_num(impl->state, exit_data->target_map_id);
+            mode_room_reload_room(impl);
+            return true;
         }
         break;
     default:
@@ -49,13 +61,17 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
         return;
     }
 
-    room_exit_impl_t exit_data = {
-        .target_map_id = target_map_id,
-    };
+    room_exit_impl_t *exit_data = smalloc(sizeof(*exit_data));
+    if (!exit_data) {
+        fprintf(stderr,
+                "widebrim: [room_add_exit] failed to allocate exit data\n");
+        return;
+    }
+    *exit_data = (room_exit_impl_t){.target_map_id = target_map_id};
 
     object_t *exit = impl->exits[impl->exit_count];
     object_init_kind(exit, OBJECT_KIND_EXIT);
-    exit->self_vars = &exit_data;
+    exit->self_vars = exit_data;
 
     if (!exit) {
         fprintf(stderr,

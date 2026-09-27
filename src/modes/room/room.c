@@ -15,12 +15,39 @@
 
 #define MOVE_MODE_TRANSITION 250.0f
 
+static void set_move_mode(mode_room_impl_t *impl, bool enable) {
+    if (!impl) {
+        return;
+    }
+
+    impl->in_move_mode = enable;
+
+    bool allow_exit_interaction = impl->in_move_mode;
+    for (int i = 0; i < impl->exit_count; i++) {
+        object_t *exit = impl->exits[i];
+        if (!exit) {
+            continue;
+        }
+        object_set_interactive(exit, allow_exit_interaction);
+    }
+
+    bool allow_tobj_interaction = !impl->in_move_mode;
+    for (int i = 0; i < impl->tobj_count; i++) {
+        object_t *text_obj = impl->text_obj[i];
+        if (!text_obj) {
+            continue;
+        }
+        object_set_interactive(text_obj, allow_tobj_interaction);
+    }
+}
+
 static void toggle_move_mode(mode_room_impl_t *impl) {
     if (!impl) {
         return;
     }
 
-    impl->in_move_mode = !impl->in_move_mode;
+    set_move_mode(impl, !impl->in_move_mode);
+
     if (impl->in_move_mode) {
         object_fade_out(impl->move_mode_btn, impl->controller->renderer,
                         MOVE_MODE_TRANSITION);
@@ -35,22 +62,12 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
         if (!exit) {
             continue;
         }
-        object_set_interactive(exit, allow_exit_interaction);
         if (allow_exit_interaction)
             object_fade_in(exit, impl->controller->renderer,
                            MOVE_MODE_TRANSITION);
         else
             object_fade_out(exit, impl->controller->renderer,
                             MOVE_MODE_TRANSITION);
-    }
-
-    bool allow_tobj_interaction = !impl->in_move_mode;
-    for (int i = 0; i < impl->tobj_count; i++) {
-        object_t *text_obj = impl->text_obj[i];
-        if (!text_obj) {
-            continue;
-        }
-        object_set_interactive(text_obj, allow_tobj_interaction);
     }
 }
 
@@ -190,10 +207,12 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
     }
 
+    set_move_mode(impl, false);
+
     screen_controller_fade_in(impl->controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);
+
     impl->done = false;
-    impl->in_move_mode = false;
 }
 
 static void mode_room_reload_room_after_fade_out(void *user) {
@@ -202,7 +221,7 @@ static void mode_room_reload_room_after_fade_out(void *user) {
     mode_room_reset_room(impl);
 }
 
-static void mode_room_reload_room(mode_room_impl_t *impl) {
+void mode_room_reload_room(mode_room_impl_t *impl) {
     if (!impl || !impl->state || !impl->controller) {
         return;
     }
