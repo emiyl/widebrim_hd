@@ -1,6 +1,7 @@
 #ifndef MODE_ROOM_H
 #define MODE_ROOM_H
 
+#include "exit.h"
 #include "game_state.h"
 #include "mode.h"
 #include "object.h"
@@ -17,9 +18,15 @@ typedef struct mode_room_impl_t {
     void (*add_text_obj)(struct mode_room_impl_t *impl, int32_t type_or_flag,
                          int32_t x, int32_t y, int32_t width, int32_t height,
                          int32_t text_id, int32_t param7);
+    void (*add_exit)(struct mode_room_impl_t *impl, int32_t exit_sprite_id,
+                     int32_t target_map_id, int32_t x, int32_t y, int32_t width,
+                     int32_t height);
 
     object_t *move_mode_btn;
     object_t *map_place;
+
+    room_exit_t *exits;
+    int32_t exit_count;
 
     bool in_move_mode;
     bool done;

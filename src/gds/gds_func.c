@@ -268,17 +268,17 @@ static bool gds_func_Loop(gds_reader_t *reader, const gds_record_t *command,
 static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
     (void)command;
-    int32_t argv[5];
+    int32_t args[5];
 
-    if (!gds_read_s32_args(reader, argv, 5, "SetMap")) {
+    if (!gds_read_s32_args(reader, args, 5, "SetMap")) {
         return false;
     }
 
-    int32_t map_text_id = argv[0];
-    int32_t map_background_id = argv[1];
-    int32_t param3 = argv[2];
-    int32_t param4 = argv[3];
-    int32_t param5 = argv[4];
+    int32_t map_text_id = args[0];
+    int32_t map_background_id = args[1];
+    int32_t param3 = args[2];
+    int32_t param4 = args[3];
+    int32_t param5 = args[4];
 
     mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
     if (!impl || !impl->setmap) {
@@ -294,10 +294,10 @@ static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
 static bool gds_func_AddTextObj(gds_reader_t *reader,
                                 const gds_record_t *command, void *user_data) {
     (void)command;
-    int32_t argv[7];
+    int32_t args[7];
     mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
 
-    if (!gds_read_s32_args(reader, argv, 7, "AddTextObj")) {
+    if (!gds_read_s32_args(reader, args, 7, "AddTextObj")) {
         return false;
     }
 
@@ -306,13 +306,13 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
         return false;
     }
 
-    int32_t type_or_flag = argv[0];
-    int32_t x = argv[1];
-    int32_t y = argv[2];
-    int32_t width = argv[3];
-    int32_t height = argv[4];
-    int32_t text_id = argv[5];
-    int32_t param7 = argv[6];
+    int32_t type_or_flag = args[0];
+    int32_t x = args[1];
+    int32_t y = args[2];
+    int32_t width = args[3];
+    int32_t height = args[4];
+    int32_t text_id = args[5];
+    int32_t param7 = args[6];
 
     if (!impl || !impl->add_text_obj) {
         fprintf(stderr, "gds: AddTextObj called without room context\n");
@@ -394,6 +394,28 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
+                      void *user_data) {
+    (void)command;
+    mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
+
+    int32_t args[8];
+    if (!gds_read_s32_args(reader, args, 8, "AddExit")) {
+        return false;
+    }
+
+    int32_t exit_sprite_id = args[0];
+    int32_t x = args[1];
+    int32_t y = args[2];
+    int32_t width = args[3];
+    int32_t height = args[4];
+    int32_t target_map_id = args[5];
+
+    impl->add_exit(impl, exit_sprite_id, target_map_id, x, y, width, height);
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -435,6 +457,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_SetStoryFlag:
         *handler = gds_func_SetStoryFlag;
+        return true;
+    case SCRIPT_CMD_AddExit:
+        *handler = gds_func_AddExit;
         return true;
     default:
         *handler = NULL;

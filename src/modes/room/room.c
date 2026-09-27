@@ -1,13 +1,14 @@
 #include "room.h"
+#include "exit.h"
+#include "map.h"
+#include "textobj.h"
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "bg_loader.h"
-#include "map.h"
 #include "safe.h"
-#include "textobj.h"
 
 #include "gds/gds.h"
 #include "gds/gds_exec.h"
@@ -309,6 +310,7 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->controller = controller;
     impl->setmap = mode_room_setmap;
     impl->add_text_obj = mode_room_add_text_obj;
+    impl->add_exit = room_add_exit;
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));
