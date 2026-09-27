@@ -262,15 +262,15 @@ void object_draw(object_t *inst, renderer_t *renderer) {
         return;
     }
 
-    if (inst->kind == OBJECT_KIND_TOBJ) {
-        rect_t dst = {.x = (float)inst->x,
-                      .y = (float)inst->y,
-                      .w = (float)inst->width,
-                      .h = (float)inst->height};
-        renderer_fill_rect(renderer, &dst, 255, 0, 0, 100);
-        renderer_draw_rect(renderer, &dst, 0, 0, 0, 255);
-        return;
-    }
+    // if (inst->kind == OBJECT_KIND_TOBJ) {
+    //     rect_t dst = {.x = (float)inst->x,
+    //                   .y = (float)inst->y,
+    //                   .w = (float)inst->width,
+    //                   .h = (float)inst->height};
+    //     renderer_fill_rect(renderer, &dst, 255, 0, 0, 50);
+    //     renderer_draw_rect(renderer, &dst, 0, 0, 0, 255);
+    //     return;
+    // }
 
     if (!inst->visible) {
         return;
