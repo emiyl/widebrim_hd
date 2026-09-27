@@ -9,11 +9,12 @@ static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {
     (void)reader;
     (void)command;
-    if (user_data != NULL) {
-        *(bool *)user_data = true;
-    } else {
-        return false;
-    }
+
+    game_state_t *game_state = (game_state_t *)user_data;
+    gds_state_t *gds = &game_state->gds;
+
+    gds->if_condition = true;
+
     return true;
 }
 
@@ -21,11 +22,12 @@ static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
                            void *user_data) {
     (void)reader;
     (void)command;
-    if (user_data != NULL) {
-        *(bool *)user_data = false;
-    } else {
-        return false;
-    }
+
+    game_state_t *game_state = (game_state_t *)user_data;
+    gds_state_t *gds = &game_state->gds;
+
+    gds->if_condition = false;
+
     return true;
 }
 
@@ -50,17 +52,35 @@ static bool gds_func_is_block_else(gds_opcode_t opcode) {
     }
 }
 
+static bool gds_func_is_ignored_record_type(gds_record_type_t type) {
+    switch (type) {
+    case GDS_RECORD_EMPTY_5:
+    case GDS_RECORD_EMPTY_8:
+    case GDS_RECORD_EMPTY_9:
+    case GDS_RECORD_EMPTY_10:
+    case GDS_RECORD_EMPTY_11:
+    case GDS_RECORD_BREAKPOINT:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
                                     void *user_data) {
-    size_t start = reader->offset;
+    size_t start = 0U;
     gds_record_t record;
     gds_command_handler_fn handler = NULL;
-    game_state_t *game_state = (game_state_t *)user_data;
-    gds_state_t *gds = &game_state->gds;
+    game_state_t *game_state = NULL;
+    gds_state_t *gds = NULL;
 
     if (reader == NULL || result == NULL) {
         return false;
     }
+
+    start = reader->offset;
+    game_state = (game_state_t *)user_data;
+    gds = &game_state->gds;
 
     if (gds_reader_remaining(reader) == 0U) {
         fprintf(stderr, "gds: condition at end of stream is not valid\n");
@@ -71,6 +91,20 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
         reader->offset = start;
         fprintf(stderr, "gds: failed to read condition record\n");
         return false;
+    }
+
+    while (gds_func_is_ignored_record_type(record.type)) {
+        if (gds_reader_remaining(reader) == 0U) {
+            fprintf(stderr, "gds: condition at end of stream is not valid\n");
+            reader->offset = start;
+            return false;
+        }
+
+        if (!gds_read_record(reader, &record)) {
+            reader->offset = start;
+            fprintf(stderr, "gds: failed to read condition record\n");
+            return false;
+        }
     }
 
     switch (record.type) {
