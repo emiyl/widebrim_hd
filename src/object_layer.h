@@ -21,6 +21,8 @@ void object_layer_destroy(object_layer_t *layer);
 void object_layer_clear(object_layer_t *layer);
 void object_layer_update(object_layer_t *layer, float delta_ms);
 void object_layer_add_object(object_layer_t *layer, object_t *object);
+void object_layer_remove_object(object_layer_t *layer, object_t *object);
+void object_layer_remove_all_objects(object_layer_t *layer);
 bool object_layer_handle_event(object_layer_t *layer,
                                const input_event_t *event);
 

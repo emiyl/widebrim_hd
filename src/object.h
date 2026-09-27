@@ -9,7 +9,14 @@ typedef struct object_t object_t;
 typedef bool (*object_event_callback_t)(void *user, const input_event_t *event,
                                         object_t *object);
 
+typedef enum object_kind_t {
+    OBJECT_KIND_NONE = 0,
+    OBJECT_KIND_BTN,
+    OBJECT_KIND_TOBJ
+} object_kind_t;
+
 struct object_t {
+    object_kind_t kind;
     sprite_t *sprite;
     int x;
     int y;
@@ -24,6 +31,7 @@ struct object_t {
     bool interactive;
     bool visible;
     void *user;
+    void *self_vars;
     object_event_callback_t on_event;
 };
 
@@ -39,6 +47,7 @@ bool object_set_interactive(object_t *inst, bool interactive,
 bool object_set_visible(object_t *object, bool visible);
 
 void object_init(object_t *object);
+void object_init_kind(object_t *object, object_kind_t kind);
 void object_clear(object_t *object, renderer_t *renderer);
 void object_destroy(object_t *object, renderer_t *renderer);
 void object_update(object_t *object, renderer_t *renderer, float delta_ms);

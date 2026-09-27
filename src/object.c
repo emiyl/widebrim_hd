@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-void object_init(object_t *inst) {
+void object_init_kind(object_t *inst, object_kind_t kind) {
     if (!inst) {
         fprintf(stderr, "widebrim: object_init called with NULL instance\n");
         return;
@@ -19,6 +19,7 @@ void object_init(object_t *inst) {
     }
     sprite_init(inst->sprite);
 
+    inst->kind = kind;
     inst->x = 0;
     inst->y = 0;
     inst->z = 0;
@@ -32,8 +33,11 @@ void object_init(object_t *inst) {
     inst->interactive = false;
     inst->visible = true;
     inst->user = NULL;
+    inst->self_vars = NULL;
     inst->on_event = NULL;
 }
+
+void object_init(object_t *inst) { object_init_kind(inst, OBJECT_KIND_NONE); }
 
 void object_clear(object_t *inst, renderer_t *renderer) {
     if (!renderer || !inst) {
@@ -47,6 +51,11 @@ void object_clear(object_t *inst, renderer_t *renderer) {
 void object_destroy(object_t *inst, renderer_t *renderer) {
     if (!inst) {
         return;
+    }
+
+    if (inst->self_vars) {
+        free(inst->self_vars);
+        inst->self_vars = NULL;
     }
 
     if (inst->sprite) {
@@ -250,6 +259,16 @@ bool object_handle_event(object_t *inst, const input_event_t *event) {
 void object_draw(object_t *inst, renderer_t *renderer) {
     if (!inst) {
         fprintf(stderr, "widebrim: object instance is NULL in object_draw\n");
+        return;
+    }
+
+    if (inst->kind == OBJECT_KIND_TOBJ) {
+        rect_t dst = {.x = (float)inst->x,
+                      .y = (float)inst->y,
+                      .w = (float)inst->width,
+                      .h = (float)inst->height};
+        renderer_fill_rect(renderer, &dst, 255, 0, 0, 100);
+        renderer_draw_rect(renderer, &dst, 0, 0, 0, 255);
         return;
     }
 

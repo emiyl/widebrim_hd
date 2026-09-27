@@ -44,6 +44,32 @@ void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     layer->capacity = 0U;
 }
 
+void object_layer_remove_object(object_layer_t *layer, object_t *object) {
+    size_t i;
+
+    if (!layer || !object) {
+        return;
+    }
+
+    for (i = 0U; i < layer->count; ++i) {
+        if (layer->objects[i] == object) {
+            for (size_t j = i; j < layer->count - 1U; ++j) {
+                layer->objects[j] = layer->objects[j + 1U];
+            }
+            layer->count -= 1U;
+            return;
+        }
+    }
+}
+
+void object_layer_remove_all_objects(object_layer_t *layer) {
+    if (!layer) {
+        return;
+    }
+
+    layer->count = 0U;
+}
+
 void object_layer_clear(object_layer_t *layer) {
     size_t i;
 

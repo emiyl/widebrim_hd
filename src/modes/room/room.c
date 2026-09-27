@@ -184,7 +184,10 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
                 room_num);
     }
 
-    mode_room_load_map_place(impl);
+    object_layer_remove_all_objects(impl->controller->object);
+
+    object_layer_add_object(impl->controller->object, impl->map_place);
+    object_layer_add_object(impl->controller->object, impl->move_mode_btn);
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
@@ -311,10 +314,9 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->map_place = smalloc(sizeof(object_t));
 
     mode_room_load_move_mode_btn(impl);
-    mode_room_reset_room(impl);
+    mode_room_load_map_place(impl);
 
-    object_layer_add_object(impl->controller->object, impl->map_place);
-    object_layer_add_object(impl->controller->object, impl->move_mode_btn);
+    mode_room_reset_room(impl);
 
     handler.layer.impl = impl;
     handler.layer.update = NULL;
