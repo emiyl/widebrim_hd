@@ -15,6 +15,11 @@
 #include "text_layer.h"
 
 typedef struct {
+    game_state_t *game_state;
+    screen_controller_t *screen_controller;
+} mode_impl_t;
+
+typedef struct {
     screen_collection_t layers;
     bg_layer_t bg;
     object_layer_t object;

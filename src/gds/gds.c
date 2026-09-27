@@ -53,6 +53,19 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
     }
 }
 
+bool gds_read_args(gds_reader_t *reader, gds_record_t *argv, size_t count,
+                   const char *function_name) {
+    for (size_t i = 0; i < count; i++) {
+        if (!gds_read_record(reader, &argv[i])) {
+            fprintf(stderr, "gds: %s expected %zu arguments\n", function_name,
+                    count);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool gds_read_s32_args(gds_reader_t *reader, int32_t *argv, size_t count,
                        const char *function_name) {
     for (size_t i = 0; i < count; i++) {

@@ -10,6 +10,9 @@ static bool gds_execute_default_command(gds_reader_t *reader,
     (void)user_data;
     bool should_break = false;
 
+    fprintf(stderr, "Unknown command: %s(",
+            gds_opcode_to_string(record->payload.opcode));
+
     while (gds_reader_remaining(reader) > 0U) {
         size_t saved_offset = reader->offset;
         gds_record_t next_record;
@@ -27,6 +30,9 @@ static bool gds_execute_default_command(gds_reader_t *reader,
             should_break = true;
             break;
         default:
+            fprintf(stderr, "%s %s, ",
+                    gds_record_type_to_string(next_record.type),
+                    gds_record_to_string(&next_record));
             break;
         }
 
@@ -34,6 +40,9 @@ static bool gds_execute_default_command(gds_reader_t *reader,
             break;
         }
     }
+
+    fprintf(stderr, ")\n");
+    fflush(stderr);
 
     return true;
 }

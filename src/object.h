@@ -12,7 +12,8 @@ typedef bool (*object_event_callback_t)(void *user, const input_event_t *event,
 typedef enum object_kind_t {
     OBJECT_KIND_NONE = 0,
     OBJECT_KIND_BTN,
-    OBJECT_KIND_TOBJ
+    OBJECT_KIND_TOBJ,
+    OBJECT_KIND_BG
 } object_kind_t;
 
 struct object_t {

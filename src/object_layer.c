@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+#include "bg_layer.h"
+#include "safe.h"
+
 static bool object_layer_ensure_capacity(object_layer_t *layer,
                                          size_t required) {
     object_t **next;
@@ -33,6 +36,46 @@ static bool object_layer_ensure_capacity(object_layer_t *layer,
     return true;
 }
 
+static void object_layer_add_bg_object(object_layer_t *layer,
+                                       game_state_t *state, int32_t x,
+                                       int32_t y, const char *filename) {
+    if (!layer || !filename) {
+        return;
+    }
+    printf("AddBGObject: x=%d, y=%d, filename=%s\n", x, y, filename);
+
+    object_t *object = smalloc(sizeof(object_t));
+    if (!object) {
+        return;
+    }
+
+    object_init_kind(object, OBJECT_KIND_BG);
+    object_set_position(object, x, WB_SCREEN_HEIGHT + y);
+
+    sprite_t *spr = object->sprite;
+    sprite_new(spr, layer->renderer, state, filename, 250.0f, true);
+
+    if (!spr) {
+        fprintf(stderr,
+                "widebrim: failed to create sprite for background object\n");
+        free(object);
+        return;
+    }
+
+    int spr_w, spr_h;
+    sprite_get_size(spr, layer->renderer, &spr_w, &spr_h);
+    object_set_size(object, spr_w, spr_h);
+
+    if (!object_layer_ensure_capacity(layer, layer->count + 1U)) {
+        fprintf(stderr,
+                "widebrim: failed to ensure capacity for object layer\n");
+        free(object);
+        return;
+    }
+
+    layer->objects[layer->count++] = object;
+}
+
 void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     if (!layer) {
         return;
@@ -42,6 +85,7 @@ void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     layer->objects = NULL;
     layer->count = 0U;
     layer->capacity = 0U;
+    layer->add_bg_object = object_layer_add_bg_object;
 }
 
 void object_layer_remove_object(object_layer_t *layer, object_t *object) {

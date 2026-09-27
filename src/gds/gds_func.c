@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "gds_state.h"
+#include "modes/spawner.h"
 #include "room/room.h"
 
 static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
@@ -279,14 +280,13 @@ static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
     int32_t param5 = argv[4];
 
     mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
-    if (impl->setmap)
-        impl->setmap(impl, map_text_id, map_background_id, param3, param4,
-                     param5);
-    else {
+    if (!impl || !impl->setmap) {
         fprintf(stderr, "gds: setmap function pointer is NULL - is this "
                         "called from a room?\n");
+        return false;
     }
 
+    impl->setmap(impl, map_text_id, map_background_id, param3, param4, param5);
     return true;
 }
 
@@ -300,47 +300,8 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
         return false;
     }
 
-    printf("AddTextObj(");
-    for (int i = 0; i < 7; ++i) {
-        switch (i) {
-        case 0:
-            printf("type_or_flag=");
-            break;
-        case 1:
-            printf("x=");
-            break;
-        case 2:
-            printf("y=");
-            break;
-        case 3:
-            printf("width=");
-            break;
-        case 4:
-            printf("height=");
-            break;
-        case 5:
-            printf("text_id=");
-            break;
-        default:
-            printf("param%d=", i + 1);
-            break;
-        }
-        printf("%d", argv[i]);
-        if (i < 6) {
-            printf(", ");
-        }
-    }
-    printf(")\n");
-
-    if (!impl) {
+    if (!impl || !impl->add_text_obj) {
         fprintf(stderr, "gds: AddTextObj called without room context\n");
-        return false;
-    }
-
-    if (!impl->add_text_obj) {
-        fprintf(stderr,
-                "gds: add_text_obj function pointer is NULL - is this called "
-                "from a room?\n");
         return false;
     }
 
@@ -352,8 +313,39 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
     int32_t text_id = argv[5];
     int32_t param7 = argv[6];
 
+    if (!impl || !impl->add_text_obj) {
+        fprintf(stderr, "gds: AddTextObj called without room context\n");
+        return false;
+    }
+
     impl->add_text_obj(impl, type_or_flag, x, y, width, height, text_id,
                        param7);
+    return true;
+}
+
+static bool gds_func_AddBGObject(gds_reader_t *reader,
+                                 const gds_record_t *command, void *user_data) {
+    (void)command;
+    (void)user_data;
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->game_state;
+    screen_controller_t *sc = impl->screen_controller;
+    object_layer_t *ol = sc->object;
+
+    gds_record_t args[3];
+    if (!gds_read_args(reader, args, 3, "AddBGObject")) {
+        return false;
+    }
+
+    int32_t x = args[0].payload.value.s32;
+    int32_t y = args[1].payload.value.s32;
+    char *filename = (char *)args[2].payload.bytes.data;
+
+    if (ol && ol->add_bg_object) {
+        ol->add_bg_object(ol, state, x, y, filename);
+    }
+
     return true;
 }
 
@@ -389,6 +381,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_AddTextObj:
         *handler = gds_func_AddTextObj;
+        return true;
+    case SCRIPT_CMD_AddBGObject:
+        *handler = gds_func_AddBGObject;
         return true;
     default:
         *handler = NULL;

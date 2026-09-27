@@ -9,12 +9,17 @@
 #include "renderer.h"
 #include "screen.h"
 
-typedef struct {
+typedef struct object_layer_t object_layer_t;
+
+struct object_layer_t {
     renderer_t *renderer;
     object_t **objects;
     size_t count;
     size_t capacity;
-} object_layer_t;
+
+    void (*add_bg_object)(struct object_layer_t *self, game_state_t *state,
+                          int32_t x, int32_t y, const char *filename);
+};
 
 void object_layer_init(object_layer_t *layer, renderer_t *renderer);
 void object_layer_destroy(object_layer_t *layer);

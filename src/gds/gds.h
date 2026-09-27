@@ -1,9 +1,11 @@
 #ifndef GDS_H
 #define GDS_H
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "gds_opcode.h"
 #include "gds_reader.h"
@@ -74,7 +76,51 @@ typedef struct {
     } payload;
 } gds_record_t;
 
+static inline const char *gds_record_to_string(const gds_record_t *record) {
+    static char buffer[256];
+    if (record == NULL) {
+        return "NULL_RECORD";
+    }
+
+    switch (record->type) {
+    case GDS_RECORD_COMMAND:
+        snprintf(buffer, sizeof(buffer), "%s",
+                 gds_opcode_to_string(record->payload.opcode));
+        break;
+
+    case GDS_RECORD_VALUE_S32:
+        snprintf(buffer, sizeof(buffer), "%" PRIi32, record->payload.value.s32);
+        break;
+
+    case GDS_RECORD_VALUE_F32:
+        snprintf(buffer, sizeof(buffer), "%f", record->payload.value.f32);
+        break;
+
+    case GDS_RECORD_VALUE_6:
+    case GDS_RECORD_VALUE_7:
+        snprintf(buffer, sizeof(buffer), "%" PRIu32, record->payload.value.u32);
+        break;
+
+    case GDS_RECORD_STRING:
+        snprintf(buffer, sizeof(buffer), "\"%.*s\"",
+                 (int)record->payload.bytes.size, record->payload.bytes.data);
+        break;
+
+    case GDS_RECORD_BYTES:
+        snprintf(buffer, sizeof(buffer),
+                 "size=%zu data=", record->payload.bytes.size);
+        break;
+
+    default:
+        break;
+    }
+
+    return buffer;
+}
+
 bool gds_read_record(gds_reader_t *reader, gds_record_t *record);
+bool gds_read_args(gds_reader_t *reader, gds_record_t *argv, size_t count,
+                   const char *function_name);
 bool gds_read_s32_args(gds_reader_t *reader, int32_t *argv, size_t count,
                        const char *function_name);
 bool gds_extract_payload(const uint8_t *file, size_t file_size,
