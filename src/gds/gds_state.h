@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 typedef struct {
-    bool if_condition;
+    bool condition_result;
 } gds_state_t;
 
 void gds_state_init(gds_state_t *state);

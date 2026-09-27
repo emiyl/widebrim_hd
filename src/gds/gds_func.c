@@ -15,7 +15,7 @@ static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
     game_state_t *game_state = (game_state_t *)user_data;
     gds_state_t *gds = &game_state->gds;
 
-    gds->if_condition = true;
+    gds->condition_result = true;
 
     return true;
 }
@@ -28,7 +28,7 @@ static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
     game_state_t *game_state = (game_state_t *)user_data;
     gds_state_t *gds = &game_state->gds;
 
-    gds->if_condition = false;
+    gds->condition_result = false;
 
     return true;
 }
@@ -113,13 +113,13 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
     case GDS_RECORD_COMMAND:
         if (gds_func_lookup(record.payload.opcode, &handler) &&
             handler != NULL) {
-            if (!handler(reader, &record, &gds->if_condition)) {
+            if (!handler(reader, &record, &gds->condition_result)) {
                 reader->offset = start;
                 fprintf(stderr, "gds: condition command %s failed\n",
                         gds_opcode_to_string(record.payload.opcode));
                 return false;
             }
-            *result = gds->if_condition;
+            *result = gds->condition_result;
             return true;
         }
         reader->offset = start;
@@ -368,7 +368,7 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
     int32_t story_flag = args[0];
 
-    gds->if_condition = impl->game_state->story_flag == (int16_t)story_flag;
+    gds->condition_result = impl->game_state->story_flag == (int16_t)story_flag;
 
     return true;
 }
