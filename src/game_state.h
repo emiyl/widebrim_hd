@@ -20,6 +20,7 @@ typedef struct {
     language_t language;
     game_mode_t current_mode;
     game_mode_t next_mode;
+    int16_t story_flag;
     int place_num;
     int event_id;
     bool first_touch_enabled;

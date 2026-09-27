@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "gds/gds.h"
 #include "gds_state.h"
 #include "modes/spawner.h"
 #include "room/room.h"
@@ -349,6 +350,50 @@ static bool gds_func_AddBGObject(gds_reader_t *reader,
     return true;
 }
 
+bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
+                        void *user_data) {
+    (void)command;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->game_state;
+    gds_state_t *gds = &state->gds;
+
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: StoryFlag called without game state context\n");
+        return false;
+    }
+
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, "StoryFlag")) {
+        return false;
+    }
+    int32_t story_flag = args[0];
+
+    gds->if_condition = impl->game_state->story_flag == (int16_t)story_flag;
+
+    return true;
+}
+
+bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
+                           void *user_data) {
+    (void)command;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+
+    if (!impl || !impl->game_state) {
+        fprintf(stderr,
+                "gds: SetStoryFlag called without game state context\n");
+        return false;
+    }
+
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, "SetStoryFlag")) {
+        return false;
+    }
+    int32_t story_flag = args[0];
+
+    impl->game_state->story_flag = (int16_t)story_flag;
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -384,6 +429,12 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_AddBGObject:
         *handler = gds_func_AddBGObject;
+        return true;
+    case SCRIPT_CMD_StoryFlag:
+        *handler = gds_func_StoryFlag;
+        return true;
+    case SCRIPT_CMD_SetStoryFlag:
+        *handler = gds_func_SetStoryFlag;
         return true;
     default:
         *handler = NULL;
