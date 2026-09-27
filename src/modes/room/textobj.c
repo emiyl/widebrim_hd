@@ -71,6 +71,7 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
     object->self_vars = tobj_impl;
 
     object_set_position(object, x, y + WB_SCREEN_HEIGHT);
+    sprite_take_object_position(object->sprite, object);
     object_set_size(object, width, height);
     object_set_visible(object, false);
     object_set_interactive(object, true, mode_room_textobj_on_click, impl);

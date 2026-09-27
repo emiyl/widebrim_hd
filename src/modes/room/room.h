@@ -20,7 +20,7 @@ typedef struct mode_room_impl_t {
                          int32_t text_id, int32_t param7);
     void (*add_exit)(struct mode_room_impl_t *impl, int32_t exit_sprite_id,
                      int32_t target_map_id, int32_t x, int32_t y, int32_t width,
-                     int32_t height);
+                     int32_t height, int32_t param7, int32_t param8);
 
     object_t *move_mode_btn;
     object_t *map_place;

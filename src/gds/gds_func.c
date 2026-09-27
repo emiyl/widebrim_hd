@@ -410,8 +410,11 @@ bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
     int32_t width = args[3];
     int32_t height = args[4];
     int32_t target_map_id = args[5];
+    int32_t param7 = args[6];
+    int32_t param8 = args[7];
 
-    impl->add_exit(impl, exit_sprite_id, target_map_id, x, y, width, height);
+    impl->add_exit(impl, exit_sprite_id, target_map_id, x, y, width, height,
+                   param7, param8);
 
     return true;
 }

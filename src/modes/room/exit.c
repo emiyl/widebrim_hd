@@ -19,7 +19,10 @@ void ensure_rooms_exit_capacity(mode_room_impl_t *impl) {
 
 void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
                    int32_t target_map_id, int32_t x, int32_t y, int32_t width,
-                   int32_t height) {
+                   int32_t height, int32_t param7, int32_t param8) {
+    (void)param7;
+    (void)param8;
+
     ensure_rooms_exit_capacity(impl);
 
     room_exit_t *new_exit = &impl->exits[impl->exit_count];
@@ -64,6 +67,7 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
 
     if (has_sprite) {
         sprite_new(sprite, renderer, state, sprite_filename, 0.0f, false);
+        sprite_take_object_position(sprite, object);
     }
 
     object_set_visible(object, false);

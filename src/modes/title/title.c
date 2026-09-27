@@ -4,6 +4,7 @@
 
 #include "bg_loader.h"
 #include "safe.h"
+#include "sprite.h"
 
 static bool mode_title_advance(mode_title_impl_t *impl);
 
@@ -84,6 +85,7 @@ static void mode_title_load_start_car(mode_title_impl_t *impl) {
 
     object_center_position(car, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
     object_set_position(car, car->x, car->y + WB_SCREEN_HEIGHT + 150);
+    sprite_take_object_position(spr, car);
 }
 
 static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
@@ -117,6 +119,7 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
     object_center_position(logo, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT);
     object_set_position(logo, logo->x, logo->y - 40);
     object_set_interactive(logo, true, mode_title_on_sprite_click, impl);
+    sprite_take_object_position(spr, logo);
 }
 
 static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
@@ -159,6 +162,7 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
         object_set_position(buttons[i], buttons[i]->x, y_pos + i * offset);
         object_set_interactive(buttons[i], true, mode_title_on_sprite_click,
                                impl);
+        sprite_take_object_position(buttons[i]->sprite, buttons[i]);
     }
 }
 

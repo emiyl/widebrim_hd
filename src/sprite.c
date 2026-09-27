@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "object.h"
 #include "sprite_loader.h"
 
 void sprite_clear(sprite_t *sprite, renderer_t *renderer) {
@@ -56,6 +57,62 @@ void sprite_apply_alpha(sprite_t *sprite, renderer_t *renderer) {
     }
 }
 
+bool sprite_set_position(sprite_t *sprite, int x, int y) {
+    if (!sprite) {
+        return false;
+    }
+
+    sprite->x = x;
+    sprite->y = y;
+    return true;
+}
+
+bool sprite_take_object_position(sprite_t *sprite, const object_t *obj) {
+    if (!sprite || !obj) {
+        return false;
+    }
+
+    sprite->x = obj->x;
+    sprite->y = obj->y;
+    return true;
+}
+
+bool sprite_get_position(sprite_t *sprite, int *x, int *y) {
+    if (!sprite || !x || !y) {
+        return false;
+    }
+
+    *x = sprite->x;
+    *y = sprite->y;
+    return true;
+}
+
+bool sprite_set_size(sprite_t *sprite, int width, int height) {
+    if (!sprite || width <= 0 || height <= 0) {
+        return false;
+    }
+
+    sprite->width = width;
+    sprite->height = height;
+    return true;
+}
+
+bool sprite_get_size(sprite_t *sprite, renderer_t *renderer, int *width,
+                     int *height) {
+    if (!sprite || !renderer || !width || !height) {
+        return false;
+    }
+
+    if (sprite->tex) {
+        renderer_get_texture_size(renderer, sprite->tex, width, height);
+    } else {
+        *width = 0;
+        *height = 0;
+    }
+
+    return true;
+}
+
 bool sprite_set_playing(sprite_t *sprite, bool playing) {
     if (!sprite) {
         return false;
@@ -89,6 +146,10 @@ void sprite_init(sprite_t *sprite) {
         return;
     }
 
+    sprite->x = 0;
+    sprite->y = 0;
+    sprite->width = 0;
+    sprite->height = 0;
     sprite->frames = NULL;
     sprite->frame_count = 0;
     sprite->current_frame = 0;
@@ -229,20 +290,6 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
             free(frames[i]);
         }
         free(frames);
-    }
-}
-
-void sprite_get_size(sprite_t *sprite, renderer_t *renderer, int *width,
-                     int *height) {
-    if (!sprite || !renderer || !width || !height) {
-        return;
-    }
-
-    if (sprite->tex) {
-        renderer_get_texture_size(renderer, sprite->tex, width, height);
-    } else {
-        *width = 0;
-        *height = 0;
     }
 }
 

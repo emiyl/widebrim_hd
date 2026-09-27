@@ -50,26 +50,17 @@ static bool mode_room_on_move_mode_icon_click(void *user,
 
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
     static bool clicked = false;
-    static bool sprite_is_offset = false;
-    const int clicked_offset = 5;
 
     switch (event->type) {
     case INPUT_EVENT_MOUSE_BUTTON_DOWN:
         clicked = true;
-        if (!sprite_is_offset) {
-            object_set_position(impl->move_mode_btn,
-                                impl->move_mode_btn->x + clicked_offset,
-                                impl->move_mode_btn->y + clicked_offset);
-            sprite_is_offset = true;
-        }
+        sprite_set_position(impl->move_mode_btn->sprite,
+                            impl->move_mode_btn->x + 5,
+                            impl->move_mode_btn->y + 5);
         break;
     case INPUT_EVENT_MOUSE_BUTTON_UP:
-        if (sprite_is_offset) {
-            object_set_position(impl->move_mode_btn,
-                                impl->move_mode_btn->x - clicked_offset,
-                                impl->move_mode_btn->y - clicked_offset);
-            sprite_is_offset = false;
-        }
+        sprite_set_position(impl->move_mode_btn->sprite, impl->move_mode_btn->x,
+                            impl->move_mode_btn->y);
         if (clicked) {
             clicked = false;
             toggle_move_mode(impl);
@@ -115,6 +106,7 @@ static void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
 
     object_set_size(btn, spr_w, spr_h);
     object_set_position(btn, x, y);
+    sprite_take_object_position(spr, btn);
     object_set_interactive(btn, true, mode_room_on_move_mode_icon_click, impl);
 }
 

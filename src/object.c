@@ -287,9 +287,23 @@ void object_draw(object_t *inst, renderer_t *renderer) {
         return;
     }
 
-    rect_t dst = {.x = (float)inst->x,
-                  .y = (float)inst->y,
-                  .w = (float)inst->width,
-                  .h = (float)inst->height};
+    int sprite_x, sprite_y, sprite_w, sprite_h;
+    sprite_get_position(inst->sprite, &sprite_x, &sprite_y);
+    sprite_get_size(inst->sprite, renderer, &sprite_w, &sprite_h);
+
+    if (sprite_w <= 0 || sprite_h <= 0) {
+        sprite_w = inst->width > 0 ? inst->width : 0;
+        sprite_h = inst->height > 0 ? inst->height : 0;
+    }
+
+    if (sprite_w <= 0 || sprite_h <= 0) {
+        return;
+    }
+
+    rect_t dst = {.x = (float)(sprite_x),
+                  .y = (float)(sprite_y),
+                  .w = (float)sprite_w,
+                  .h = (float)sprite_h};
+
     renderer_draw_texture(renderer, inst->sprite->tex, &dst);
 }

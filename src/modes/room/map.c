@@ -30,6 +30,7 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
 
     object_set_position(map_place, x, y);
     object_set_size(map_place, w, h);
+    sprite_take_object_position(spr, map_place);
 }
 
 void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
