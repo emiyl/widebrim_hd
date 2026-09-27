@@ -13,9 +13,9 @@ typedef struct mode_room_impl_t {
     void (*setmap)(struct mode_room_impl_t *impl, int32_t map_text_id,
                    int32_t map_background_id, int32_t param3, int32_t param4,
                    int32_t param5);
-    void (*add_text_obj)(struct mode_room_impl_t *impl, int32_t x, int32_t y,
-                         int32_t width, int32_t height, int32_t text_id,
-                         int32_t param6);
+    void (*add_text_obj)(struct mode_room_impl_t *impl, int32_t type_or_flag,
+                         int32_t x, int32_t y, int32_t width, int32_t height,
+                         int32_t text_id, int32_t param7);
 
     sprite_instance_t *move_mode_sprite;
     sprite_instance_t *map_place_sprite;

@@ -270,22 +270,25 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
     for (int i = 0; i < 7; ++i) {
         switch (i) {
         case 0:
-            printf("x=");
+            printf("type_or_flag=");
             break;
         case 1:
-            printf("y=");
+            printf("x=");
             break;
         case 2:
-            printf("width=");
+            printf("y=");
             break;
         case 3:
-            printf("height=");
+            printf("width=");
             break;
         case 4:
-            printf("text_id=");
+            printf("height=");
             break;
         case 5:
-            printf("param6=");
+            printf("text_id=");
+            break;
+        default:
+            printf("param%d=", i + 1);
             break;
         }
         printf("%d", argv[i]);
@@ -307,14 +310,16 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
         return false;
     }
 
-    int32_t x = argv[0];
-    int32_t y = argv[1];
-    int32_t width = argv[2];
-    int32_t height = argv[3];
-    int32_t text_id = argv[4];
-    int32_t param6 = argv[6];
+    int32_t type_or_flag = argv[0];
+    int32_t x = argv[1];
+    int32_t y = argv[2];
+    int32_t width = argv[3];
+    int32_t height = argv[4];
+    int32_t text_id = argv[5];
+    int32_t param7 = argv[6];
 
-    impl->add_text_obj(impl, x, y, width, height, text_id, param6);
+    impl->add_text_obj(impl, type_or_flag, x, y, width, height, text_id,
+                       param7);
     return true;
 }
 
