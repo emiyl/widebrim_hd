@@ -266,10 +266,34 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
         return false;
     }
 
-    printf("AddTextObj arguments:\n");
+    printf("AddTextObj(");
     for (int i = 0; i < 7; ++i) {
-        printf("argv[%d] = %d\n", i, argv[i]);
+        switch (i) {
+        case 0:
+            printf("x=");
+            break;
+        case 1:
+            printf("y=");
+            break;
+        case 2:
+            printf("width=");
+            break;
+        case 3:
+            printf("height=");
+            break;
+        case 4:
+            printf("text_id=");
+            break;
+        case 5:
+            printf("param6=");
+            break;
+        }
+        printf("%d", argv[i]);
+        if (i < 6) {
+            printf(", ");
+        }
     }
+    printf(")\n");
 
     if (!impl) {
         fprintf(stderr, "gds: AddTextObj called without room context\n");
@@ -283,8 +307,14 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
         return false;
     }
 
-    impl->add_text_obj(impl, argv[0], argv[1], argv[2], argv[3], argv[4],
-                       argv[6]);
+    int32_t x = argv[0];
+    int32_t y = argv[1];
+    int32_t width = argv[2];
+    int32_t height = argv[3];
+    int32_t text_id = argv[4];
+    int32_t param6 = argv[6];
+
+    impl->add_text_obj(impl, x, y, width, height, text_id, param6);
     return true;
 }
 
