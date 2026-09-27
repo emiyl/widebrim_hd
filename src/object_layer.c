@@ -72,7 +72,9 @@ void object_layer_destroy(object_layer_t *layer) {
 
     for (size_t i = 0U; i < layer->count; ++i) {
         if (layer->objects[i]) {
-            object_clear(layer->objects[i], layer->renderer);
+            object_destroy(layer->objects[i], layer->renderer);
+            free(layer->objects[i]);
+            layer->objects[i] = NULL;
         }
     }
 
