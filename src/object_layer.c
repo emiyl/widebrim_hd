@@ -42,7 +42,6 @@ static void object_layer_add_bg_object(object_layer_t *layer,
     if (!layer || !filename) {
         return;
     }
-    printf("AddBGObject: x=%d, y=%d, filename=%s\n", x, y, filename);
 
     object_t *object = smalloc(sizeof(object_t));
     if (!object) {
