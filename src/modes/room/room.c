@@ -308,6 +308,8 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->state = state;
     impl->controller = controller;
+    impl->exit_count = 0;
+
     impl->setmap = mode_room_setmap;
     impl->add_text_obj = mode_room_add_text_obj;
     impl->add_exit = room_add_exit;
