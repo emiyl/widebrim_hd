@@ -24,27 +24,33 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
     if (impl->in_move_mode) {
         object_fade_out(impl->move_mode_btn, impl->controller->renderer,
                         MOVE_MODE_TRANSITION);
-        for (int i = 0; i < impl->exit_count; i++) {
-            object_t *exit = impl->exits[i];
-            if (!exit) {
-                continue;
-            }
-            object_set_interactive(exit, true);
-            object_fade_in(exit, impl->controller->renderer,
-                           MOVE_MODE_TRANSITION);
-        }
     } else {
         object_fade_in(impl->move_mode_btn, impl->controller->renderer,
                        MOVE_MODE_TRANSITION);
-        for (int i = 0; i < impl->exit_count; i++) {
-            object_t *exit = impl->exits[i];
-            if (!exit) {
-                continue;
-            }
-            object_set_interactive(exit, false);
+    }
+
+    bool allow_exit_interaction = impl->in_move_mode;
+    for (int i = 0; i < impl->exit_count; i++) {
+        object_t *exit = impl->exits[i];
+        if (!exit) {
+            continue;
+        }
+        object_set_interactive(exit, allow_exit_interaction);
+        if (allow_exit_interaction)
+            object_fade_in(exit, impl->controller->renderer,
+                           MOVE_MODE_TRANSITION);
+        else
             object_fade_out(exit, impl->controller->renderer,
                             MOVE_MODE_TRANSITION);
+    }
+
+    bool allow_tobj_interaction = !impl->in_move_mode;
+    for (int i = 0; i < impl->tobj_count; i++) {
+        object_t *text_obj = impl->text_obj[i];
+        if (!text_obj) {
+            continue;
         }
+        object_set_interactive(text_obj, allow_tobj_interaction);
     }
 }
 
@@ -322,6 +328,7 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->state = state;
     impl->controller = controller;
+    impl->tobj_count = 0;
     impl->exit_count = 0;
 
     impl->setmap = mode_room_setmap;
@@ -330,6 +337,9 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));
+    for (int i = 0; i < 16; i++) {
+        impl->text_obj[i] = smalloc(sizeof(object_t));
+    }
     for (int i = 0; i < 8; i++) {
         impl->exits[i] = smalloc(sizeof(object_t));
     }

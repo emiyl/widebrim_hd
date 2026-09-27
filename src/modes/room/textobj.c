@@ -49,13 +49,18 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
         return;
     }
 
-    object = smalloc(sizeof(*object));
+    if (impl->tobj_count >= 16) {
+        fprintf(stderr, "widebrim: [room_add_text_obj] maximum number of text "
+                        "objects reached\n");
+        return;
+    }
+
+    object = impl->text_obj[impl->tobj_count];
     object_init_kind(object, OBJECT_KIND_TOBJ);
 
     tobj_impl_t *tobj_impl = smalloc(sizeof(*tobj_impl));
 
     if (!tobj_impl) {
-        free(object);
         return;
     }
 
@@ -71,6 +76,7 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
     object_set_interaction_callback(object, mode_room_textobj_on_click, impl);
 
     object_layer_add_object(impl->controller->object, object);
+    impl->tobj_count++;
 }
 
 void mode_room_add_text_obj(mode_room_impl_t *impl, int32_t type_or_flag,

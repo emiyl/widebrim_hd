@@ -25,6 +25,9 @@ typedef struct mode_room_impl_t {
     object_t *move_mode_btn;
     object_t *map_place;
 
+    object_t *text_obj[16];
+    int32_t tobj_count;
+
     object_t *exits[8];
     int32_t exit_count;
 
