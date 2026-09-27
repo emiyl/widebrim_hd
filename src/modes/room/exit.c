@@ -64,10 +64,9 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
 
     if (has_sprite) {
         sprite_new(sprite, renderer, state, sprite_filename, 0.0f, false);
-    } else {
-        object_set_visible(object, false);
     }
 
+    object_set_visible(object, false);
     object_layer_add_object(impl->controller->object, new_exit->object);
 
     impl->exit_count++;

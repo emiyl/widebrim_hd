@@ -24,9 +24,17 @@ static void toggle_move_mode(mode_room_impl_t *impl) {
     if (impl->in_move_mode) {
         object_fade_out(impl->move_mode_btn, impl->controller->renderer,
                         MOVE_MODE_TRANSITION);
+        for (int i = 0; i < impl->exit_count; i++) {
+            object_fade_in(impl->exits[i].object, impl->controller->renderer,
+                           MOVE_MODE_TRANSITION);
+        }
     } else {
         object_fade_in(impl->move_mode_btn, impl->controller->renderer,
                        MOVE_MODE_TRANSITION);
+        for (int i = 0; i < impl->exit_count; i++) {
+            object_fade_out(impl->exits[i].object, impl->controller->renderer,
+                            MOVE_MODE_TRANSITION);
+        }
     }
 }
 
