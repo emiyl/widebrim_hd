@@ -14,12 +14,12 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
     game_state_t *state = impl->state;
 
     object_t *map_place = impl->map_place;
-    object_init(map_place);
-
     if (!map_place) {
         fprintf(stderr, "widebrim: failed to create map place object\n");
         return;
     }
+
+    object_clear(map_place, renderer);
 
     sprite_t *spr = map_place->sprite;
     sprite_new(spr, renderer, state, "map_place", 0.0f, false);

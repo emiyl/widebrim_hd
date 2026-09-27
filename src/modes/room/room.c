@@ -83,12 +83,12 @@ static void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
     game_state_t *state = impl->state;
 
     object_t *btn = impl->move_mode_btn;
-    object_init(btn);
-
     if (!btn) {
         fprintf(stderr, "widebrim: failed to create move mode button\n");
         return;
     }
+
+    object_clear(btn, renderer);
 
     sprite_t *spr = btn->sprite;
     sprite_new(spr, renderer, state, "movemode", 0.0f, false);
@@ -237,10 +237,12 @@ static void mode_room_destroy(void *user) {
     object_layer_clear(impl->controller->object);
 
     if (impl->move_mode_btn) {
+        object_destroy(impl->move_mode_btn, impl->controller->renderer);
         free(impl->move_mode_btn);
         impl->move_mode_btn = NULL;
     }
     if (impl->map_place) {
+        object_destroy(impl->map_place, impl->controller->renderer);
         free(impl->map_place);
         impl->map_place = NULL;
     }
