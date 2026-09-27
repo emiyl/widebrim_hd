@@ -184,7 +184,6 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
                 room_num);
     }
 
-    mode_room_load_move_mode_btn(impl);
     mode_room_load_map_place(impl);
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {
@@ -311,6 +310,7 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));
 
+    mode_room_load_move_mode_btn(impl);
     mode_room_reset_room(impl);
 
     object_layer_add_object(impl->controller->object, impl->map_place);
