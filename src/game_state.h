@@ -33,6 +33,8 @@ typedef struct game_state_t {
     int16_t current_question;
     uint8_t question_state;
     uint8_t question_states[256];
+    bool isQuestionCheck;
+    bool isQuestionExist;
 
     bool (*bit_flag)(const struct game_state_t *state, int flag);
     void (*set_bit_flag)(struct game_state_t *state, int flag, bool value);

@@ -151,9 +151,9 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
     printf("gds: %s(story_flag=%d)\n", function_name, story_flag);
 #endif
 
-    bool isQuestionCheck = false;
-    if (!isQuestionCheck)
-        impl->game_state->story_flag = (int16_t)story_flag;
+    game_state_t *state = impl->game_state;
+    if (!state->isQuestionCheck)
+        state->story_flag = (int16_t)story_flag;
 
     return true;
 }
@@ -185,7 +185,7 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
     game_state_t *state = impl->game_state;
     gds_state_t *gds = &state->gds;
 
-    gds->condition_result = (impl->game_state->event_viewed[event_id] & 1) != 0;
+    gds->condition_result = (state->event_viewed[event_id] & 1) != 0;
 
     return true;
 }
@@ -215,9 +215,9 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-    bool isQuestionCheck = false;
-    if (!isQuestionCheck) {
-        impl->game_state->event_viewed[event_id] |= 1;
+    game_state_t *state = impl->game_state;
+    if (!state->isQuestionCheck) {
+        state->event_viewed[event_id] |= 1;
     }
 
     return true;
