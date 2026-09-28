@@ -121,7 +121,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     char map_purpose_path[256];
     char map_purpose_buffer[256];
 
-    snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.png",
+    snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.bgx",
              map_background_id);
 
     if (!bg_loader_load(room->state, room->controller, map_background_path,

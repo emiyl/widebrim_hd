@@ -98,22 +98,68 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
 
     for (size_t i = 0U; i < root_count; ++i) {
         const char *root = roots[i];
-        for (size_t j = 0U;
-             j < sizeof(dir_candidates) / sizeof(dir_candidates[0]); ++j) {
-            int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s", root,
-                               dir_candidates[j], normalized);
-            if (len < 0 || (size_t)len >= sizeof(candidate)) {
-                continue;
-            }
-            if (access(candidate, F_OK) == 0) {
-                snprintf(out_path, out_path_size, "%s", candidate);
-                return true;
+        char stem[4096];
+        const char *suffix = strrchr(normalized, '.');
+        size_t stem_len = strlen(normalized);
+        char candidate_paths[5][4096];
+        size_t candidate_count = 0U;
+
+        if (suffix != NULL &&
+            (strcmp(suffix, ".png") == 0 || strcmp(suffix, ".jpg") == 0 ||
+             strcmp(suffix, ".jpeg") == 0 || strcmp(suffix, ".bgx") == 0)) {
+            stem_len = (size_t)(suffix - normalized);
+        }
+
+        if (stem_len >= sizeof(stem)) {
+            stem_len = sizeof(stem) - 1U;
+        }
+        memcpy(stem, normalized, stem_len);
+        stem[stem_len] = '\0';
+
+        static const char *const extension_variants[] = {".jpg", ".jpeg",
+                                                         ".png", ".bgx"};
+        for (size_t v = 0U;
+             v < sizeof(extension_variants) / sizeof(extension_variants[0]);
+             ++v) {
+            int len =
+                snprintf(candidate_paths[candidate_count],
+                         sizeof(candidate_paths[candidate_count]), "%.*s%s",
+                         (int)stem_len, stem, extension_variants[v]);
+            if (len >= 0 &&
+                (size_t)len < sizeof(candidate_paths[candidate_count])) {
+                ++candidate_count;
             }
         }
 
-        {
+        if (candidate_count == 0U ||
+            strcmp(candidate_paths[candidate_count - 1], normalized) != 0) {
+            int len = snprintf(candidate_paths[candidate_count],
+                               sizeof(candidate_paths[candidate_count]), "%s",
+                               normalized);
+            if (len >= 0 &&
+                (size_t)len < sizeof(candidate_paths[candidate_count])) {
+                ++candidate_count;
+            }
+        }
+
+        for (size_t j = 0U;
+             j < sizeof(dir_candidates) / sizeof(dir_candidates[0]); ++j) {
+            for (size_t k = 0U; k < candidate_count; ++k) {
+                int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s",
+                                   root, dir_candidates[j], candidate_paths[k]);
+                if (len < 0 || (size_t)len >= sizeof(candidate)) {
+                    continue;
+                }
+                if (access(candidate, F_OK) == 0) {
+                    snprintf(out_path, out_path_size, "%s", candidate);
+                    return true;
+                }
+            }
+        }
+
+        for (size_t k = 0U; k < candidate_count; ++k) {
             int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s", root,
-                               lang_dir, normalized);
+                               lang_dir, candidate_paths[k]);
             if (len >= 0 && (size_t)len < sizeof(candidate) &&
                 access(candidate, F_OK) == 0) {
                 snprintf(out_path, out_path_size, "%s", candidate);
@@ -121,9 +167,9 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
             }
         }
 
-        {
+        for (size_t k = 0U; k < candidate_count; ++k) {
             int len = snprintf(candidate, sizeof(candidate), "%s/data/%s", root,
-                               normalized);
+                               candidate_paths[k]);
             if (len >= 0 && (size_t)len < sizeof(candidate) &&
                 access(candidate, F_OK) == 0) {
                 snprintf(out_path, out_path_size, "%s", candidate);

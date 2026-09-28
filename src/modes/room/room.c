@@ -91,7 +91,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
 
     int room_num = game_state_get_place_num(impl->state);
     char bg_sub_path[256];
-    snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.png", room_num);
+    snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.bgx", room_num);
 
     if (!bg_loader_load(impl->state, impl->controller, bg_sub_path,
                         screen_controller_set_bg_sub)) {

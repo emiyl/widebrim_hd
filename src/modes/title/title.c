@@ -175,9 +175,9 @@ static void mode_title_load_sprites(mode_title_impl_t *impl) {
 }
 
 static void mode_title_load_bg(mode_title_impl_t *impl) {
-    const char *bg_path = "bg/select_title.png";
-    const char *sub_bg_path = "bg/start_select2.png";
-    const char *sub_bg_overlay_path = "bg/start_select.png";
+    const char *bg_path = "bg/select_title.bgx";
+    const char *sub_bg_path = "bg/start_select2.bgx";
+    const char *sub_bg_overlay_path = "bg/start_select.bgx";
 
     game_state_t *state = impl->state;
     screen_controller_t *controller = impl->controller;
