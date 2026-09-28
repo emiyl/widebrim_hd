@@ -98,8 +98,8 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
             record.type == GDS_RECORD_EMPTY_9 ||
             record.type == GDS_RECORD_EMPTY_10 ||
             record.type == GDS_RECORD_EMPTY_11 ||
-            record.type == GDS_RECORD_VALUE_6 ||
-            record.type == GDS_RECORD_VALUE_7) {
+            record.type == GDS_RECORD_BLOCK_START ||
+            record.type == GDS_RECORD_BLOCK_END) {
             continue;
         }
 

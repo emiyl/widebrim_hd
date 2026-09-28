@@ -52,9 +52,11 @@ static void dump_value_record(const gds_record_t *record) {
         printf("%f", record->payload.value.f32);
         break;
 
-    case GDS_RECORD_VALUE_6:
-    case GDS_RECORD_VALUE_7:
-        printf("%" PRIu32, record->payload.value.u32);
+    case GDS_RECORD_BLOCK_START:
+        printf("{ 0x%04" PRIx32, record->payload.value.u32);
+        break;
+    case GDS_RECORD_BLOCK_END:
+        printf("} 0x%04" PRIx32, record->payload.value.u32);
         break;
 
     case GDS_RECORD_STRING:
@@ -92,6 +94,10 @@ static bool dump_command_call(gds_reader_t *reader, const gds_record_t *command,
             if (!dump_command_call(reader, &argument, false)) {
                 return false;
             }
+        } else if (argument.type == GDS_RECORD_BLOCK_START ||
+                   argument.type == GDS_RECORD_BLOCK_END) {
+            reader->offset = saved_offset;
+            return true;
         } else {
             dump_value_record(&argument);
         }
@@ -108,7 +114,9 @@ static bool dump_command_call(gds_reader_t *reader, const gds_record_t *command,
                 return false;
             }
 
-            if (argument.type == GDS_RECORD_COMMAND) {
+            if (argument.type == GDS_RECORD_COMMAND ||
+                argument.type == GDS_RECORD_BLOCK_START ||
+                argument.type == GDS_RECORD_BLOCK_END) {
                 reader->offset = saved_offset;
                 break;
             }
@@ -158,10 +166,9 @@ bool dump_gds_raw(const uint8_t *data, size_t size) {
                    record.payload.value.u32);
             break;
 
-        case GDS_RECORD_VALUE_6:
-        case GDS_RECORD_VALUE_7:
-            printf("%" PRIu32 " (0x%08" PRIx32 ")", record.payload.value.u32,
-                   record.payload.value.u32);
+        case GDS_RECORD_BLOCK_START:
+        case GDS_RECORD_BLOCK_END:
+            printf("BLOCK_EDGE 0x%08" PRIx32, record.payload.value.u32);
             break;
 
         case GDS_RECORD_STRING:

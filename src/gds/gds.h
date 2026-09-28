@@ -17,8 +17,8 @@ typedef enum {
     GDS_RECORD_STRING = 3,
     GDS_RECORD_BYTES = 4,
     GDS_RECORD_EMPTY_5 = 5,
-    GDS_RECORD_VALUE_6 = 6,
-    GDS_RECORD_VALUE_7 = 7,
+    GDS_RECORD_BLOCK_START = 6,
+    GDS_RECORD_BLOCK_END = 7,
     GDS_RECORD_EMPTY_8 = 8,
     GDS_RECORD_EMPTY_9 = 9,
     GDS_RECORD_EMPTY_10 = 10,
@@ -40,10 +40,10 @@ static inline char *gds_record_type_to_string(gds_record_type_t type) {
         return "BYTES";
     case GDS_RECORD_EMPTY_5:
         return "EMPTY_5";
-    case GDS_RECORD_VALUE_6:
-        return "VALUE_6";
-    case GDS_RECORD_VALUE_7:
-        return "VALUE_7";
+    case GDS_RECORD_BLOCK_START:
+        return "BLOCK_START";
+    case GDS_RECORD_BLOCK_END:
+        return "BLOCK_END";
     case GDS_RECORD_EMPTY_8:
         return "EMPTY_8";
     case GDS_RECORD_EMPTY_9:
@@ -96,8 +96,8 @@ static inline const char *gds_record_to_string(const gds_record_t *record) {
         snprintf(buffer, sizeof(buffer), "%f", record->payload.value.f32);
         break;
 
-    case GDS_RECORD_VALUE_6:
-    case GDS_RECORD_VALUE_7:
+    case GDS_RECORD_BLOCK_START:
+    case GDS_RECORD_BLOCK_END:
         snprintf(buffer, sizeof(buffer), "%" PRIu32, record->payload.value.u32);
         break;
 
