@@ -33,6 +33,35 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
     sprite_take_object_position(spr, map_place);
 }
 
+void mode_room_load_map_purpose(mode_room_impl_t *impl) {
+    int x, y, w, h;
+    if (!impl) {
+        return;
+    }
+
+    renderer_t *renderer = impl->controller->renderer;
+    game_state_t *state = impl->state;
+
+    object_t *map_purpose = impl->map_purpose;
+    if (!map_purpose) {
+        fprintf(stderr, "widebrim: failed to create map purpose object\n");
+        return;
+    }
+
+    object_clear(map_purpose, renderer);
+
+    sprite_t *spr = map_purpose->sprite;
+    sprite_new(spr, renderer, state, "map_purpose.spr", 0.0f, false);
+
+    sprite_get_size(spr, renderer, &w, &h);
+    x = 0;
+    y = WB_SCREEN_HEIGHT - h;
+
+    object_set_position(map_purpose, x, y);
+    object_set_size(map_purpose, w, h);
+    sprite_take_object_position(spr, map_purpose);
+}
+
 void mode_room_set_map(mode_room_impl_t *self, int32_t map_text_id,
                        int32_t map_background_id, int32_t param3,
                        int32_t param4, int32_t param5) {

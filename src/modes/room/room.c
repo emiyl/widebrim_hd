@@ -108,6 +108,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     impl->event_count = 0;
 
     object_layer_add_object(impl->controller->object, impl->map_place);
+    object_layer_add_object(impl->controller->object, impl->map_purpose);
     object_layer_add_object(impl->controller->object, impl->move_mode_btn);
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {
@@ -169,6 +170,11 @@ static void mode_room_destroy(void *user) {
         object_destroy(impl->map_place, impl->controller->renderer);
         free(impl->map_place);
         impl->map_place = NULL;
+    }
+    if (impl->map_purpose) {
+        object_destroy(impl->map_purpose, impl->controller->renderer);
+        free(impl->map_purpose);
+        impl->map_purpose = NULL;
     }
 
     free(user);
@@ -265,6 +271,7 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));
+    impl->map_purpose = smalloc(sizeof(object_t));
     for (int i = 0; i < MAX_TOBJ; i++) {
         impl->text_obj[i] = smalloc(sizeof(object_t));
     }
@@ -277,6 +284,7 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     mode_room_load_move_mode_btn(impl);
     mode_room_load_map_place(impl);
+    mode_room_load_map_purpose(impl);
 
     mode_room_reset_room(impl);
 
