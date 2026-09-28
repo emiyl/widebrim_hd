@@ -8,6 +8,8 @@
 #include "modes/spawner.h"
 #include "room/room.h"
 
+#define TRACE
+
 static bool gds_func_is_ignored_record_type(gds_record_type_t type) {
     switch (type) {
     case GDS_RECORD_EMPTY_5:
@@ -148,6 +150,11 @@ static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
+
     gds = &game_state->gds;
     gds->condition_result = true;
 
@@ -167,6 +174,11 @@ static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
+
     gds = &game_state->gds;
     gds->condition_result = false;
 
@@ -178,6 +190,11 @@ static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
     bool condition = true;
 
     (void)command;
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
 
     if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
@@ -208,6 +225,11 @@ static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
 
     (void)command;
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
+
     if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
     }
@@ -236,6 +258,12 @@ static bool gds_func_ELSE(gds_reader_t *reader, const gds_record_t *command,
     (void)reader;
     (void)command;
     (void)user_data;
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
+
     return true;
 }
 
@@ -244,6 +272,11 @@ static bool gds_func_WHILE(gds_reader_t *reader, const gds_record_t *command,
     bool condition = true;
 
     (void)command;
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
 
     if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
@@ -273,6 +306,11 @@ static bool gds_func_Loop(gds_reader_t *reader, const gds_record_t *command,
     bool condition = true;
 
     (void)command;
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
 
     if (!gds_func_read_condition(reader, &condition, user_data)) {
         return false;
@@ -316,6 +354,14 @@ static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
     int32_t param4 = args[3];
     int32_t param5 = args[4];
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(map_text_id=%d, map_background_id=%d, param3=%d, "
+           "param4=%d, param5=%d)\n",
+           function_name, map_text_id, map_background_id, param3, param4,
+           param5);
+#endif
+
     room->set_map(room, map_text_id, map_background_id, param3, param4, param5);
     return true;
 }
@@ -341,6 +387,13 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
     int32_t text_id = args[5];
     int32_t param7 = args[6];
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(type_or_flag=%d, x=%d, y=%d, width=%d, height=%d, "
+           "text_id=%d, param7=%d)\n",
+           function_name, type_or_flag, x, y, width, height, text_id, param7);
+#endif
+
     room->add_text_obj(room, type_or_flag, x, y, width, height, text_id,
                        param7);
     return true;
@@ -361,6 +414,11 @@ static bool gds_func_AddBGObject(gds_reader_t *reader,
     int32_t x = args[0].payload.value.s32;
     int32_t y = args[1].payload.value.s32;
     char *filename = (char *)args[2].payload.bytes.data;
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(x=%d, y=%d, filename=%s)\n", function_name, x, y, filename);
+#endif
 
     if (ol && ol->add_bg_object) {
         ol->add_bg_object(ol, state, x, y, filename);
@@ -383,6 +441,12 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t story_flag = args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(story_flag=%d)\n", function_name, story_flag);
+#endif
+
     gds_state_t *gds = &impl->game_state->gds;
 
     gds->condition_result = impl->game_state->story_flag == (int16_t)story_flag;
@@ -406,6 +470,11 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
 
     int32_t story_flag = args[0];
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(story_flag=%d)\n", function_name, story_flag);
+#endif
+
     bool isQuestionCheck = false;
     if (!isQuestionCheck)
         impl->game_state->story_flag = (int16_t)story_flag;
@@ -427,6 +496,11 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t event_id = args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(event_id=%d)\n", function_name, event_id);
+#endif
 
     if (event_id < 0 || event_id >= MAX_EVENT_VIEWED) {
         return false;
@@ -455,6 +529,11 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t event_id = args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(event_id=%d)\n", function_name, event_id);
+#endif
 
     if (event_id < 0 || event_id >= MAX_EVENT_VIEWED) {
         return false;
@@ -490,6 +569,14 @@ bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
     int32_t param7 = args[6];
     int32_t param8 = args[7];
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(exit_sprite_id=%d, x=%d, y=%d, width=%d, height=%d, "
+           "target_map_id=%d, param7=%d, param8=%d)\n",
+           function_name, exit_sprite_id, x, y, width, height, target_map_id,
+           param7, param8);
+#endif
+
     room->add_exit(room, exit_sprite_id, target_map_id, x, y, width, height,
                    param7, param8);
 
@@ -502,6 +589,11 @@ bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(flag=%d)\n", function_name, args[0]);
+#endif
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
     if (!impl || !impl->game_state) {
@@ -533,6 +625,11 @@ bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
     int32_t flag = args[0];
     bool value = args[1] != 0;
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(flag=%d, value=%d)\n", function_name, args[0], args[1]);
+#endif
+
     game_state_t *state = impl->game_state;
 
     state->set_bit_flag(state, flag, value);
@@ -560,6 +657,13 @@ bool gds_func_AddEvent(gds_reader_t *reader, const gds_record_t *command,
     int32_t sprite_id = args[4];
     int32_t event_id = args[5];
 
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf(
+        "gds: %s(x=%d, y=%d, width=%d, height=%d, sprite_id=%d, event_id=%d)\n",
+        function_name, x, y, width, height, sprite_id, event_id);
+#endif
+
     return room->add_event(room, x, y, width, height, sprite_id, event_id);
 }
 
@@ -578,6 +682,11 @@ bool gds_func_SetCurrentQuestion(gds_reader_t *reader,
     }
 
     int32_t question = args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(question=%d)\n", function_name, question);
+#endif
 
     if (question < 0 || question >= 0x100) {
         question = 0;
@@ -615,6 +724,11 @@ bool gds_func_SolvedQuestion(gds_reader_t *reader, const gds_record_t *command,
         state->gds.condition_result = false;
         return true;
     }
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(question=%d, index=%zu)\n", function_name, question, index);
+#endif
 
     gds_state_t *gds = &state->gds;
     gds->condition_result = (state->question_states[index] & 0x04) != 0;
