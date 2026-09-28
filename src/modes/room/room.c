@@ -200,6 +200,9 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
 
     object_layer_remove_all_objects(impl->controller->object);
 
+    impl->exit_count = 0;
+    impl->tobj_count = 0;
+
     object_layer_add_object(impl->controller->object, impl->map_place);
     object_layer_add_object(impl->controller->object, impl->move_mode_btn);
 
@@ -208,6 +211,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     }
 
     set_move_mode(impl, false);
+    object_reset_fade(impl->move_mode_btn, impl->controller->renderer);
 
     screen_controller_fade_in(impl->controller, FADER_DEFAULT_DURATION_MS, NULL,
                               NULL);

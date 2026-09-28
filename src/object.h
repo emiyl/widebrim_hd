@@ -38,6 +38,7 @@ struct object_t {
     object_event_callback_t on_event;
 };
 
+bool object_reset_fade(object_t *object, renderer_t *renderer);
 bool object_fade_in(object_t *object, renderer_t *renderer, float duration_ms);
 bool object_fade_out(object_t *object, renderer_t *renderer, float duration_ms);
 bool object_center_position(object_t *object, int screen_width,

@@ -57,6 +57,14 @@ void sprite_apply_alpha(sprite_t *sprite, renderer_t *renderer) {
     }
 }
 
+void sprite_set_alpha(sprite_t *sprite, uint8_t alpha) {
+    if (!sprite) {
+        return;
+    }
+
+    sprite->alpha = alpha;
+}
+
 bool sprite_set_position(sprite_t *sprite, int x, int y) {
     if (!sprite) {
         return false;

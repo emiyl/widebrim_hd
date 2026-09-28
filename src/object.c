@@ -111,6 +111,24 @@ bool object_set_visible(object_t *inst, bool visible) {
     return true;
 }
 
+bool object_reset_fade(object_t *inst, renderer_t *renderer) {
+    if (!inst) {
+        return false;
+    }
+
+    inst->fade_duration_ms = 0.0f;
+    inst->fade_elapsed_ms = 0.0f;
+    inst->fading_in = false;
+    inst->fading_out = false;
+
+    if (inst->sprite) {
+        inst->sprite->alpha = inst->alpha;
+        inst->visible = true;
+        sprite_apply_alpha(inst->sprite, renderer);
+    }
+    return true;
+}
+
 bool object_fade_in(object_t *inst, renderer_t *renderer, float duration_ms) {
     if (!inst) {
         return false;
@@ -272,15 +290,19 @@ void object_draw(object_t *inst, renderer_t *renderer) {
         return;
     }
 
-    // if (inst->kind == OBJECT_KIND_TOBJ) {
-    //     rect_t dst = {.x = (float)inst->x,
-    //                   .y = (float)inst->y,
-    //                   .w = (float)inst->width,
-    //                   .h = (float)inst->height};
-    //     renderer_fill_rect(renderer, &dst, 255, 0, 0, 50);
-    //     renderer_draw_rect(renderer, &dst, 0, 0, 0, 255);
-    //     return;
-    // }
+    rect_t obj_dst = {.x = (float)inst->x,
+                      .y = (float)inst->y,
+                      .w = (float)inst->width,
+                      .h = (float)inst->height};
+
+    switch (inst->kind) {
+    case OBJECT_KIND_EXIT:
+        renderer_fill_rect(renderer, &obj_dst, 255, 0, 0, 100);
+        renderer_draw_rect(renderer, &obj_dst, 0, 0, 0, 255);
+        break;
+    default:
+        break;
+    }
 
     if (!inst->visible) {
         return;

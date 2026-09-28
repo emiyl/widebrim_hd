@@ -29,6 +29,7 @@ void sprite_init(sprite_t *sprite);
 void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
                 const char *sprite_path, float frame_duration_ms, bool loop);
 void sprite_clear(sprite_t *sprite, renderer_t *renderer);
+void sprite_set_alpha(sprite_t *sprite, uint8_t alpha);
 void sprite_apply_alpha(sprite_t *sprite, renderer_t *renderer);
 void sprite_update(sprite_t *sprite, float delta_ms);
 
