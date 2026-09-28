@@ -12,7 +12,6 @@
 static bool gds_branch_is_ignored_record_type(gds_record_type_t type) {
     switch (type) {
     case GDS_RECORD_EMPTY_5:
-    case GDS_RECORD_NOT:
     case GDS_RECORD_EMPTY_11:
     case GDS_RECORD_BREAKPOINT:
         return true;
