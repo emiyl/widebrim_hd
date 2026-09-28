@@ -42,6 +42,60 @@ static bool gds_func_is_ignored_record_type(gds_record_type_t type) {
     }
 }
 
+static game_state_t *gds_func_get_game_state(void *user_data) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+
+    if (impl != NULL && impl->game_state != NULL) {
+        return impl->game_state;
+    }
+
+    return (game_state_t *)user_data;
+}
+
+static gds_state_t *gds_func_get_gds_state(void *user_data) {
+    game_state_t *game_state = gds_func_get_game_state(user_data);
+
+    if (game_state == NULL) {
+        return NULL;
+    }
+
+    return &game_state->gds;
+}
+
+static bool gds_func_push_branch_state(void *user_data, bool taken) {
+    gds_state_t *gds = gds_func_get_gds_state(user_data);
+
+    if (gds == NULL) {
+        return false;
+    }
+
+    if (gds->if_branch_depth >= GDS_IF_BRANCH_STACK_SIZE) {
+        return false;
+    }
+
+    gds->if_branch_taken[gds->if_branch_depth] = taken;
+    gds->if_branch_depth++;
+    return true;
+}
+
+static bool gds_func_current_branch_taken(void *user_data) {
+    gds_state_t *gds = gds_func_get_gds_state(user_data);
+
+    if (gds == NULL || gds->if_branch_depth == 0U) {
+        return false;
+    }
+
+    return gds->if_branch_taken[gds->if_branch_depth - 1U];
+}
+
+static void gds_func_pop_branch_state(void *user_data) {
+    gds_state_t *gds = gds_func_get_gds_state(user_data);
+
+    if (gds != NULL && gds->if_branch_depth > 0U) {
+        gds->if_branch_depth--;
+    }
+}
+
 static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
                                     void *user_data) {
     size_t start = 0U;
@@ -55,7 +109,12 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
     }
 
     start = reader->offset;
-    game_state = (game_state_t *)user_data;
+    game_state = gds_func_get_game_state(user_data);
+    if (game_state == NULL) {
+        fprintf(stderr,
+                "gds: condition evaluation requires game state context\n");
+        return false;
+    }
     gds = &game_state->gds;
 
     if (gds_reader_remaining(reader) == 0U) {
@@ -87,7 +146,7 @@ static bool gds_func_read_condition(gds_reader_t *reader, bool *result,
     case GDS_RECORD_COMMAND:
         if (gds_func_lookup(record.payload.opcode, &handler) &&
             handler != NULL) {
-            if (!handler(reader, &record, &gds->condition_result)) {
+            if (!handler(reader, &record, user_data)) {
                 reader->offset = start;
                 fprintf(stderr, "gds: condition command %s failed\n",
                         gds_opcode_to_string(record.payload.opcode));
@@ -164,9 +223,15 @@ static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
     (void)reader;
     (void)command;
 
-    game_state_t *game_state = (game_state_t *)user_data;
-    gds_state_t *gds = &game_state->gds;
+    game_state_t *game_state = gds_func_get_game_state(user_data);
+    gds_state_t *gds = NULL;
 
+    if (game_state == NULL) {
+        fprintf(stderr, "gds: TRUE called without game state context\n");
+        return false;
+    }
+
+    gds = &game_state->gds;
     gds->condition_result = true;
 
     return true;
@@ -177,9 +242,15 @@ static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
     (void)reader;
     (void)command;
 
-    game_state_t *game_state = (game_state_t *)user_data;
-    gds_state_t *gds = &game_state->gds;
+    game_state_t *game_state = gds_func_get_game_state(user_data);
+    gds_state_t *gds = NULL;
 
+    if (game_state == NULL) {
+        fprintf(stderr, "gds: FALSE called without game state context\n");
+        return false;
+    }
+
+    gds = &game_state->gds;
     gds->condition_result = false;
 
     return true;
@@ -190,9 +261,13 @@ static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
     bool condition = true;
 
     (void)command;
-    (void)user_data;
 
     if (!gds_func_read_condition(reader, &condition, user_data)) {
+        return false;
+    }
+
+    if (!gds_func_push_branch_state(user_data, condition)) {
+        fprintf(stderr, "gds: too many nested IF blocks\n");
         return false;
     }
 
@@ -208,9 +283,21 @@ static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
     bool condition = true;
 
     (void)command;
-    (void)user_data;
+
+    if (gds_func_current_branch_taken(user_data)) {
+        if (!gds_func_skip_to_next_clause(reader)) {
+            return false;
+        }
+        gds_func_pop_branch_state(user_data);
+        return true;
+    }
 
     if (!gds_func_read_condition(reader, &condition, user_data)) {
+        return false;
+    }
+
+    if (!gds_func_push_branch_state(user_data, condition)) {
+        fprintf(stderr, "gds: too many nested IF blocks\n");
         return false;
     }
 
@@ -223,9 +310,21 @@ static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
 
 static bool gds_func_ELSE(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {
-    (void)reader;
     (void)command;
-    (void)user_data;
+
+    if (gds_func_current_branch_taken(user_data)) {
+        if (!gds_func_skip_to_next_clause(reader)) {
+            return false;
+        }
+        gds_func_pop_branch_state(user_data);
+        return true;
+    }
+
+    if (!gds_func_push_branch_state(user_data, true)) {
+        fprintf(stderr, "gds: too many nested IF blocks\n");
+        return false;
+    }
+
     return true;
 }
 
@@ -345,14 +444,13 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    game_state_t *state = impl->game_state;
-    gds_state_t *gds = &state->gds;
     if (!impl || !impl->game_state) {
         fprintf(stderr, "gds: StoryFlag called without game state context\n");
         return false;
     }
 
     int32_t story_flag = args[0];
+    gds_state_t *gds = &impl->game_state->gds;
 
     gds->condition_result = impl->game_state->story_flag == (int16_t)story_flag;
 
