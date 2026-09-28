@@ -70,7 +70,8 @@ bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,
     return gds_execute_default_command(reader, record, user_data);
 }
 
-bool gds_execute_script(const uint8_t *data, size_t size, void *user_data) {
+bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
+                        gds_state_t *state) {
     gds_reader_t reader;
     gds_record_t record;
 
@@ -79,6 +80,7 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data) {
         return false;
     }
 
+    gds_state_reset(state);
     gds_reader_init(&reader, data, size);
 
     while (gds_reader_remaining(&reader) > 0U) {
