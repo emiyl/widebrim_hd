@@ -197,17 +197,21 @@ static void bg_layer_texture_draw(renderer_t *renderer, bg_layer_texture_t *tex,
         if (tex->repeating) {
             renderer_get_texture_size(renderer, tex->tex, &tex_w, &tex_h);
             if (tex_w > 0) {
-                float offset_x = fmodf(tex->scroll_x, (float)tex_w);
-                if (offset_x < 0.0f) {
-                    offset_x += (float)tex_w;
+                float tile_w = (float)tex_w;
+                if (tile_w > (float)WB_SCREEN_WIDTH) {
+                    tile_w = (float)WB_SCREEN_WIDTH;
                 }
 
-                for (x = -offset_x; x < WB_SCREEN_WIDTH + tex_w;
-                     x += (float)tex_w) {
+                float offset_x = fmodf(tex->scroll_x, tile_w);
+                if (offset_x < 0.0f) {
+                    offset_x += tile_w;
+                }
+
+                for (x = -offset_x; x < WB_SCREEN_WIDTH + tile_w; x += tile_w) {
                     rect_t tile = {.x = x + (float)shake_x,
                                    .y = (float)y_offset + (float)shake_y,
-                                   .w = (float)tex_w,
-                                   .h = (float)tex_h};
+                                   .w = tile_w,
+                                   .h = (float)WB_SCREEN_HEIGHT};
                     renderer_draw_texture(renderer, tex->tex, &tile);
                 }
             } else {
