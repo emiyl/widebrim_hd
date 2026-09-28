@@ -7,12 +7,17 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL3 REQUIRED sdl3)
+pkg_check_modules(LIBWEBP QUIET libwebp)
 
 set(INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/modes
     ${SDL3_INCLUDE_DIRS}
 )
+
+if(LIBWEBP_FOUND)
+    list(APPEND INCLUDE_DIRS ${LIBWEBP_INCLUDE_DIRS})
+endif()
 
 include_directories(${INCLUDE_DIRS})
 
@@ -53,6 +58,10 @@ endif()
 
 add_executable(widebrim ${WIDEBRIM_SOURCES})
 target_include_directories(widebrim PRIVATE ${INCLUDE_DIRS})
+if(LIBWEBP_FOUND)
+    target_link_libraries(widebrim PRIVATE ${LIBWEBP_LINK_LIBRARIES})
+    target_compile_definitions(widebrim PRIVATE HAVE_LIBWEBP=1)
+endif()
 target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
 target_compile_options(widebrim PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 

@@ -106,7 +106,8 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
 
         if (suffix != NULL &&
             (strcmp(suffix, ".png") == 0 || strcmp(suffix, ".jpg") == 0 ||
-             strcmp(suffix, ".jpeg") == 0 || strcmp(suffix, ".bgx") == 0)) {
+             strcmp(suffix, ".jpeg") == 0 || strcmp(suffix, ".webp") == 0 ||
+             strcmp(suffix, ".bgx") == 0)) {
             stem_len = (size_t)(suffix - normalized);
         }
 
@@ -116,8 +117,8 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
         memcpy(stem, normalized, stem_len);
         stem[stem_len] = '\0';
 
-        static const char *const extension_variants[] = {".jpg", ".jpeg",
-                                                         ".png", ".bgx"};
+        static const char *const extension_variants[] = {
+            ".jpg", ".jpeg", ".png", ".webp", ".bgx"};
         for (size_t v = 0U;
              v < sizeof(extension_variants) / sizeof(extension_variants[0]);
              ++v) {
