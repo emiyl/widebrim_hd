@@ -188,6 +188,8 @@ static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
 static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
                         void *user_data) {
     bool condition = true;
+    size_t checkpoint = 0U;
+    gds_record_t block_start;
 
     (void)command;
 
@@ -200,20 +202,20 @@ static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-    if (!condition) {
-        size_t checkpoint = reader->offset;
-        gds_record_t next_record;
+    checkpoint = reader->offset;
+    if (gds_reader_remaining(reader) == 0U) {
+        return true;
+    }
 
-        if (gds_reader_remaining(reader) > 0U &&
-            gds_read_record(reader, &next_record) &&
-            (next_record.type == GDS_RECORD_BLOCK_START ||
-             next_record.type == GDS_RECORD_BLOCK_END)) {
-            return gds_func_jump_to_block_target(reader, next_record.type,
-                                                 next_record.payload.value.u32);
-        }
-
+    if (!gds_read_record(reader, &block_start) ||
+        block_start.type != GDS_RECORD_BLOCK_START) {
         reader->offset = checkpoint;
         return true;
+    }
+
+    if (!condition) {
+        return gds_func_jump_to_block_target(reader, block_start.type,
+                                             block_start.payload.value.u32);
     }
 
     return true;
@@ -222,6 +224,8 @@ static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
 static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
     bool condition = true;
+    size_t checkpoint = 0U;
+    gds_record_t block_start;
 
     (void)command;
 
@@ -234,20 +238,20 @@ static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-    if (!condition) {
-        size_t checkpoint = reader->offset;
-        gds_record_t next_record;
+    checkpoint = reader->offset;
+    if (gds_reader_remaining(reader) == 0U) {
+        return true;
+    }
 
-        if (gds_reader_remaining(reader) > 0U &&
-            gds_read_record(reader, &next_record) &&
-            (next_record.type == GDS_RECORD_BLOCK_START ||
-             next_record.type == GDS_RECORD_BLOCK_END)) {
-            return gds_func_jump_to_block_target(reader, next_record.type,
-                                                 next_record.payload.value.u32);
-        }
-
+    if (!gds_read_record(reader, &block_start) ||
+        block_start.type != GDS_RECORD_BLOCK_START) {
         reader->offset = checkpoint;
         return true;
+    }
+
+    if (!condition) {
+        return gds_func_jump_to_block_target(reader, block_start.type,
+                                             block_start.payload.value.u32);
     }
 
     return true;
@@ -255,7 +259,8 @@ static bool gds_func_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
 
 static bool gds_func_ELSE(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {
-    (void)reader;
+    gds_record_t block_start;
+
     (void)command;
     (void)user_data;
 
@@ -264,7 +269,17 @@ static bool gds_func_ELSE(gds_reader_t *reader, const gds_record_t *command,
     printf("gds: %s()\n", function_name);
 #endif
 
-    return true;
+    if (reader == NULL || gds_reader_remaining(reader) == 0U) {
+        return true;
+    }
+
+    if (!gds_read_record(reader, &block_start) ||
+        block_start.type != GDS_RECORD_BLOCK_START) {
+        return true;
+    }
+
+    return gds_func_jump_to_block_target(reader, block_start.type,
+                                         block_start.payload.value.u32);
 }
 
 static bool gds_func_WHILE(gds_reader_t *reader, const gds_record_t *command,
