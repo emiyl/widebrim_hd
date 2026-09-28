@@ -7,32 +7,6 @@
 #include "modes/spawner.h"
 #include "room/room.h"
 
-static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
-                          void *user_data) {
-    (void)reader;
-    (void)command;
-
-    game_state_t *game_state = (game_state_t *)user_data;
-    gds_state_t *gds = &game_state->gds;
-
-    gds->condition_result = true;
-
-    return true;
-}
-
-static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
-                           void *user_data) {
-    (void)reader;
-    (void)command;
-
-    game_state_t *game_state = (game_state_t *)user_data;
-    gds_state_t *gds = &game_state->gds;
-
-    gds->condition_result = false;
-
-    return true;
-}
-
 static bool gds_func_is_block_start(gds_opcode_t opcode) {
     switch (opcode) {
     case SCRIPT_CMD_IF:
@@ -185,6 +159,32 @@ static bool gds_func_skip_to_next_clause(gds_reader_t *reader) {
     return true;
 }
 
+static bool gds_func_TRUE(gds_reader_t *reader, const gds_record_t *command,
+                          void *user_data) {
+    (void)reader;
+    (void)command;
+
+    game_state_t *game_state = (game_state_t *)user_data;
+    gds_state_t *gds = &game_state->gds;
+
+    gds->condition_result = true;
+
+    return true;
+}
+
+static bool gds_func_FALSE(gds_reader_t *reader, const gds_record_t *command,
+                           void *user_data) {
+    (void)reader;
+    (void)command;
+
+    game_state_t *game_state = (game_state_t *)user_data;
+    gds_state_t *gds = &game_state->gds;
+
+    gds->condition_result = false;
+
+    return true;
+}
+
 static bool gds_func_IF(gds_reader_t *reader, const gds_record_t *command,
                         void *user_data) {
     bool condition = true;
@@ -268,8 +268,13 @@ static bool gds_func_Loop(gds_reader_t *reader, const gds_record_t *command,
 static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
     int32_t args[5];
-
     if (!gds_read_s32_args(reader, args, 5, command)) {
+        return false;
+    }
+
+    mode_room_impl_t *room = (mode_room_impl_t *)user_data;
+    if (!room) {
+        fprintf(stderr, "gds: SetMap called without room context\n");
         return false;
     }
 
@@ -279,28 +284,19 @@ static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
     int32_t param4 = args[3];
     int32_t param5 = args[4];
 
-    mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
-    if (!impl || !impl->setmap) {
-        fprintf(stderr, "gds: setmap function pointer is NULL - is this "
-                        "called from a room?\n");
-        return false;
-    }
-
-    impl->setmap(impl, map_text_id, map_background_id, param3, param4, param5);
+    room->set_map(room, map_text_id, map_background_id, param3, param4, param5);
     return true;
 }
 
 static bool gds_func_AddTextObj(gds_reader_t *reader,
                                 const gds_record_t *command, void *user_data) {
-    (void)command;
     int32_t args[7];
-    mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
-
     if (!gds_read_s32_args(reader, args, 7, command)) {
         return false;
     }
 
-    if (!impl || !impl->add_text_obj) {
+    mode_room_impl_t *room = (mode_room_impl_t *)user_data;
+    if (!room) {
         fprintf(stderr, "gds: AddTextObj called without room context\n");
         return false;
     }
@@ -313,19 +309,13 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
     int32_t text_id = args[5];
     int32_t param7 = args[6];
 
-    if (!impl || !impl->add_text_obj) {
-        fprintf(stderr, "gds: AddTextObj called without room context\n");
-        return false;
-    }
-
-    impl->add_text_obj(impl, type_or_flag, x, y, width, height, text_id,
+    room->add_text_obj(room, type_or_flag, x, y, width, height, text_id,
                        param7);
     return true;
 }
 
 static bool gds_func_AddBGObject(gds_reader_t *reader,
                                  const gds_record_t *command, void *user_data) {
-    (void)user_data;
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->game_state;
     screen_controller_t *sc = impl->screen_controller;
@@ -349,19 +339,19 @@ static bool gds_func_AddBGObject(gds_reader_t *reader,
 
 bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
                         void *user_data) {
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, command)) {
+        return false;
+    }
+
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->game_state;
     gds_state_t *gds = &state->gds;
-
     if (!impl || !impl->game_state) {
         fprintf(stderr, "gds: StoryFlag called without game state context\n");
         return false;
     }
 
-    int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, command)) {
-        return false;
-    }
     int32_t story_flag = args[0];
 
     gds->condition_result = impl->game_state->story_flag == (int16_t)story_flag;
@@ -371,18 +361,18 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
                            void *user_data) {
-    mode_impl_t *impl = (mode_impl_t *)user_data;
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, command)) {
+        return false;
+    }
 
+    mode_impl_t *impl = (mode_impl_t *)user_data;
     if (!impl || !impl->game_state) {
         fprintf(stderr,
                 "gds: SetStoryFlag called without game state context\n");
         return false;
     }
 
-    int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, command)) {
-        return false;
-    }
     int32_t story_flag = args[0];
 
     bool isQuestionCheck = false;
@@ -394,15 +384,14 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {
-    mode_impl_t *impl = (mode_impl_t *)user_data;
-
-    if (!impl || !impl->game_state) {
-        fprintf(stderr, "gds: ViewedEvent called without game state context\n");
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
 
-    int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, command)) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: ViewedEvent called without game state context\n");
         return false;
     }
 
@@ -422,16 +411,15 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
                              void *user_data) {
-    mode_impl_t *impl = (mode_impl_t *)user_data;
-
-    if (!impl || !impl->game_state) {
-        fprintf(stderr,
-                "gds: SetEventViewed called without game state context\n");
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
 
-    int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, command)) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->game_state) {
+        fprintf(stderr,
+                "gds: SetEventViewed called without game state context\n");
         return false;
     }
 
@@ -451,10 +439,14 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
                       void *user_data) {
-    mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
-
     int32_t args[8];
     if (!gds_read_s32_args(reader, args, 8, command)) {
+        return false;
+    }
+
+    mode_room_impl_t *room = (mode_room_impl_t *)user_data;
+    if (!room) {
+        fprintf(stderr, "gds: AddExit called without room context\n");
         return false;
     }
 
@@ -467,7 +459,7 @@ bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
     int32_t param7 = args[6];
     int32_t param8 = args[7];
 
-    impl->add_exit(impl, exit_sprite_id, target_map_id, x, y, width, height,
+    room->add_exit(room, exit_sprite_id, target_map_id, x, y, width, height,
                    param7, param8);
 
     return true;
@@ -475,15 +467,14 @@ bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
                       void *user_data) {
-    mode_impl_t *impl = (mode_impl_t *)user_data;
-
-    if (!impl || !impl->game_state) {
-        fprintf(stderr, "gds: BitFlag called without game state context\n");
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
 
-    int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, command)) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: BitFlag called without game state context\n");
         return false;
     }
 
@@ -497,15 +488,14 @@ bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
                          void *user_data) {
-    mode_impl_t *impl = (mode_impl_t *)user_data;
-
-    if (!impl || !impl->game_state) {
-        fprintf(stderr, "gds: SetBitFlag called without game state context\n");
+    int32_t args[2];
+    if (!gds_read_s32_args(reader, args, 2, command)) {
         return false;
     }
 
-    int32_t args[2];
-    if (!gds_read_s32_args(reader, args, 2, command)) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: SetBitFlag called without game state context\n");
         return false;
     }
 
@@ -521,15 +511,14 @@ bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_AddEvent(gds_reader_t *reader, const gds_record_t *command,
                        void *user_data) {
-    mode_room_impl_t *room = (mode_room_impl_t *)user_data;
-
-    if (!room) {
-        fprintf(stderr, "gds: AddEvent called without room context\n");
+    int32_t args[6];
+    if (!gds_read_s32_args(reader, args, 6, command)) {
         return false;
     }
 
-    int32_t args[6];
-    if (!gds_read_s32_args(reader, args, 6, command)) {
+    mode_room_impl_t *room = (mode_room_impl_t *)user_data;
+    if (!room) {
+        fprintf(stderr, "gds: AddEvent called without room context\n");
         return false;
     }
 

@@ -33,9 +33,9 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
     sprite_take_object_position(spr, map_place);
 }
 
-void mode_room_setmap(mode_room_impl_t *self, int32_t map_text_id,
-                      int32_t map_background_id, int32_t param3, int32_t param4,
-                      int32_t param5) {
+void mode_room_set_map(mode_room_impl_t *self, int32_t map_text_id,
+                       int32_t map_background_id, int32_t param3,
+                       int32_t param4, int32_t param5) {
     (void)param3;
     (void)param4;
     (void)param5;

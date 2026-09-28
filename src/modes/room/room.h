@@ -12,9 +12,9 @@ typedef struct mode_room_impl_t {
     game_state_t *state;
     screen_controller_t *controller;
 
-    void (*setmap)(struct mode_room_impl_t *impl, int32_t map_text_id,
-                   int32_t map_background_id, int32_t param3, int32_t param4,
-                   int32_t param5);
+    void (*set_map)(struct mode_room_impl_t *impl, int32_t map_text_id,
+                    int32_t map_background_id, int32_t param3, int32_t param4,
+                    int32_t param5);
     void (*add_text_obj)(struct mode_room_impl_t *impl, int32_t type_or_flag,
                          int32_t x, int32_t y, int32_t width, int32_t height,
                          int32_t text_id, int32_t param7);

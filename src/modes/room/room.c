@@ -356,7 +356,7 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->tobj_count = 0;
     impl->exit_count = 0;
 
-    impl->setmap = mode_room_setmap;
+    impl->set_map = mode_room_set_map;
     impl->add_text_obj = mode_room_add_text_obj;
     impl->add_exit = room_add_exit;
     impl->add_event = room_add_event;
