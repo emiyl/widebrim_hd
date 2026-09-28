@@ -14,13 +14,24 @@ typedef struct {
     uint16_t available;
 } hint_coin_state_t;
 
-typedef struct {
+#define MAX_EVENT_VIEWED 0x1DF
+#define BIT_FLAG_COUNT 0x400
+#define BIT_FLAG_BYTES (BIT_FLAG_COUNT / 8)
+
+typedef struct game_state_t {
     gds_state_t gds;
     const char *assets_root;
     language_t language;
     game_mode_t current_mode;
     game_mode_t next_mode;
+
     int16_t story_flag;
+    uint8_t event_viewed[MAX_EVENT_VIEWED];
+    uint8_t bit_flags[BIT_FLAG_BYTES];
+
+    bool (*bit_flag)(const struct game_state_t *state, int flag);
+    void (*set_bit_flag)(struct game_state_t *state, int flag, bool value);
+
     int place_num;
     int event_id;
     bool first_touch_enabled;

@@ -4,6 +4,28 @@
 #include <stdio.h>
 #include <string.h>
 
+static bool game_state_bit_flag(const game_state_t *state, int flag) {
+    if (!state || flag < 0 || flag >= BIT_FLAG_COUNT) {
+        return false;
+    }
+
+    return (state->bit_flags[flag >> 3] >> (flag & 7)) & 1;
+}
+
+static void game_state_set_bit_flag(game_state_t *state, int flag, bool value) {
+    if (!state || flag < 0 || flag >= BIT_FLAG_COUNT) {
+        return;
+    }
+
+    uint8_t mask = (uint8_t)(1u << (flag & 7));
+
+    if (value) {
+        state->bit_flags[flag >> 3] |= mask;
+    } else {
+        state->bit_flags[flag >> 3] &= (uint8_t)~mask;
+    }
+}
+
 int game_state_init(game_state_t *state, const char *assets_root,
                     language_t language) {
     if (!state) {
@@ -52,6 +74,9 @@ void game_state_reset(game_state_t *state) {
     state->hint_coint_state.encountered = 0;
     state->hint_coint_state.available = 0;
     state->font_event_loaded = false;
+
+    state->bit_flag = game_state_bit_flag;
+    state->set_bit_flag = game_state_set_bit_flag;
 
     gds_state_reset(&state->gds);
 }

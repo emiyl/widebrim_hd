@@ -390,7 +390,69 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
     int32_t story_flag = args[0];
 
-    impl->game_state->story_flag = (int16_t)story_flag;
+    bool isQuestionCheck = false;
+    if (!isQuestionCheck)
+        impl->game_state->story_flag = (int16_t)story_flag;
+
+    return true;
+}
+
+bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
+                          void *user_data) {
+    (void)command;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: ViewedEvent called without game state context\n");
+        return false;
+    }
+
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, "ViewedEvent")) {
+        return false;
+    }
+
+    int32_t event_id = args[0];
+
+    if (event_id < 0 || event_id >= MAX_EVENT_VIEWED) {
+        return false;
+    }
+
+    game_state_t *state = impl->game_state;
+    gds_state_t *gds = &state->gds;
+
+    gds->condition_result = (impl->game_state->event_viewed[event_id] & 1) != 0;
+
+    return true;
+}
+
+bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
+                             void *user_data) {
+    (void)command;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+
+    if (!impl || !impl->game_state) {
+        fprintf(stderr,
+                "gds: SetEventViewed called without game state context\n");
+        return false;
+    }
+
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, "SetEventViewed")) {
+        return false;
+    }
+
+    int32_t event_id = args[0];
+
+    if (event_id < 0 || event_id >= MAX_EVENT_VIEWED) {
+        return false;
+    }
+
+    bool isQuestionCheck = false;
+    if (!isQuestionCheck) {
+        impl->game_state->event_viewed[event_id] |= 1;
+    }
+
     return true;
 }
 
@@ -415,6 +477,55 @@ bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
 
     impl->add_exit(impl, exit_sprite_id, target_map_id, x, y, width, height,
                    param7, param8);
+
+    return true;
+}
+bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
+                      void *user_data) {
+    (void)command;
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: BitFlag called without game state context\n");
+        return false;
+    }
+
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, "BitFlag")) {
+        return false;
+    }
+
+    game_state_t *state = impl->game_state;
+    gds_state_t *gds = &state->gds;
+
+    gds->condition_result = state->bit_flag(state, args[0]);
+
+    return true;
+}
+
+bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
+                         void *user_data) {
+    (void)command;
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+
+    if (!impl || !impl->game_state) {
+        fprintf(stderr, "gds: SetBitFlag called without game state context\n");
+        return false;
+    }
+
+    int32_t args[2];
+    if (!gds_read_s32_args(reader, args, 2, "SetBitFlag")) {
+        return false;
+    }
+
+    int32_t flag = args[0];
+    bool value = args[1] != 0;
+
+    game_state_t *state = impl->game_state;
+
+    state->set_bit_flag(state, flag, value);
 
     return true;
 }
@@ -461,8 +572,20 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     case SCRIPT_CMD_SetStoryFlag:
         *handler = gds_func_SetStoryFlag;
         return true;
+    case SCRIPT_CMD_ViewedEvent:
+        *handler = gds_func_ViewedEvent;
+        return true;
+    case SCRIPT_CMD_SetEventViewed:
+        *handler = gds_func_SetEventViewed;
+        return true;
     case SCRIPT_CMD_AddExit:
         *handler = gds_func_AddExit;
+        return true;
+    case SCRIPT_CMD_BitFlag:
+        *handler = gds_func_BitFlag;
+        return true;
+    case SCRIPT_CMD_SetBitFlag:
+        *handler = gds_func_SetBitFlag;
         return true;
     default:
         *handler = NULL;
