@@ -12,6 +12,7 @@ typedef struct sprite_t sprite_t;
 struct sprite_t {
     renderer_texture_t *tex;
     renderer_texture_t **frames;
+    char **frame_names;
     int x;
     int y;
     int width;
@@ -35,6 +36,7 @@ void sprite_update(sprite_t *sprite, float delta_ms);
 
 bool sprite_set_playing(sprite_t *sprite, bool playing);
 bool sprite_set_frame(sprite_t *sprite, size_t frame);
+bool sprite_set_frame_by_name(sprite_t *sprite, const char *frame_name);
 
 bool sprite_get_position(sprite_t *sprite, int *x, int *y);
 bool sprite_set_position(sprite_t *sprite, int x, int y);

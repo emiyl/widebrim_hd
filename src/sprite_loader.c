@@ -1,5 +1,6 @@
 #include "sprite_loader.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -351,6 +352,163 @@ bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
 
     sprite_sheet_free(sheet);
     texture_free(spritesheet);
+    return ok;
+}
+
+static bool sprite_loader_parse_animation_names(const uint8_t *bytes,
+                                                size_t length,
+                                                char ***out_names,
+                                                size_t *out_count) {
+    static const char sprite_anim_marker[] = "Create an Animation";
+    char **names = NULL;
+    size_t count = 0U;
+    size_t offset = 0U;
+    const uint8_t *start = NULL;
+
+    if (!bytes || !out_names || !out_count) {
+        return false;
+    }
+
+    for (offset = 0U; offset + strlen(sprite_anim_marker) < length; ++offset) {
+        if (memcmp(bytes + offset, sprite_anim_marker,
+                   strlen(sprite_anim_marker)) == 0) {
+            start = bytes + offset + strlen(sprite_anim_marker);
+            break;
+        }
+    }
+
+    if (!start) {
+        return false;
+    }
+
+    offset = (size_t)(start - bytes);
+    while (offset < length) {
+        size_t name_len = 0U;
+        char *name;
+
+        while (offset < length && bytes[offset] == '\0') {
+            ++offset;
+        }
+
+        if (offset >= length) {
+            break;
+        }
+
+        if (!isprint((unsigned char)bytes[offset])) {
+            break;
+        }
+
+        while (offset + name_len < length && bytes[offset + name_len] != '\0' &&
+               isprint((unsigned char)bytes[offset + name_len])) {
+            ++name_len;
+        }
+
+        if (name_len == 0U || name_len >= SPRITE_MAX_ANIM_NAME) {
+            break;
+        }
+
+        name = malloc(name_len + 1U);
+        if (!name) {
+            return false;
+        }
+
+        memcpy(name, bytes + offset, name_len);
+        name[name_len] = '\0';
+
+        char **next_names = realloc(names, (count + 1U) * sizeof(*next_names));
+        if (!next_names) {
+            free(name);
+            return false;
+        }
+        names = next_names;
+        names[count++] = name;
+
+        offset += name_len + 1U;
+    }
+
+    if (count == 0U) {
+        free(names);
+        return false;
+    }
+
+    *out_names = names;
+    *out_count = count;
+    return true;
+}
+
+bool sprite_loader_load_animation_names(game_state_t *state,
+                                        const char *rel_path, char ***out_names,
+                                        size_t *out_count) {
+    char full_path[SPRITE_PATH_MAX];
+    char *suffix;
+    FILE *file;
+    long size;
+    uint8_t *buffer = NULL;
+    bool ok = false;
+    char **names = NULL;
+    size_t count = 0U;
+
+    if (!state || !state->assets_root || !rel_path || !out_names ||
+        !out_count) {
+        return false;
+    }
+
+    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
+                            full_path, sizeof(full_path))) {
+        return false;
+    }
+
+    suffix = strrchr(full_path, '.');
+    if (suffix != NULL && strcmp(suffix, ".png") == 0) {
+        size_t prefix_len = (size_t)(suffix - full_path);
+        if (prefix_len + strlen(".spr") + 1U < sizeof(full_path)) {
+            snprintf(full_path + prefix_len, sizeof(full_path) - prefix_len,
+                     ".spr");
+        }
+    }
+
+    file = fopen(full_path, "rb");
+    if (!file) {
+        return false;
+    }
+
+    if (fseek(file, 0L, SEEK_END) != 0) {
+        fclose(file);
+        return false;
+    }
+
+    size = ftell(file);
+    if (size < 0L) {
+        fclose(file);
+        return false;
+    }
+
+    if (fseek(file, 0L, SEEK_SET) != 0) {
+        fclose(file);
+        return false;
+    }
+
+    buffer = malloc((size_t)size);
+    if (!buffer) {
+        fclose(file);
+        return false;
+    }
+
+    if (fread(buffer, 1U, (size_t)size, file) != (size_t)size) {
+        free(buffer);
+        fclose(file);
+        return false;
+    }
+
+    if (sprite_loader_parse_animation_names(buffer, (size_t)size, &names,
+                                            &count)) {
+        ok = true;
+        *out_names = names;
+        *out_count = count;
+    }
+
+    free(buffer);
+    fclose(file);
     return ok;
 }
 
