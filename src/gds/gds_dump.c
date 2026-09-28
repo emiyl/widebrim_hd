@@ -5,6 +5,9 @@
 
 #include "gds_opcode.h"
 
+static bool dump_command_call(gds_reader_t *reader, const gds_record_t *command,
+                              bool consume_single_condition);
+
 static void dump_bytes(const uint8_t *data, size_t size) {
     size_t i;
 
@@ -59,10 +62,90 @@ static void dump_value_record(const gds_record_t *record) {
         dump_bytes(record->payload.bytes.data, record->payload.bytes.size);
         return;
 
+    case GDS_RECORD_NOT:
+        printf("!");
+        break;
+
+    case GDS_RECORD_AND:
+        printf("&&");
+        break;
+
+    case GDS_RECORD_OR:
+        printf("||");
+        break;
+
     default:
         printf("%s", gds_record_type_to_string(record->type));
         break;
     }
+}
+
+static bool dump_condition_expression(gds_reader_t *reader) {
+    bool first_value = true;
+
+    while (gds_reader_remaining(reader) > 0U) {
+        size_t saved_offset = reader->offset;
+        gds_record_t operand;
+
+        if (!gds_read_record(reader, &operand)) {
+            fprintf(stderr, "Invalid condition operand at offset %zu\n",
+                    saved_offset);
+            return false;
+        }
+
+        if (operand.type == GDS_RECORD_BLOCK_START ||
+            operand.type == GDS_RECORD_BLOCK_END) {
+            reader->offset = saved_offset;
+            break;
+        }
+
+        if (operand.type == GDS_RECORD_COMMAND) {
+            if (!first_value) {
+                printf(" ");
+            }
+            if (!dump_command_call(reader, &operand, false)) {
+                return false;
+            }
+            first_value = false;
+            continue;
+        }
+
+        if (operand.type == GDS_RECORD_NOT) {
+            if (!first_value) {
+                printf(" ");
+            }
+            printf("NOT");
+            first_value = false;
+            continue;
+        }
+
+        if (operand.type == GDS_RECORD_AND) {
+            printf(" && ");
+            first_value = true;
+            continue;
+        }
+
+        if (operand.type == GDS_RECORD_OR) {
+            printf(" || ");
+            first_value = true;
+            continue;
+        }
+
+        if (operand.type == GDS_RECORD_EMPTY_5 ||
+            operand.type == GDS_RECORD_EMPTY_11 ||
+            operand.type == GDS_RECORD_BREAKPOINT) {
+            continue;
+        }
+
+        if (!first_value) {
+            printf(" ");
+        }
+
+        dump_value_record(&operand);
+        first_value = false;
+    }
+
+    return true;
 }
 
 static bool dump_command_call(gds_reader_t *reader, const gds_record_t *command,
@@ -171,6 +254,18 @@ bool dump_gds_raw(const uint8_t *data, size_t size) {
             dump_bytes(record.payload.bytes.data, record.payload.bytes.size);
             continue;
 
+        case GDS_RECORD_NOT:
+            printf("NOT");
+            break;
+
+        case GDS_RECORD_AND:
+            printf("AND");
+            break;
+
+        case GDS_RECORD_OR:
+            printf("OR");
+            break;
+
         default:
             break;
         }
@@ -211,12 +306,17 @@ bool dump_gds(const uint8_t *data, size_t size) {
                 gds_is_block_start(record.payload.opcode) ||
                 record.payload.opcode == SCRIPT_CMD_ELSEIF;
 
-            if (!dump_command_call(&reader, &record,
-                                   consume_single_condition)) {
+            if (consume_single_condition) {
+                printf("%s(", gds_opcode_to_string(record.payload.opcode));
+                if (!dump_condition_expression(&reader)) {
+                    return false;
+                }
+                printf(")\n");
+            } else if (!dump_command_call(&reader, &record, false)) {
                 return false;
+            } else {
+                putchar('\n');
             }
-
-            putchar('\n');
         } else if (record.type != GDS_RECORD_BLOCK_START &&
                    record.type != GDS_RECORD_BLOCK_END) {
             dump_value_record(&record);
