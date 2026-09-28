@@ -63,6 +63,9 @@ add_executable(gds_dump_cli "${CMAKE_CURRENT_SOURCE_DIR}/tools/gds_dump.c" ${GDS
 target_include_directories(gds_dump_cli PRIVATE ${INCLUDE_DIRS})
 target_compile_options(gds_dump_cli PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 
+add_executable(spr_scale "${CMAKE_CURRENT_SOURCE_DIR}/tools/spr_scale.c")
+target_compile_options(spr_scale PRIVATE -pedantic-errors -Wall -Wextra -Werror)
+
 # Work around pkg-config library ordering on some platforms.
 if(APPLE)
     target_link_options(widebrim PRIVATE -Wl,-framework,CoreFoundation)
