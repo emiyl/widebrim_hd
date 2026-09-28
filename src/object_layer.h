@@ -19,6 +19,9 @@ struct object_layer_t {
 
     void (*add_bg_object)(struct object_layer_t *self, game_state_t *state,
                           int32_t x, int32_t y, const char *filename);
+    void (*add_sub_sprite)(struct object_layer_t *layer, game_state_t *state,
+                           int32_t x, int32_t y, const char *sprite_name,
+                           const char *animation_name);
 };
 
 void object_layer_init(object_layer_t *layer, renderer_t *renderer);

@@ -412,6 +412,42 @@ bool gds_func_SolvedQuestion(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_AddSubSprite(gds_reader_t *reader, const gds_record_t *command,
+                           void *user_data) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->game_state;
+    screen_controller_t *sc = impl->screen_controller;
+    object_layer_t *ol = sc->object;
+
+    int32_t int_args[2];
+    const char *string_args[2];
+
+    if (!gds_read_s32_args(reader, int_args, 2, command)) {
+        return false;
+    }
+
+    if (!gds_read_string_args(reader, string_args, 2, command)) {
+        return false;
+    }
+
+    int32_t x = int_args[0];
+    int32_t y = int_args[1];
+    const char *sprite_name = string_args[0];
+    const char *animation_name = string_args[1];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(x=%d, y=%d, sprite_name=\"%s\", animation_name=\"%s\")\n",
+           function_name, x, y, sprite_name, animation_name);
+#endif
+
+    if (ol && ol->add_sub_sprite) {
+        ol->add_sub_sprite(ol, state, x, y, sprite_name, animation_name);
+    }
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -460,6 +496,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_SolvedQuestion:
         *handler = gds_func_SolvedQuestion;
+        return true;
+    case SCRIPT_CMD_AddSubSprite:
+        *handler = gds_func_AddSubSprite;
         return true;
     default:
         *handler = NULL;

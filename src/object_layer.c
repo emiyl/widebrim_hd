@@ -36,29 +36,53 @@ static bool object_layer_ensure_capacity(object_layer_t *layer,
     return true;
 }
 
-static void object_layer_add_bg_object(object_layer_t *layer,
-                                       game_state_t *state, int32_t x,
-                                       int32_t y, const char *filename) {
-    if (!layer || !filename) {
+static void object_layer_add_sprite_object(object_layer_t *layer,
+                                           game_state_t *state, int32_t x,
+                                           int32_t y, const char *sprite_name,
+                                           const char *animation_name,
+                                           object_kind_t kind,
+                                           float frame_duration) {
+    const char *label = "unknown";
+    int y_offset = 0;
+    bool loop = false;
+
+    switch (kind) {
+    case OBJECT_KIND_BG:
+        label = "background";
+        y_offset = WB_SCREEN_HEIGHT;
+        loop = true;
+        break;
+    case OBJECT_KIND_SUB_SPRITE:
+        label = "sub-sprite";
+        break;
+    default:
+        break;
+    }
+
+    if (!layer || !sprite_name) {
         return;
     }
 
-    object_t *object = smalloc(sizeof(object_t));
+    object_t *object = smalloc(sizeof(*object));
     if (!object) {
         return;
     }
 
-    object_init_kind(object, OBJECT_KIND_BG);
-    object_set_position(object, x, WB_SCREEN_HEIGHT + y);
+    object_init_kind(object, kind);
+    object_set_position(object, x, y + y_offset);
 
     sprite_t *spr = object->sprite;
-    sprite_new(spr, layer->renderer, state, filename, 250.0f, true);
+    sprite_new(spr, layer->renderer, state, sprite_name, frame_duration, loop);
 
     if (!spr) {
-        fprintf(stderr,
-                "widebrim: failed to create sprite for background object\n");
+        fprintf(stderr, "widebrim: failed to create sprite for %s object\n",
+                label);
         free(object);
         return;
+    }
+
+    if (animation_name != NULL && *animation_name != '\0') {
+        sprite_set_frame_by_name(spr, animation_name);
     }
 
     int spr_w, spr_h;
@@ -76,6 +100,22 @@ static void object_layer_add_bg_object(object_layer_t *layer,
     layer->objects[layer->count++] = object;
 }
 
+static void object_layer_add_sub_sprite(object_layer_t *layer,
+                                        game_state_t *state, int32_t x,
+                                        int32_t y, const char *sprite_name,
+                                        const char *animation_name) {
+    object_layer_add_sprite_object(layer, state, x, y, sprite_name,
+                                   animation_name, OBJECT_KIND_SUB_SPRITE,
+                                   0.0f);
+}
+
+static void object_layer_add_bg_object(object_layer_t *layer,
+                                       game_state_t *state, int32_t x,
+                                       int32_t y, const char *filename) {
+    object_layer_add_sprite_object(layer, state, x, y, filename, NULL,
+                                   OBJECT_KIND_BG, 250.0f);
+}
+
 void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     if (!layer) {
         return;
@@ -86,6 +126,7 @@ void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     layer->count = 0U;
     layer->capacity = 0U;
     layer->add_bg_object = object_layer_add_bg_object;
+    layer->add_sub_sprite = object_layer_add_sub_sprite;
 }
 
 void object_layer_remove_object(object_layer_t *layer, object_t *object) {
