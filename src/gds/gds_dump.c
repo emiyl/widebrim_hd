@@ -32,16 +32,6 @@ static bool gds_is_block_start(gds_opcode_t opcode) {
     }
 }
 
-static bool gds_is_block_else(gds_opcode_t opcode) {
-    switch (opcode) {
-    case SCRIPT_CMD_ELSE:
-    case SCRIPT_CMD_ELSEIF:
-        return true;
-    default:
-        return false;
-    }
-}
-
 static void dump_value_record(const gds_record_t *record) {
     switch (record->type) {
     case GDS_RECORD_VALUE_S32:
@@ -53,10 +43,10 @@ static void dump_value_record(const gds_record_t *record) {
         break;
 
     case GDS_RECORD_BLOCK_START:
-        printf("{ 0x%04" PRIx32, record->payload.value.u32);
+        printf("{");
         break;
     case GDS_RECORD_BLOCK_END:
-        printf("} 0x%04" PRIx32, record->payload.value.u32);
+        printf("}");
         break;
 
     case GDS_RECORD_STRING:
@@ -206,13 +196,15 @@ bool dump_gds(const uint8_t *data, size_t size) {
             return false;
         }
 
-        if (record.type == GDS_RECORD_COMMAND &&
-            gds_is_block_else(record.payload.opcode) && indent > 0U) {
+        if (record.type == GDS_RECORD_BLOCK_END && indent > 0U) {
             indent--;
         }
 
-        dump_indent(indent);
-        printf("%04zx  ", old_offset);
+        if (record.type != GDS_RECORD_BLOCK_START &&
+            record.type != GDS_RECORD_BLOCK_END) {
+            dump_indent(indent);
+            printf("%04zx  ", old_offset);
+        }
 
         if (record.type == GDS_RECORD_COMMAND) {
             bool consume_single_condition =
@@ -225,14 +217,13 @@ bool dump_gds(const uint8_t *data, size_t size) {
             }
 
             putchar('\n');
-        } else {
+        } else if (record.type != GDS_RECORD_BLOCK_START &&
+                   record.type != GDS_RECORD_BLOCK_END) {
             dump_value_record(&record);
             putchar('\n');
         }
 
-        if (record.type == GDS_RECORD_COMMAND &&
-            (gds_is_block_start(record.payload.opcode) ||
-             gds_is_block_else(record.payload.opcode))) {
+        if (record.type == GDS_RECORD_BLOCK_START) {
             indent++;
         }
     }
