@@ -193,6 +193,11 @@ static bool gds_func_skip_to_next_clause(gds_reader_t *reader) {
             return false;
         }
 
+        if (record.type == GDS_RECORD_VALUE_6 ||
+            record.type == GDS_RECORD_VALUE_7) {
+            continue;
+        }
+
         if (record.type != GDS_RECORD_COMMAND) {
             continue;
         }
@@ -208,11 +213,6 @@ static bool gds_func_skip_to_next_clause(gds_reader_t *reader) {
                 return true;
             }
             depth--;
-            continue;
-        }
-
-        if (depth == 0U) {
-            continue;
         }
     }
 
