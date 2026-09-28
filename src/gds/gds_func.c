@@ -267,10 +267,9 @@ static bool gds_func_Loop(gds_reader_t *reader, const gds_record_t *command,
 
 static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
-    (void)command;
     int32_t args[5];
 
-    if (!gds_read_s32_args(reader, args, 5, "SetMap")) {
+    if (!gds_read_s32_args(reader, args, 5, command)) {
         return false;
     }
 
@@ -297,7 +296,7 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
     int32_t args[7];
     mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
 
-    if (!gds_read_s32_args(reader, args, 7, "AddTextObj")) {
+    if (!gds_read_s32_args(reader, args, 7, command)) {
         return false;
     }
 
@@ -326,16 +325,14 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
 
 static bool gds_func_AddBGObject(gds_reader_t *reader,
                                  const gds_record_t *command, void *user_data) {
-    (void)command;
     (void)user_data;
-
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->game_state;
     screen_controller_t *sc = impl->screen_controller;
     object_layer_t *ol = sc->object;
 
     gds_record_t args[3];
-    if (!gds_read_args(reader, args, 3, "AddBGObject")) {
+    if (!gds_read_args(reader, args, 3, command)) {
         return false;
     }
 
@@ -352,7 +349,6 @@ static bool gds_func_AddBGObject(gds_reader_t *reader,
 
 bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
                         void *user_data) {
-    (void)command;
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->game_state;
     gds_state_t *gds = &state->gds;
@@ -363,7 +359,7 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, "StoryFlag")) {
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
     int32_t story_flag = args[0];
@@ -375,7 +371,6 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
                            void *user_data) {
-    (void)command;
     mode_impl_t *impl = (mode_impl_t *)user_data;
 
     if (!impl || !impl->game_state) {
@@ -385,7 +380,7 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, "SetStoryFlag")) {
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
     int32_t story_flag = args[0];
@@ -399,7 +394,6 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {
-    (void)command;
     mode_impl_t *impl = (mode_impl_t *)user_data;
 
     if (!impl || !impl->game_state) {
@@ -408,7 +402,7 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, "ViewedEvent")) {
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
 
@@ -428,7 +422,6 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
                              void *user_data) {
-    (void)command;
     mode_impl_t *impl = (mode_impl_t *)user_data;
 
     if (!impl || !impl->game_state) {
@@ -438,7 +431,7 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, "SetEventViewed")) {
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
 
@@ -458,11 +451,10 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
                       void *user_data) {
-    (void)command;
     mode_room_impl_t *impl = (mode_room_impl_t *)user_data;
 
     int32_t args[8];
-    if (!gds_read_s32_args(reader, args, 8, "AddExit")) {
+    if (!gds_read_s32_args(reader, args, 8, command)) {
         return false;
     }
 
@@ -480,10 +472,9 @@ bool gds_func_AddExit(gds_reader_t *reader, const gds_record_t *command,
 
     return true;
 }
+
 bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
                       void *user_data) {
-    (void)command;
-
     mode_impl_t *impl = (mode_impl_t *)user_data;
 
     if (!impl || !impl->game_state) {
@@ -492,7 +483,7 @@ bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t args[1];
-    if (!gds_read_s32_args(reader, args, 1, "BitFlag")) {
+    if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
     }
 
@@ -506,8 +497,6 @@ bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
                          void *user_data) {
-    (void)command;
-
     mode_impl_t *impl = (mode_impl_t *)user_data;
 
     if (!impl || !impl->game_state) {
@@ -516,7 +505,7 @@ bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     int32_t args[2];
-    if (!gds_read_s32_args(reader, args, 2, "SetBitFlag")) {
+    if (!gds_read_s32_args(reader, args, 2, command)) {
         return false;
     }
 
