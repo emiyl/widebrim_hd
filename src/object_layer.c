@@ -83,9 +83,12 @@ static void object_layer_add_sprite_object(object_layer_t *layer,
         sprite_set_frame_by_name(spr, animation_name);
     }
 
-    int spr_w, spr_h;
+    int spr_w = 0;
+    int spr_h = 0;
     sprite_get_size(spr, layer->renderer, &spr_w, &spr_h);
-    object_set_size(object, spr_w, spr_h);
+    if (spr_w > 0 && spr_h > 0) {
+        object_set_size(object, spr_w, spr_h);
+    }
     sprite_take_object_position(spr, object);
 
     if (!object_layer_ensure_capacity(layer, layer->count + 1U)) {
