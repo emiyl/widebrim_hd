@@ -42,7 +42,7 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
         return gds_reader_read_bytes(reader, &record->payload.bytes.data, size);
 
     case GDS_RECORD_EMPTY_5:
-    case GDS_RECORD_EMPTY_8:
+    case GDS_RECORD_NOT:
     case GDS_RECORD_AND:
     case GDS_RECORD_OR:
     case GDS_RECORD_EMPTY_11:

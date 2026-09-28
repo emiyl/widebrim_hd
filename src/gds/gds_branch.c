@@ -12,7 +12,7 @@
 static bool gds_branch_is_ignored_record_type(gds_record_type_t type) {
     switch (type) {
     case GDS_RECORD_EMPTY_5:
-    case GDS_RECORD_EMPTY_8:
+    case GDS_RECORD_NOT:
     case GDS_RECORD_EMPTY_11:
     case GDS_RECORD_BREAKPOINT:
         return true;
@@ -91,6 +91,18 @@ static bool gds_branch_read_condition_term(gds_reader_t *reader, bool *result,
             fprintf(stderr, "gds: failed to read condition record\n");
             return false;
         }
+    }
+
+    if (record.type == GDS_RECORD_NOT) {
+        bool value = false;
+
+        if (!gds_branch_read_condition_term(reader, &value, user_data)) {
+            reader->offset = start;
+            return false;
+        }
+
+        *result = !value;
+        return true;
     }
 
     switch (record.type) {

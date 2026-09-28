@@ -94,8 +94,8 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
 
         if (record.type == GDS_RECORD_BREAKPOINT ||
             record.type == GDS_RECORD_EMPTY_5 ||
-            record.type == GDS_RECORD_EMPTY_8 ||
-            record.type == GDS_RECORD_AND || record.type == GDS_RECORD_OR ||
+            record.type == GDS_RECORD_NOT || record.type == GDS_RECORD_AND ||
+            record.type == GDS_RECORD_OR ||
             record.type == GDS_RECORD_EMPTY_11 ||
             record.type == GDS_RECORD_BLOCK_START ||
             record.type == GDS_RECORD_BLOCK_END) {
