@@ -48,7 +48,8 @@ bool room_add_event(struct mode_room_impl_t *room, int32_t x, int32_t y,
 
     char sprite_filename[12] = "";
     snprintf(sprite_filename, sizeof(sprite_filename), "obj_%d.spr", sprite_id);
-    sprite_new(sprite, renderer, state, sprite_filename, 0.0f, false);
+    sprite_new(sprite, renderer, state, sprite_filename, 750.0f, true);
+
     sprite_take_object_position(sprite, event);
 
     object_set_visible(event, true);
