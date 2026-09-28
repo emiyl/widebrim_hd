@@ -62,11 +62,6 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
     }
 
     room_exit_impl_t *exit_data = smalloc(sizeof(*exit_data));
-    if (!exit_data) {
-        fprintf(stderr,
-                "widebrim: [room_add_exit] failed to allocate exit data\n");
-        return;
-    }
     *exit_data = (room_exit_impl_t){.target_map_id = target_map_id};
 
     object_t *exit = impl->exits[impl->exit_count];

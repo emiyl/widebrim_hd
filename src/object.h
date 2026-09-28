@@ -14,7 +14,8 @@ typedef enum object_kind_t {
     OBJECT_KIND_BTN,
     OBJECT_KIND_TOBJ,
     OBJECT_KIND_BG,
-    OBJECT_KIND_EXIT
+    OBJECT_KIND_EXIT,
+    OBJECT_KIND_EVENT
 } object_kind_t;
 
 struct object_t {

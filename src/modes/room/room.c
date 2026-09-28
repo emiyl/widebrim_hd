@@ -363,11 +363,14 @@ mode_handler_t mode_room_create(game_state_t *state,
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < MAX_TOBJ; i++) {
         impl->text_obj[i] = smalloc(sizeof(object_t));
     }
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < MAX_EXITS; i++) {
         impl->exits[i] = smalloc(sizeof(object_t));
+    }
+    for (int i = 0; i < MAX_EVENTS; i++) {
+        impl->event[i] = smalloc(sizeof(object_t));
     }
 
     mode_room_load_move_mode_btn(impl);

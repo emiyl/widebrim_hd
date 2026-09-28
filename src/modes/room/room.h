@@ -7,6 +7,10 @@
 #include "object.h"
 #include "screen_controller.h"
 
+#define MAX_TOBJ 16
+#define MAX_EXITS 8
+#define MAX_EVENTS 16
+
 typedef struct mode_room_impl_t {
     // Game state and controller must be at the beginning of the struct
     game_state_t *state;
@@ -28,13 +32,13 @@ typedef struct mode_room_impl_t {
     object_t *move_mode_btn;
     object_t *map_place;
 
-    object_t *text_obj[16];
+    object_t *text_obj[MAX_TOBJ];
     int32_t tobj_count;
 
-    object_t *exits[8];
+    object_t *exits[MAX_EXITS];
     int32_t exit_count;
 
-    object_t *event[16];
+    object_t *event[MAX_EVENTS];
     int32_t event_count;
 
     bool in_move_mode;

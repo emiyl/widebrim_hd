@@ -297,6 +297,7 @@ void object_draw(object_t *inst, renderer_t *renderer) {
 
     switch (inst->kind) {
     case OBJECT_KIND_EXIT:
+        break;
         renderer_fill_rect(renderer, &obj_dst, 255, 0, 0, 100);
         renderer_draw_rect(renderer, &obj_dst, 0, 0, 0, 255);
         break;
