@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "gds/gds.h"
+#include "gds/gds_opcode.h"
 #include "gds_state.h"
 #include "modes/spawner.h"
 #include "room/room.h"
@@ -630,6 +631,65 @@ bool gds_func_AddEvent(gds_reader_t *reader, const gds_record_t *command,
     return room->add_event(room, x, y, width, height, sprite_id, event_id);
 }
 
+bool gds_func_SetCurrentQuestion(gds_reader_t *reader,
+                                 const gds_record_t *command, void *user_data) {
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, 1, command)) {
+        return false;
+    }
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->game_state) {
+        fprintf(stderr,
+                "gds: SetCurrentQuestion called without game state context\n");
+        return false;
+    }
+
+    int32_t question = args[0];
+
+    if (question < 0 || question >= 0x100) {
+        question = 0;
+    }
+
+    game_state_t *state = impl->game_state;
+
+    if (state->current_question != (int16_t)question) {
+        state->question_state = 0;
+    }
+
+    state->current_question = (int16_t)question;
+
+    return true;
+}
+
+bool gds_func_SolvedQuestion(gds_reader_t *reader, const gds_record_t *command,
+                             void *user_data) {
+    (void)reader;
+    (void)command;
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->game_state) {
+        fprintf(stderr,
+                "gds: SolvedQuestion called without game state context\n");
+        return false;
+    }
+
+    game_state_t *state = impl->game_state;
+
+    int32_t question = state->current_question;
+    size_t index = (size_t)question;
+
+    if (index >= GDS_MAX_QUESTIONS) {
+        state->gds.condition_result = false;
+        return true;
+    }
+
+    gds_state_t *gds = &state->gds;
+    gds->condition_result = (state->question_states[index] & 0x04) != 0;
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -689,6 +749,12 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_AddEvent:
         *handler = gds_func_AddEvent;
+        return true;
+    case SCRIPT_CMD_SetCurrentQuestion:
+        *handler = gds_func_SetCurrentQuestion;
+        return true;
+    case SCRIPT_CMD_SolvedQuestion:
+        *handler = gds_func_SolvedQuestion;
         return true;
     default:
         *handler = NULL;

@@ -75,6 +75,8 @@ void game_state_reset(game_state_t *state) {
     state->hint_coint_state.available = 0;
     state->font_event_loaded = false;
 
+    state->story_flag = 1;
+
     state->bit_flag = game_state_bit_flag;
     state->set_bit_flag = game_state_set_bit_flag;
 

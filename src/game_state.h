@@ -14,6 +14,7 @@ typedef struct {
     uint16_t available;
 } hint_coin_state_t;
 
+#define GDS_MAX_QUESTIONS 256
 #define MAX_EVENT_VIEWED 0x1DF
 #define BIT_FLAG_COUNT 0x400
 #define BIT_FLAG_BYTES (BIT_FLAG_COUNT / 8)
@@ -28,6 +29,10 @@ typedef struct game_state_t {
     int16_t story_flag;
     uint8_t event_viewed[MAX_EVENT_VIEWED];
     uint8_t bit_flags[BIT_FLAG_BYTES];
+
+    int16_t current_question;
+    uint8_t question_state;
+    uint8_t question_states[256];
 
     bool (*bit_flag)(const struct game_state_t *state, int flag);
     void (*set_bit_flag)(struct game_state_t *state, int flag, bool value);
