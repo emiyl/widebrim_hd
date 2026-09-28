@@ -128,23 +128,37 @@ static inline uint32_t game_state_scale_from_root(const char *root) {
 static inline bool
 game_state_path_is_in_resource_pack(const game_state_t *state,
                                     const char *path) {
+    const char *root;
+    const char *match;
     size_t root_len;
+    size_t offset;
 
     if (!state || !state->resource_pack_root || !path ||
         state->resource_pack_root[0] == '\0') {
         return false;
     }
 
-    root_len = strlen(state->resource_pack_root);
+    root = state->resource_pack_root;
+    root_len = strlen(root);
+    while (root_len > 0U &&
+           (root[root_len - 1U] == '/' || root[root_len - 1U] == '\\')) {
+        --root_len;
+    }
     if (root_len == 0U) {
         return false;
     }
 
-    if (strncmp(path, state->resource_pack_root, root_len) != 0) {
+    match = strstr(path, root);
+    if (!match) {
         return false;
     }
 
-    return path[root_len] == '\0' || path[root_len] == '/';
+    if (match != path && match[-1] != '/' && match[-1] != '\\') {
+        return false;
+    }
+
+    offset = (size_t)(match - path) + root_len;
+    return path[offset] == '\0' || path[offset] == '/' || path[offset] == '\\';
 }
 
 static inline uint32_t

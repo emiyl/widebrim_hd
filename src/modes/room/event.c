@@ -48,7 +48,14 @@ bool room_add_event(struct mode_room_impl_t *room, int32_t x, int32_t y,
 
     char sprite_filename[12] = "";
     snprintf(sprite_filename, sizeof(sprite_filename), "obj_%d.spr", sprite_id);
-    sprite_new(sprite, renderer, state, sprite_filename, 750.0f, true);
+    sprite_new(sprite, renderer, state, sprite_filename, 500.0f, true);
+
+    int sprite_w = 0;
+    int sprite_h = 0;
+    sprite_get_size(sprite, renderer, &sprite_w, &sprite_h);
+    if (sprite_w > 0 && sprite_h > 0) {
+        object_set_size(event, sprite_w, sprite_h);
+    }
 
     sprite_take_object_position(sprite, event);
 

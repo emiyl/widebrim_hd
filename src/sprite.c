@@ -538,33 +538,32 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
         return;
     }
 
+    sprite_new_animation(sprite, renderer, (const uint8_t *const *)frames,
+                         sprite->frame_count, frame_widths, frame_heights,
+                         frame_duration_ms, loop);
+
     if (asset_path_resolve(state, sprite_path, resolved_path,
                            sizeof(resolved_path))) {
         for (size_t i = 0U; i < sprite->frame_count; ++i) {
-            if (frame_widths[i] > 0) {
-                frame_widths[i] = game_state_scale_dimension_for_path(
-                    state, frame_widths[i], resolved_path);
+            if (sprite->frame_widths && sprite->frame_widths[i] > 0) {
+                sprite->frame_widths[i] = game_state_scale_dimension_for_path(
+                    state, sprite->frame_widths[i], resolved_path);
             }
-            if (frame_heights[i] > 0) {
-                frame_heights[i] = game_state_scale_dimension_for_path(
-                    state, frame_heights[i], resolved_path);
+            if (sprite->frame_heights && sprite->frame_heights[i] > 0) {
+                sprite->frame_heights[i] = game_state_scale_dimension_for_path(
+                    state, sprite->frame_heights[i], resolved_path);
             }
         }
         logical_width = game_state_scale_dimension_for_path(
             state, sprite->width, resolved_path);
         logical_height = game_state_scale_dimension_for_path(
             state, sprite->height, resolved_path);
-        sprite->width = logical_width > 0 ? logical_width : sprite->width;
-        sprite->height = logical_height > 0 ? logical_height : sprite->height;
-    }
-
-    sprite_new_animation(sprite, renderer, (const uint8_t *const *)frames,
-                         sprite->frame_count, frame_widths, frame_heights,
-                         frame_duration_ms, loop);
-
-    if (logical_width > 0 && logical_height > 0) {
-        sprite->width = logical_width;
-        sprite->height = logical_height;
+        if (logical_width > 0) {
+            sprite->width = logical_width;
+        }
+        if (logical_height > 0) {
+            sprite->height = logical_height;
+        }
     }
 
     if (sprite_loader_load_animation_names(state, sprite_path, &frame_names,
