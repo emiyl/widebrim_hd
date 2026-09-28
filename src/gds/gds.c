@@ -102,6 +102,35 @@ bool gds_read_s32_args(gds_reader_t *reader, int32_t *argv, size_t count,
     return true;
 }
 
+bool gds_read_string_args(gds_reader_t *reader, const char **argv, size_t count,
+                          const gds_record_t *command) {
+    if (command->type != GDS_RECORD_COMMAND) {
+        fprintf(stderr, "gds: expected command record\n");
+        return false;
+    }
+    const char *function_name = gds_opcode_to_string(command->payload.opcode);
+
+    for (size_t i = 0; i < count; i++) {
+        gds_record_t record;
+
+        if (!gds_read_record(reader, &record)) {
+            fprintf(stderr, "gds: %s expected %zu arguments\n", function_name,
+                    count);
+            return false;
+        }
+
+        if (record.type != GDS_RECORD_STRING) {
+            fprintf(stderr, "gds: %s argument %zu is not a string\n",
+                    function_name, i);
+            return false;
+        }
+
+        argv[i] = (const char *)record.payload.bytes.data;
+    }
+
+    return true;
+}
+
 bool gds_extract_payload(const uint8_t *file, size_t file_size,
                          const uint8_t **payload, size_t *payload_size) {
     uint32_t size;
