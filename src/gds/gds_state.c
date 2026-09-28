@@ -2,11 +2,9 @@
 
 void gds_state_init(gds_state_t *state) { gds_state_reset(state); }
 void gds_state_reset(gds_state_t *state) {
-    size_t i;
+    if (state == NULL) {
+        return;
+    }
 
     state->condition_result = false;
-    for (i = 0U; i < GDS_IF_BRANCH_STACK_SIZE; ++i) {
-        state->if_branch_taken[i] = false;
-    }
-    state->if_branch_depth = 0U;
 }
