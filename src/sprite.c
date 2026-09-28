@@ -51,9 +51,43 @@ static void sprite_clear_frame_names(sprite_t *sprite) {
     sprite->frame_names = NULL;
 }
 
+static void sprite_update_size_from_current_frame(sprite_t *sprite) {
+    size_t image_index = 0U;
+
+    if (!sprite || !sprite->frame_widths || !sprite->frame_heights) {
+        return;
+    }
+
+    if (sprite->active_animation_index < sprite->animation_count &&
+        sprite->animations &&
+        sprite->animations[sprite->active_animation_index].frames &&
+        sprite->current_frame <
+            sprite->animations[sprite->active_animation_index].frame_count) {
+        image_index = sprite->animations[sprite->active_animation_index]
+                          .frames[sprite->current_frame]
+                          .image_index;
+    } else {
+        image_index = sprite->current_frame;
+    }
+
+    if (image_index < sprite->frame_count) {
+        sprite->width = sprite->frame_widths[image_index];
+        sprite->height = sprite->frame_heights[image_index];
+    }
+}
+
 void sprite_clear(sprite_t *sprite, renderer_t *renderer) {
     if (!sprite || !renderer) {
         return;
+    }
+
+    if (sprite->frame_widths) {
+        free(sprite->frame_widths);
+        sprite->frame_widths = NULL;
+    }
+    if (sprite->frame_heights) {
+        free(sprite->frame_heights);
+        sprite->frame_heights = NULL;
     }
 
     if (sprite->frames) {
@@ -168,8 +202,20 @@ bool sprite_set_size(sprite_t *sprite, int width, int height) {
 
 bool sprite_get_size(sprite_t *sprite, renderer_t *renderer, int *width,
                      int *height) {
-    if (!sprite || !renderer || !width || !height) {
+    if (!sprite || !width || !height) {
         return false;
+    }
+
+    if (sprite->width > 0 && sprite->height > 0) {
+        *width = sprite->width;
+        *height = sprite->height;
+        return true;
+    }
+
+    if (!renderer) {
+        *width = 0;
+        *height = 0;
+        return true;
     }
 
     if (sprite->tex) {
@@ -217,6 +263,7 @@ bool sprite_set_frame(sprite_t *sprite, size_t frame_index) {
     sprite->current_frame = frame_index;
     sprite->elapsed_ms = 0;
     sprite->tex = sprite->frames[frame_index];
+    sprite_update_size_from_current_frame(sprite);
     return true;
 }
 
@@ -243,6 +290,9 @@ bool sprite_set_frame_by_name(sprite_t *sprite, const char *frame_name) {
                     sprite->tex =
                         sprite->frames
                             [sprite->animations[i].frames[0U].image_index];
+                    sprite->current_frame =
+                        sprite->animations[i].frames[0U].image_index;
+                    sprite_update_size_from_current_frame(sprite);
                 }
                 return true;
             }
@@ -289,6 +339,8 @@ void sprite_init(sprite_t *sprite) {
     sprite->y = 0;
     sprite->width = 0;
     sprite->height = 0;
+    sprite->frame_widths = NULL;
+    sprite->frame_heights = NULL;
     sprite->frames = NULL;
     sprite->frame_names = NULL;
     sprite->animations = NULL;
@@ -394,6 +446,31 @@ void sprite_new_animation(sprite_t *sprite, renderer_t *renderer,
         }
     }
 
+    sprite->frame_widths = calloc(frame_count, sizeof(*sprite->frame_widths));
+    sprite->frame_heights = calloc(frame_count, sizeof(*sprite->frame_heights));
+    if (!sprite->frame_widths || !sprite->frame_heights) {
+        free(sprite->frame_widths);
+        free(sprite->frame_heights);
+        sprite->frame_widths = NULL;
+        sprite->frame_heights = NULL;
+        for (size_t j = 0; j < frame_count; ++j) {
+            if (sprite->frames[j]) {
+                renderer_destroy_texture(renderer, sprite->frames[j]);
+                sprite->frames[j] = NULL;
+            }
+        }
+        free(sprite->frames);
+        sprite->frames = NULL;
+        sprite->frame_count = 0U;
+        fprintf(stderr,
+                "widebrim: failed to allocate sprite frame geometry arrays\n");
+        return;
+    }
+    for (size_t j = 0; j < frame_count; ++j) {
+        sprite->frame_widths[j] = frame_widths[j];
+        sprite->frame_heights[j] = frame_heights[j];
+    }
+
     sprite->frame_count = frame_count;
     sprite->frame_names = calloc(frame_count, sizeof(*sprite->frame_names));
     if (!sprite->frame_names) {
@@ -423,9 +500,12 @@ void sprite_new_animation(sprite_t *sprite, renderer_t *renderer,
     sprite->playing = true;
     sprite->tex = sprite->frames[0];
     if (frame_widths != NULL && frame_heights != NULL) {
-        sprite->width = frame_widths[0];
-        sprite->height = frame_heights[0];
+        if (sprite->width <= 0 || sprite->height <= 0) {
+            sprite->width = frame_widths[0];
+            sprite->height = frame_heights[0];
+        }
     }
+    sprite_update_size_from_current_frame(sprite);
 }
 
 void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
@@ -435,14 +515,16 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
     int *frame_heights = NULL;
     char **frame_names = NULL;
     size_t frame_name_count = 0U;
+    char resolved_path[4096];
+    char sprite_path[256];
+    int logical_width = 0;
+    int logical_height = 0;
     if (!sprite || !renderer || !state || !sprite_name) {
         return;
     }
 
-    char sprite_path[256];
     snprintf(sprite_path, sizeof(sprite_path), "ani/%s", sprite_name);
 
-    // if sprite path ends with .sbj, replace with .spr
     size_t len = strlen(sprite_path);
     if (len > 4 && strcmp(sprite_path + len - 4, ".sbj") == 0) {
         strcpy(sprite_path + len - 4, ".spr");
@@ -456,9 +538,34 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
         return;
     }
 
+    if (asset_path_resolve(state, sprite_path, resolved_path,
+                           sizeof(resolved_path))) {
+        for (size_t i = 0U; i < sprite->frame_count; ++i) {
+            if (frame_widths[i] > 0) {
+                frame_widths[i] = game_state_scale_dimension_for_path(
+                    state, frame_widths[i], resolved_path);
+            }
+            if (frame_heights[i] > 0) {
+                frame_heights[i] = game_state_scale_dimension_for_path(
+                    state, frame_heights[i], resolved_path);
+            }
+        }
+        logical_width = game_state_scale_dimension_for_path(
+            state, sprite->width, resolved_path);
+        logical_height = game_state_scale_dimension_for_path(
+            state, sprite->height, resolved_path);
+        sprite->width = logical_width > 0 ? logical_width : sprite->width;
+        sprite->height = logical_height > 0 ? logical_height : sprite->height;
+    }
+
     sprite_new_animation(sprite, renderer, (const uint8_t *const *)frames,
                          sprite->frame_count, frame_widths, frame_heights,
                          frame_duration_ms, loop);
+
+    if (logical_width > 0 && logical_height > 0) {
+        sprite->width = logical_width;
+        sprite->height = logical_height;
+    }
 
     if (sprite_loader_load_animation_names(state, sprite_path, &frame_names,
                                            &frame_name_count)) {
@@ -501,6 +608,11 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
 
     free(frame_widths);
     free(frame_heights);
+    if (sprite->frame_widths && sprite->frame_count > 0U &&
+        (sprite->width <= 0 || sprite->height <= 0)) {
+        sprite->width = sprite->frame_widths[0];
+        sprite->height = sprite->frame_heights[0];
+    }
     if (!sprite->frames && frames != NULL) {
         for (size_t i = 0; i < sprite->frame_count; ++i) {
             free(frames[i]);
@@ -553,6 +665,7 @@ void sprite_update(sprite_t *sprite, float delta_ms) {
         }
 
         sprite->tex = sprite->frames[frames[sprite->current_frame].image_index];
+        sprite_update_size_from_current_frame(sprite);
         return;
     }
 
@@ -575,4 +688,5 @@ void sprite_update(sprite_t *sprite, float delta_ms) {
     }
 
     sprite->tex = sprite->frames[sprite->current_frame];
+    sprite_update_size_from_current_frame(sprite);
 }

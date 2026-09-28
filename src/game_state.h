@@ -1,8 +1,11 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "gds/gds_state.h"
 #include "language.h"
@@ -78,6 +81,112 @@ void game_state_room_hint_coin_set_found(game_state_t *state, int room_num,
                                          int coin_index);
 void game_state_hint_coin_mark_found(game_state_t *state, int room_num,
                                      int coin_index);
+
+static inline uint32_t game_state_scale_from_root(const char *root) {
+    char scale_path[4096];
+    FILE *file;
+    char line[64];
+    char *end = NULL;
+    unsigned long value;
+
+    if (!root || root[0] == '\0') {
+        return 1U;
+    }
+
+    if (snprintf(scale_path, sizeof(scale_path), "%s/scale.txt", root) >=
+        (int)sizeof(scale_path)) {
+        return 1U;
+    }
+
+    file = fopen(scale_path, "r");
+    if (file == NULL) {
+        return 1U;
+    }
+
+    if (fgets(line, sizeof(line), file) == NULL) {
+        fclose(file);
+        return 1U;
+    }
+    fclose(file);
+
+    errno = 0;
+    value = strtoul(line, &end, 10);
+    if (errno != 0 || end == line || value == 0UL || value > UINT32_MAX) {
+        return 1U;
+    }
+
+    while (*end == ' ' || *end == '\t' || *end == '\n' || *end == '\r') {
+        ++end;
+    }
+    if (*end != '\0') {
+        return 1U;
+    }
+
+    return (uint32_t)value;
+}
+
+static inline bool
+game_state_path_is_in_resource_pack(const game_state_t *state,
+                                    const char *path) {
+    size_t root_len;
+
+    if (!state || !state->resource_pack_root || !path ||
+        state->resource_pack_root[0] == '\0') {
+        return false;
+    }
+
+    root_len = strlen(state->resource_pack_root);
+    if (root_len == 0U) {
+        return false;
+    }
+
+    if (strncmp(path, state->resource_pack_root, root_len) != 0) {
+        return false;
+    }
+
+    return path[root_len] == '\0' || path[root_len] == '/';
+}
+
+static inline uint32_t
+game_state_resource_pack_scale_for_path(const game_state_t *state,
+                                        const char *path) {
+    if (!state || !state->resource_pack_root ||
+        state->resource_pack_root[0] == '\0') {
+        return 1U;
+    }
+
+    if (path && !game_state_path_is_in_resource_pack(state, path)) {
+        return 1U;
+    }
+
+    return game_state_scale_from_root(state->resource_pack_root);
+}
+
+static inline uint32_t
+game_state_resource_pack_scale(const game_state_t *state) {
+    return game_state_resource_pack_scale_for_path(state, NULL);
+}
+
+static inline int game_state_scale_dimension_for_path(const game_state_t *state,
+                                                      int value,
+                                                      const char *path) {
+    uint32_t scale = game_state_resource_pack_scale_for_path(state, path);
+
+    if (scale <= 1U || value <= 0) {
+        return value;
+    }
+
+    if (!game_state_path_is_in_resource_pack(state, path)) {
+        return value;
+    }
+
+    return value / (int)scale;
+}
+
+static inline int game_state_scale_dimension(const game_state_t *state,
+                                             int value) {
+    return game_state_scale_dimension_for_path(state, value, NULL);
+}
 
 static inline bool asset_path_resolve(const game_state_t *state,
                                       const char *rel_path, char *out_path,

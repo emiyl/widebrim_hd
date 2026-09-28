@@ -21,6 +21,8 @@ struct sprite_t {
     int y;
     int width;
     int height;
+    int *frame_widths;
+    int *frame_heights;
     uint8_t alpha;
     size_t frame_count;
     size_t current_frame;
