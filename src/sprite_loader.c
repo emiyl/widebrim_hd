@@ -50,10 +50,189 @@ static uint32_t sprite_read_u32_le(FILE *file) {
            ((uint32_t)bytes[2] << 16U) | ((uint32_t)bytes[3] << 24U);
 }
 
+static uint32_t sprite_read_u32_le_at(const uint8_t *bytes, size_t offset) {
+    return (uint32_t)bytes[offset] | ((uint32_t)bytes[offset + 1U] << 8U) |
+           ((uint32_t)bytes[offset + 2U] << 16U) |
+           ((uint32_t)bytes[offset + 3U] << 24U);
+}
+
+static bool sprite_sheet_parse_animation_data(const uint8_t *bytes,
+                                              size_t length,
+                                              sprite_sheet_t *sheet) {
+    size_t offset = 0U;
+    uint32_t animation_count = 0U;
+
+    if (sheet == NULL || bytes == NULL || length == 0U) {
+        return false;
+    }
+
+    if (length < 4U + sheet->frame_count * 8U) {
+        return true;
+    }
+
+    offset = 4U + sheet->frame_count * 8U;
+    if (offset + 30U + 4U > length) {
+        return true;
+    }
+
+    offset += 30U;
+    animation_count = sprite_read_u32_le_at(bytes, offset);
+    offset += 4U;
+
+    if (animation_count == 0U) {
+        sheet->animation_count = 0U;
+        sheet->animations = NULL;
+        return true;
+    }
+
+    sheet->animations = calloc(animation_count, sizeof(*sheet->animations));
+    if (sheet->animations == NULL) {
+        fprintf(stderr, "widebrim: failed to allocate %u sprite animations\n",
+                animation_count);
+        return false;
+    }
+    sheet->animation_count = (size_t)animation_count;
+
+    for (uint32_t anim_index = 0U; anim_index < animation_count; ++anim_index) {
+        size_t name_len = 0U;
+
+        if (offset + 30U > length) {
+            return false;
+        }
+
+        while (name_len < 30U && bytes[offset + name_len] != '\0') {
+            ++name_len;
+        }
+        if (name_len >= sizeof(sheet->animations[anim_index].name)) {
+            name_len = sizeof(sheet->animations[anim_index].name) - 1U;
+        }
+        memcpy(sheet->animations[anim_index].name, bytes + offset, name_len);
+        sheet->animations[anim_index].name[name_len] = '\0';
+        offset += 30U;
+    }
+
+    for (uint32_t anim_index = 0U; anim_index < animation_count; ++anim_index) {
+        uint32_t keyframe_count = 0U;
+        uint32_t *ordering = NULL;
+        uint32_t *durations = NULL;
+        uint32_t *image_indices = NULL;
+        size_t *ordered_indices = NULL;
+
+        if (offset + 4U > length) {
+            return false;
+        }
+        keyframe_count = sprite_read_u32_le_at(bytes, offset);
+        offset += 4U;
+
+        if (keyframe_count == 0U) {
+            sheet->animations[anim_index].frames = NULL;
+            sheet->animations[anim_index].frame_count = 0U;
+            continue;
+        }
+
+        ordering = calloc(keyframe_count, sizeof(*ordering));
+        durations = calloc(keyframe_count, sizeof(*durations));
+        image_indices = calloc(keyframe_count, sizeof(*image_indices));
+        ordered_indices = calloc(keyframe_count, sizeof(*ordered_indices));
+        if (ordering == NULL || durations == NULL || image_indices == NULL ||
+            ordered_indices == NULL) {
+            free(ordering);
+            free(durations);
+            free(image_indices);
+            free(ordered_indices);
+            return false;
+        }
+
+        for (uint32_t frame_index = 0U; frame_index < keyframe_count;
+             ++frame_index) {
+            if (offset + 4U > length) {
+                free(ordering);
+                free(durations);
+                free(image_indices);
+                free(ordered_indices);
+                return false;
+            }
+            ordering[frame_index] = sprite_read_u32_le_at(bytes, offset);
+            offset += 4U;
+        }
+        for (uint32_t frame_index = 0U; frame_index < keyframe_count;
+             ++frame_index) {
+            if (offset + 4U > length) {
+                free(ordering);
+                free(durations);
+                free(image_indices);
+                free(ordered_indices);
+                return false;
+            }
+            durations[frame_index] = sprite_read_u32_le_at(bytes, offset);
+            offset += 4U;
+        }
+        for (uint32_t frame_index = 0U; frame_index < keyframe_count;
+             ++frame_index) {
+            if (offset + 4U > length) {
+                free(ordering);
+                free(durations);
+                free(image_indices);
+                free(ordered_indices);
+                return false;
+            }
+            image_indices[frame_index] = sprite_read_u32_le_at(bytes, offset);
+            offset += 4U;
+        }
+
+        for (size_t i = 0U; i < keyframe_count; ++i) {
+            ordered_indices[i] = i;
+        }
+        for (size_t i = 1U; i < keyframe_count; ++i) {
+            size_t j = i;
+            while (j > 0U && ordering[ordered_indices[j - 1U]] >
+                                 ordering[ordered_indices[j]]) {
+                size_t tmp = ordered_indices[j - 1U];
+                ordered_indices[j - 1U] = ordered_indices[j];
+                ordered_indices[j] = tmp;
+                --j;
+            }
+        }
+
+        sheet->animations[anim_index].frames = calloc(
+            keyframe_count, sizeof(*sheet->animations[anim_index].frames));
+        sheet->animations[anim_index].frame_count = (size_t)keyframe_count;
+        if (sheet->animations[anim_index].frames == NULL) {
+            free(ordering);
+            free(durations);
+            free(image_indices);
+            free(ordered_indices);
+            return false;
+        }
+
+        for (size_t frame_index = 0U; frame_index < keyframe_count;
+             ++frame_index) {
+            size_t ordered_index = ordered_indices[frame_index];
+            sheet->animations[anim_index].frames[frame_index].order =
+                ordering[ordered_index];
+            sheet->animations[anim_index].frames[frame_index].duration =
+                durations[ordered_index];
+            sheet->animations[anim_index].frames[frame_index].image_index =
+                image_indices[ordered_index];
+        }
+
+        free(ordering);
+        free(durations);
+        free(image_indices);
+        free(ordered_indices);
+    }
+
+    sheet->variable_count = 0U;
+    sheet->variables = NULL;
+    sheet->sub_anim_name[0] = '\0';
+    return true;
+}
+
 static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
     uint32_t frame_count;
     uint32_t index;
     long file_size;
+    uint8_t *buffer = NULL;
 
     if (sheet == NULL || file == NULL) {
         return false;
@@ -91,6 +270,7 @@ static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
         if (!sprite_read_exact(file, raw, sizeof(raw))) {
             fprintf(stderr, "widebrim: failed to read sprite frame %u\n",
                     index);
+            free(buffer);
             return false;
         }
 
@@ -102,21 +282,30 @@ static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
             (uint16_t)raw[6] | ((uint16_t)raw[7] << 8U);
     }
 
-    /*
-     * The real .spr files in this project store frame rectangles at the front
-     * of the file. The optional animation metadata that follows is not
-     * consistent across every asset, and the project only needs the frame
-     * geometry for rendering. Keep the sprite-sheet parser tolerant: load the
-     * frames we need, ignore the trailing metadata block if it is not present
-     * or does not match the expected layout.
-     */
-    sheet->animation_count = 0U;
-    sheet->animations = NULL;
-    sheet->variable_count = 0U;
-    sheet->variables = NULL;
-    sheet->sub_anim_name[0] = '\0';
+    buffer = malloc((size_t)file_size);
+    if (buffer == NULL) {
+        fprintf(stderr, "widebrim: failed to allocate sprite file buffer\n");
+        return false;
+    }
 
-    (void)file_size;
+    if (fseek(file, 0L, SEEK_SET) != 0) {
+        free(buffer);
+        fprintf(stderr, "widebrim: failed to rewind sprite file\n");
+        return false;
+    }
+
+    if (fread(buffer, 1U, (size_t)file_size, file) != (size_t)file_size) {
+        free(buffer);
+        fprintf(stderr, "widebrim: failed to read sprite file contents\n");
+        return false;
+    }
+
+    if (!sprite_sheet_parse_animation_data(buffer, (size_t)file_size, sheet)) {
+        free(buffer);
+        return false;
+    }
+
+    free(buffer);
     return true;
 }
 

@@ -70,6 +70,17 @@ void sprite_clear(sprite_t *sprite, renderer_t *renderer) {
         sprite->frames = NULL;
     }
 
+    if (sprite->animations) {
+        for (size_t i = 0; i < sprite->animation_count; ++i) {
+            if (sprite->animations[i].frames) {
+                free(sprite->animations[i].frames);
+                sprite->animations[i].frames = NULL;
+            }
+        }
+        free(sprite->animations);
+        sprite->animations = NULL;
+    }
+
     sprite_clear_frame_names(sprite);
 
     if (sprite->tex) {
@@ -79,6 +90,8 @@ void sprite_clear(sprite_t *sprite, renderer_t *renderer) {
 
     sprite->alpha = 255;
     sprite->frame_count = 0;
+    sprite->animation_count = 0U;
+    sprite->active_animation_index = SIZE_MAX;
     sprite->current_frame = 0;
     sprite->frame_duration_ms = 0;
     sprite->elapsed_ms = 0;
@@ -175,8 +188,17 @@ bool sprite_set_playing(sprite_t *sprite, bool playing) {
     }
 
     sprite->playing = playing;
-    if (sprite->frame_count > 0 && sprite->frames &&
-        sprite->current_frame < sprite->frame_count) {
+    if (sprite->active_animation_index < sprite->animation_count &&
+        sprite->animations &&
+        sprite->animations[sprite->active_animation_index].frames &&
+        sprite->current_frame <
+            sprite->animations[sprite->active_animation_index].frame_count) {
+        sprite->tex =
+            sprite->frames[sprite->animations[sprite->active_animation_index]
+                               .frames[sprite->current_frame]
+                               .image_index];
+    } else if (sprite->frame_count > 0 && sprite->frames &&
+               sprite->current_frame < sprite->frame_count) {
         sprite->tex = sprite->frames[sprite->current_frame];
     }
     return true;
@@ -191,6 +213,7 @@ bool sprite_set_frame(sprite_t *sprite, size_t frame_index) {
         return false;
     }
 
+    sprite->active_animation_index = SIZE_MAX;
     sprite->current_frame = frame_index;
     sprite->elapsed_ms = 0;
     sprite->tex = sprite->frames[frame_index];
@@ -209,6 +232,23 @@ bool sprite_set_frame_by_name(sprite_t *sprite, const char *frame_name) {
         return strcmp(frame_name, "default") == 0 && sprite->tex != NULL;
     }
 
+    if (sprite->animations && sprite->animation_count > 0U) {
+        for (size_t i = 0; i < sprite->animation_count; ++i) {
+            if (strcmp(sprite->animations[i].name, frame_name) == 0) {
+                sprite->active_animation_index = i;
+                sprite->current_frame = 0U;
+                sprite->elapsed_ms = 0.0f;
+                if (sprite->animations[i].frame_count > 0U &&
+                    sprite->animations[i].frames != NULL) {
+                    sprite->tex =
+                        sprite->frames
+                            [sprite->animations[i].frames[0U].image_index];
+                }
+                return true;
+            }
+        }
+    }
+
     if (!sprite->frame_names) {
         sprite->frame_names =
             calloc(sprite->frame_count, sizeof(*sprite->frame_names));
@@ -224,6 +264,7 @@ bool sprite_set_frame_by_name(sprite_t *sprite, const char *frame_name) {
     for (size_t i = 0; i < sprite->frame_count; ++i) {
         if (sprite->frame_names[i] &&
             strcmp(sprite->frame_names[i], frame_name) == 0) {
+            sprite->active_animation_index = SIZE_MAX;
             return sprite_set_frame(sprite, i);
         }
     }
@@ -232,6 +273,7 @@ bool sprite_set_frame_by_name(sprite_t *sprite, const char *frame_name) {
     index = strtol(frame_name, &end, 10);
     if (errno == 0 && frame_name != end && *end == '\0' && index >= 0L &&
         (size_t)index < sprite->frame_count) {
+        sprite->active_animation_index = SIZE_MAX;
         return sprite_set_frame(sprite, (size_t)index);
     }
 
@@ -249,6 +291,9 @@ void sprite_init(sprite_t *sprite) {
     sprite->height = 0;
     sprite->frames = NULL;
     sprite->frame_names = NULL;
+    sprite->animations = NULL;
+    sprite->animation_count = 0U;
+    sprite->active_animation_index = SIZE_MAX;
     sprite->frame_count = 0;
     sprite->current_frame = 0;
     sprite->frame_duration_ms = 0;
@@ -403,9 +448,14 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
         strcpy(sprite_path + len - 4, ".spr");
     }
 
-    sprite_loader_load_animation_rgba(
-        state, sprite_path, &frames, &sprite->frame_count, &frame_widths,
-        &frame_heights, &sprite->width, &sprite->height);
+    if (!sprite_loader_load_animation_rgba(
+            state, sprite_path, &frames, &sprite->frame_count, &frame_widths,
+            &frame_heights, &sprite->width, &sprite->height)) {
+        fprintf(stderr, "widebrim: failed to load sprite sheet for %s\n",
+                sprite_name);
+        return;
+    }
+
     sprite_new_animation(sprite, renderer, (const uint8_t *const *)frames,
                          sprite->frame_count, frame_widths, frame_heights,
                          frame_duration_ms, loop);
@@ -436,6 +486,19 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
         free(frame_names);
     }
 
+    {
+        sprite_sheet_t *sheet = NULL;
+        if (sprite_loader_load(state, sprite_path, &sheet) && sheet) {
+            if (sheet->animations && sheet->animation_count > 0U) {
+                sprite->animations = sheet->animations;
+                sprite->animation_count = sheet->animation_count;
+                sheet->animations = NULL;
+                sheet->animation_count = 0U;
+            }
+            sprite_sheet_free(sheet);
+        }
+    }
+
     free(frame_widths);
     free(frame_heights);
     if (!sprite->frames && frames != NULL) {
@@ -451,8 +514,49 @@ void sprite_update(sprite_t *sprite, float delta_ms) {
         return;
     }
 
-    if (!sprite->playing || sprite->frame_count < 2U ||
-        sprite->frame_duration_ms <= 0.0f) {
+    if (!sprite->playing) {
+        return;
+    }
+
+    if (sprite->active_animation_index < sprite->animation_count &&
+        sprite->animations &&
+        sprite->animations[sprite->active_animation_index].frames) {
+        sprite_animation_t *animation =
+            &sprite->animations[sprite->active_animation_index];
+        sprite_anim_frame_t *frames = animation->frames;
+        size_t frame_count = animation->frame_count;
+        float per_frame_duration_ms =
+            sprite->frame_duration_ms > 0.0f
+                ? sprite->frame_duration_ms
+                : (float)frames[sprite->current_frame].duration;
+
+        if (frame_count < 2U) {
+            return;
+        }
+
+        sprite->elapsed_ms += delta_ms;
+        while (sprite->elapsed_ms >= per_frame_duration_ms) {
+            sprite->elapsed_ms -= per_frame_duration_ms;
+            if (sprite->current_frame + 1U < frame_count) {
+                sprite->current_frame += 1U;
+            } else if (sprite->loop) {
+                sprite->current_frame = 0U;
+            } else {
+                sprite->playing = false;
+                sprite->current_frame = frame_count - 1U;
+                break;
+            }
+            if (sprite->frame_duration_ms <= 0.0f) {
+                per_frame_duration_ms =
+                    (float)frames[sprite->current_frame].duration;
+            }
+        }
+
+        sprite->tex = sprite->frames[frames[sprite->current_frame].image_index];
+        return;
+    }
+
+    if (sprite->frame_count < 2U || sprite->frame_duration_ms <= 0.0f) {
         return;
     }
 

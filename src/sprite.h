@@ -3,6 +3,7 @@
 
 #include "game_state.h"
 #include "renderer.h"
+#include "sprite_loader.h"
 
 #include <stdbool.h>
 
@@ -13,6 +14,9 @@ struct sprite_t {
     renderer_texture_t *tex;
     renderer_texture_t **frames;
     char **frame_names;
+    sprite_animation_t *animations;
+    size_t animation_count;
+    size_t active_animation_index;
     int x;
     int y;
     int width;

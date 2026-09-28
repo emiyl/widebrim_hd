@@ -41,16 +41,14 @@ static void object_layer_add_sprite_object(object_layer_t *layer,
                                            int32_t y, const char *sprite_name,
                                            const char *animation_name,
                                            object_kind_t kind,
-                                           float frame_duration) {
+                                           float frame_duration, bool loop) {
     const char *label = "unknown";
     int y_offset = 0;
-    bool loop = false;
 
     switch (kind) {
     case OBJECT_KIND_BG:
         label = "background";
         y_offset = WB_SCREEN_HEIGHT;
-        loop = true;
         break;
     case OBJECT_KIND_SUB_SPRITE:
         label = "sub-sprite";
@@ -106,14 +104,14 @@ static void object_layer_add_sub_sprite(object_layer_t *layer,
                                         const char *animation_name) {
     object_layer_add_sprite_object(layer, state, x, y, sprite_name,
                                    animation_name, OBJECT_KIND_SUB_SPRITE,
-                                   0.0f);
+                                   150.0f, true);
 }
 
 static void object_layer_add_bg_object(object_layer_t *layer,
                                        game_state_t *state, int32_t x,
                                        int32_t y, const char *filename) {
     object_layer_add_sprite_object(layer, state, x, y, filename, NULL,
-                                   OBJECT_KIND_BG, 250.0f);
+                                   OBJECT_KIND_BG, 150.0f, true);
 }
 
 void object_layer_init(object_layer_t *layer, renderer_t *renderer) {

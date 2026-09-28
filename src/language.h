@@ -107,8 +107,10 @@ static inline bool asset_path_resolve(const char *assets_root,
     {
         int len = snprintf(candidate, sizeof(candidate), "%s/data/%s",
                            assets_root, normalized);
-        if (len >= 0 && (size_t)len < sizeof(candidate)) {
+        if (len >= 0 && (size_t)len < sizeof(candidate) &&
+            access(candidate, F_OK) == 0) {
             snprintf(out_path, out_path_size, "%s", candidate);
+            return true;
         }
     }
 
