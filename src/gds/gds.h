@@ -20,8 +20,8 @@ typedef enum {
     GDS_RECORD_BLOCK_START = 6,
     GDS_RECORD_BLOCK_END = 7,
     GDS_RECORD_EMPTY_8 = 8,
-    GDS_RECORD_EMPTY_9 = 9,
-    GDS_RECORD_EMPTY_10 = 10,
+    GDS_RECORD_AND = 9,
+    GDS_RECORD_OR = 10,
     GDS_RECORD_EMPTY_11 = 11,
     GDS_RECORD_BREAKPOINT = 12
 } gds_record_type_t;
@@ -46,9 +46,9 @@ static inline char *gds_record_type_to_string(gds_record_type_t type) {
         return "BLOCK_END";
     case GDS_RECORD_EMPTY_8:
         return "EMPTY_8";
-    case GDS_RECORD_EMPTY_9:
+    case GDS_RECORD_AND:
         return "EMPTY_9";
-    case GDS_RECORD_EMPTY_10:
+    case GDS_RECORD_OR:
         return "EMPTY_10";
     case GDS_RECORD_EMPTY_11:
         return "EMPTY_11";

@@ -43,8 +43,8 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
 
     case GDS_RECORD_EMPTY_5:
     case GDS_RECORD_EMPTY_8:
-    case GDS_RECORD_EMPTY_9:
-    case GDS_RECORD_EMPTY_10:
+    case GDS_RECORD_AND:
+    case GDS_RECORD_OR:
     case GDS_RECORD_EMPTY_11:
     case GDS_RECORD_BREAKPOINT:
         return true;

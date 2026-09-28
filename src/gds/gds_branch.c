@@ -13,8 +13,6 @@ static bool gds_branch_is_ignored_record_type(gds_record_type_t type) {
     switch (type) {
     case GDS_RECORD_EMPTY_5:
     case GDS_RECORD_EMPTY_8:
-    case GDS_RECORD_EMPTY_9:
-    case GDS_RECORD_EMPTY_10:
     case GDS_RECORD_EMPTY_11:
     case GDS_RECORD_BREAKPOINT:
         return true;
@@ -49,8 +47,8 @@ static bool gds_branch_jump_to_block_target(gds_reader_t *reader,
     return true;
 }
 
-static bool gds_branch_read_condition(gds_reader_t *reader, bool *result,
-                                      void *user_data) {
+static bool gds_branch_read_condition_term(gds_reader_t *reader, bool *result,
+                                           void *user_data) {
     size_t start = 0U;
     gds_record_t record;
     gds_command_handler_fn handler = NULL;
@@ -96,6 +94,14 @@ static bool gds_branch_read_condition(gds_reader_t *reader, bool *result,
     }
 
     switch (record.type) {
+    case GDS_RECORD_AND:
+    case GDS_RECORD_OR:
+        reader->offset = start;
+        fprintf(
+            stderr,
+            "gds: logical operator %s is not a valid standalone condition\n",
+            gds_record_type_to_string(record.type));
+        return false;
     case GDS_RECORD_COMMAND:
         if (gds_func_lookup(record.payload.opcode, &handler) &&
             handler != NULL) {
@@ -134,6 +140,52 @@ static bool gds_branch_read_condition(gds_reader_t *reader, bool *result,
                 gds_record_type_to_string(record.type));
         return false;
     }
+}
+
+static bool gds_branch_read_condition(gds_reader_t *reader, bool *result,
+                                      void *user_data) {
+    bool left = false;
+    bool right = false;
+    size_t start = 0U;
+    gds_record_t record;
+
+    if (reader == NULL || result == NULL) {
+        return false;
+    }
+
+    start = reader->offset;
+    if (!gds_branch_read_condition_term(reader, &left, user_data)) {
+        reader->offset = start;
+        return false;
+    }
+
+    while (gds_reader_remaining(reader) > 0U) {
+        size_t saved_offset = reader->offset;
+
+        if (!gds_read_record(reader, &record)) {
+            reader->offset = saved_offset;
+            break;
+        }
+
+        if (record.type != GDS_RECORD_AND && record.type != GDS_RECORD_OR) {
+            reader->offset = saved_offset;
+            break;
+        }
+
+        if (!gds_branch_read_condition_term(reader, &right, user_data)) {
+            reader->offset = start;
+            return false;
+        }
+
+        if (record.type == GDS_RECORD_AND) {
+            left = left && right;
+        } else {
+            left = left || right;
+        }
+    }
+
+    *result = left;
+    return true;
 }
 
 static bool gds_branch_TRUE(gds_reader_t *reader, const gds_record_t *command,
