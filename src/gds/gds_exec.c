@@ -9,6 +9,7 @@ static bool gds_execute_default_command(gds_reader_t *reader,
                                         void *user_data) {
     (void)user_data;
     bool should_break = false;
+    bool first_arg = true;
 
     fprintf(stderr, "Unknown command: %s(",
             gds_opcode_to_string(record->payload.opcode));
@@ -30,9 +31,13 @@ static bool gds_execute_default_command(gds_reader_t *reader,
             should_break = true;
             break;
         default:
-            fprintf(stderr, "%s %s, ",
+            if (!first_arg) {
+                fprintf(stderr, ", ");
+            }
+            fprintf(stderr, "%s %s",
                     gds_record_type_to_string(next_record.type),
                     gds_record_to_string(&next_record));
+            first_arg = false;
             break;
         }
 
