@@ -40,8 +40,7 @@ bool bg_loader_load(game_state_t *state, screen_controller_t *controller,
 
     char full_path[1024];
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            full_path, sizeof(full_path))) {
+    if (!asset_path_resolve(state, rel_path, full_path, sizeof(full_path))) {
         fprintf(stderr,
                 "widebrim: Failed to resolve path for background image '%s'\n",
                 rel_path);

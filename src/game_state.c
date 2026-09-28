@@ -27,7 +27,7 @@ static void game_state_set_bit_flag(game_state_t *state, int flag, bool value) {
 }
 
 int game_state_init(game_state_t *state, const char *assets_root,
-                    language_t language) {
+                    const char *resource_pack_root, language_t language) {
     if (!state) {
         fprintf(stderr,
                 "widebrim: game_state_init called with NULL state pointer\n");
@@ -36,6 +36,7 @@ int game_state_init(game_state_t *state, const char *assets_root,
     gds_state_init(&state->gds);
     game_state_reset(state);
     state->assets_root = assets_root;
+    state->resource_pack_root = resource_pack_root;
     state->language = language;
     return 0;
 }
@@ -52,6 +53,7 @@ void game_state_destroy(game_state_t *state) {
 
 void game_state_reset(game_state_t *state) {
     const char *assets_root;
+    const char *resource_pack_root;
     language_t language = LANGUAGE_EN;
 
     if (!state) {
@@ -61,9 +63,11 @@ void game_state_reset(game_state_t *state) {
     }
 
     assets_root = state->assets_root;
+    resource_pack_root = state->resource_pack_root;
     language = state->language;
     memset(state, 0, sizeof(game_state_t));
     state->assets_root = assets_root;
+    state->resource_pack_root = resource_pack_root;
     state->language = language;
     state->current_mode = MODE_RESET;
     state->next_mode = MODE_RESET;

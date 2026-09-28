@@ -13,8 +13,8 @@ bool text_loader_load_path(game_state_t *state, const char *rel_path,
         return false;
     }
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            resolved_path, sizeof(resolved_path))) {
+    if (!asset_path_resolve(state, rel_path, resolved_path,
+                            sizeof(resolved_path))) {
         fprintf(stderr, "widebrim: failed to resolve text asset: %s\n",
                 rel_path);
         return false;

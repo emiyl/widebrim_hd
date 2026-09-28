@@ -10,7 +10,8 @@
 #define TARGET_FRAMERATE 60.0
 #define WINDOW_SCALE 1.0f
 
-int runtime_init(runtime_t *rt, const char *assets_root, language_t language) {
+int runtime_init(runtime_t *rt, const char *assets_root,
+                 const char *resource_pack_root, language_t language) {
     if (!rt) {
         fprintf(stderr, "widebrim: Invalid runtime pointer\n");
         return -1;
@@ -48,7 +49,8 @@ int runtime_init(runtime_t *rt, const char *assets_root, language_t language) {
 
     window_set_scale(rt->window, WINDOW_SCALE, WINDOW_SCALE);
 
-    if (game_state_init(&rt->state, assets_root, language) != 0) {
+    if (game_state_init(&rt->state, assets_root, resource_pack_root,
+                        language) != 0) {
         fprintf(stderr, "widebrim: Failed to initialize game state\n");
         runtime_destroy(rt);
         return -1;

@@ -54,16 +54,30 @@ static inline const char *language_to_data_dir(language_t language) {
     }
 }
 
-static inline bool asset_path_resolve(const char *assets_root,
-                                      language_t language, const char *rel_path,
-                                      char *out_path, size_t out_path_size) {
+static inline bool asset_path_resolve_roots(const char *assets_root,
+                                            const char *resource_pack_root,
+                                            language_t language,
+                                            const char *rel_path,
+                                            char *out_path,
+                                            size_t out_path_size) {
     static const char *const dir_candidates[] = {"data", "data-EU"};
     char candidate[4096];
     const char *normalized = rel_path;
     const char *lang_dir = language_to_data_dir(language);
-    size_t i;
+    const char *roots[2];
+    size_t root_count = 0U;
 
-    if (!assets_root || !rel_path || !out_path || out_path_size == 0U) {
+    if (!rel_path || !out_path || out_path_size == 0U) {
+        return false;
+    }
+
+    if (resource_pack_root && resource_pack_root[0] != '\0') {
+        roots[root_count++] = resource_pack_root;
+    }
+    if (assets_root && assets_root[0] != '\0') {
+        roots[root_count++] = assets_root;
+    }
+    if (root_count == 0U) {
         return false;
     }
 
@@ -82,35 +96,39 @@ static inline bool asset_path_resolve(const char *assets_root,
         }
     }
 
-    for (i = 0U; i < sizeof(dir_candidates) / sizeof(dir_candidates[0]); ++i) {
-        int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s",
-                           assets_root, dir_candidates[i], normalized);
-        if (len < 0 || (size_t)len >= sizeof(candidate)) {
-            continue;
+    for (size_t i = 0U; i < root_count; ++i) {
+        const char *root = roots[i];
+        for (size_t j = 0U;
+             j < sizeof(dir_candidates) / sizeof(dir_candidates[0]); ++j) {
+            int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s", root,
+                               dir_candidates[j], normalized);
+            if (len < 0 || (size_t)len >= sizeof(candidate)) {
+                continue;
+            }
+            if (access(candidate, F_OK) == 0) {
+                snprintf(out_path, out_path_size, "%s", candidate);
+                return true;
+            }
         }
-        if (access(candidate, F_OK) == 0) {
-            snprintf(out_path, out_path_size, "%s", candidate);
-            return true;
-        }
-    }
 
-    {
-        int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s",
-                           assets_root, lang_dir, normalized);
-        if (len >= 0 && (size_t)len < sizeof(candidate) &&
-            access(candidate, F_OK) == 0) {
-            snprintf(out_path, out_path_size, "%s", candidate);
-            return true;
+        {
+            int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s", root,
+                               lang_dir, normalized);
+            if (len >= 0 && (size_t)len < sizeof(candidate) &&
+                access(candidate, F_OK) == 0) {
+                snprintf(out_path, out_path_size, "%s", candidate);
+                return true;
+            }
         }
-    }
 
-    {
-        int len = snprintf(candidate, sizeof(candidate), "%s/data/%s",
-                           assets_root, normalized);
-        if (len >= 0 && (size_t)len < sizeof(candidate) &&
-            access(candidate, F_OK) == 0) {
-            snprintf(out_path, out_path_size, "%s", candidate);
-            return true;
+        {
+            int len = snprintf(candidate, sizeof(candidate), "%s/data/%s", root,
+                               normalized);
+            if (len >= 0 && (size_t)len < sizeof(candidate) &&
+                access(candidate, F_OK) == 0) {
+                snprintf(out_path, out_path_size, "%s", candidate);
+                return true;
+            }
         }
     }
 

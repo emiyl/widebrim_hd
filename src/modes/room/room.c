@@ -27,8 +27,7 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_in.gds",
              room_num);
 
-    if (!asset_path_resolve(impl->state->assets_root, impl->state->language,
-                            script_path, resolved_path,
+    if (!asset_path_resolve(impl->state, script_path, resolved_path,
                             sizeof(resolved_path))) {
         fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 script_path);
@@ -57,8 +56,7 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
              room_num);
 
-    if (!asset_path_resolve(impl->state->assets_root, impl->state->language,
-                            script_path, resolved_path,
+    if (!asset_path_resolve(impl->state, script_path, resolved_path,
                             sizeof(resolved_path))) {
         fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 script_path);

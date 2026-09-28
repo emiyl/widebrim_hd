@@ -22,6 +22,7 @@ typedef struct {
 typedef struct game_state_t {
     gds_state_t gds;
     const char *assets_root;
+    const char *resource_pack_root;
     language_t language;
     game_mode_t current_mode;
     game_mode_t next_mode;
@@ -49,7 +50,7 @@ typedef struct game_state_t {
 } game_state_t;
 
 int game_state_init(game_state_t *state, const char *assets_root,
-                    language_t language);
+                    const char *resource_pack_root, language_t language);
 void game_state_destroy(game_state_t *state);
 
 void game_state_reset(game_state_t *state);
@@ -77,5 +78,17 @@ void game_state_room_hint_coin_set_found(game_state_t *state, int room_num,
                                          int coin_index);
 void game_state_hint_coin_mark_found(game_state_t *state, int room_num,
                                      int coin_index);
+
+static inline bool asset_path_resolve(const game_state_t *state,
+                                      const char *rel_path, char *out_path,
+                                      size_t out_path_size) {
+    if (!state) {
+        return false;
+    }
+
+    return asset_path_resolve_roots(state->assets_root,
+                                    state->resource_pack_root, state->language,
+                                    rel_path, out_path, out_path_size);
+}
 
 #endif // GAME_STATE_H

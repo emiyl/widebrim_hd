@@ -350,8 +350,9 @@ sprite_sheet_t *sprite_sheet_load(const char *path) {
     return sheet;
 }
 
-bool sprite_sheet_load_from_assets(const char *assets_root, language_t language,
-                                   const char *rel_path,
+bool sprite_sheet_load_from_assets(const char *assets_root,
+                                   const char *resource_pack_root,
+                                   language_t language, const char *rel_path,
                                    sprite_sheet_t **out_sheet) {
     char normalized[SPRITE_PATH_MAX];
     char path[SPRITE_PATH_MAX];
@@ -375,8 +376,8 @@ bool sprite_sheet_load_from_assets(const char *assets_root, language_t language,
         suffix = NULL;
     }
 
-    if (!asset_path_resolve(assets_root, language, normalized, path,
-                            sizeof(path))) {
+    if (!asset_path_resolve_roots(assets_root, resource_pack_root, language,
+                                  normalized, path, sizeof(path))) {
         return false;
     }
 
@@ -423,8 +424,7 @@ bool sprite_loader_load(game_state_t *state, const char *rel_path,
         return false;
     }
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            full_path, sizeof(full_path))) {
+    if (!asset_path_resolve(state, rel_path, full_path, sizeof(full_path))) {
         fprintf(stderr,
                 "widebrim: Failed to resolve path for sprite asset '%s'\n",
                 rel_path);
@@ -438,8 +438,9 @@ bool sprite_loader_load(game_state_t *state, const char *rel_path,
         return *out_sheet != NULL;
     }
 
-    return sprite_sheet_load_from_assets(state->assets_root, state->language,
-                                         rel_path, out_sheet);
+    return sprite_sheet_load_from_assets(state->assets_root,
+                                         state->resource_pack_root,
+                                         state->language, rel_path, out_sheet);
 }
 
 bool sprite_sheet_extract_frame_rgba(const sprite_sheet_t *sheet,
@@ -512,8 +513,8 @@ bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
         return false;
     }
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            spritesheet_path, sizeof(spritesheet_path))) {
+    if (!asset_path_resolve(state, rel_path, spritesheet_path,
+                            sizeof(spritesheet_path))) {
         return false;
     }
 
@@ -642,8 +643,7 @@ bool sprite_loader_load_animation_names(game_state_t *state,
         return false;
     }
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            full_path, sizeof(full_path))) {
+    if (!asset_path_resolve(state, rel_path, full_path, sizeof(full_path))) {
         return false;
     }
 
@@ -726,8 +726,8 @@ bool sprite_loader_load_animation_rgba(
         return false;
     }
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            spritesheet_path, sizeof(spritesheet_path))) {
+    if (!asset_path_resolve(state, rel_path, spritesheet_path,
+                            sizeof(spritesheet_path))) {
         fprintf(stderr, "widebrim: failed to resolve asset path for %s\n",
                 rel_path);
         return false;

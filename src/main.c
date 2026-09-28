@@ -5,16 +5,21 @@
 #include "runtime.h"
 
 static void print_usage(const char *argv0) {
-    printf("Usage: %s\n --assets <assets_path> [--language en]\n", argv0);
+    printf("Usage: %s\n --assets <assets_path> [--resource-pack <pack_path>] "
+           "[--language en]\n",
+           argv0);
 }
 
 int main(int argc, char *argv[]) {
     const char *assets_root = NULL;
+    const char *resource_pack_root = NULL;
     language_t language = LANGUAGE_UNKNOWN;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--assets") == 0 && i + 1 < argc) {
             assets_root = argv[i + 1];
+        } else if (strcmp(argv[i], "--resource-pack") == 0 && i + 1 < argc) {
+            resource_pack_root = argv[i + 1];
         } else if (strcmp(argv[i], "--language") == 0 && i + 1 < argc) {
             language = language_string_as_enum(argv[i + 1]);
         } else if (strcmp(argv[i], "--help") == 0) {
@@ -44,8 +49,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (resource_pack_root != NULL && access(resource_pack_root, F_OK) != 0) {
+        fprintf(stderr,
+                "widebrim: resource pack directory '%s' does not exist.\n",
+                resource_pack_root);
+        return 1;
+    }
+
     runtime_t runtime;
-    if (runtime_init(&runtime, assets_root, language) != 0) {
+    if (runtime_init(&runtime, assets_root, resource_pack_root, language) !=
+        0) {
         fprintf(stderr, "widebrim: Failed to initialize runtime\n");
         return 1;
     }

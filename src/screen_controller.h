@@ -81,8 +81,7 @@ static inline bool screen_controller_load_font(screen_controller_t *sc,
         return false;
     }
 
-    if (!asset_path_resolve(state->assets_root, state->language, rel_path,
-                            resolved, sizeof(resolved))) {
+    if (!asset_path_resolve(state, rel_path, resolved, sizeof(resolved))) {
         fprintf(stderr, "widebrim: failed to resolve font path for asset: %s\n",
                 rel_path);
         return false;
