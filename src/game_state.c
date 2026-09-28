@@ -76,6 +76,7 @@ void game_state_reset(game_state_t *state) {
     state->font_event_loaded = false;
 
     state->story_flag = 1;
+    state->memo_flag = 1;
     state->isQuestionCheck = false;
     state->isQuestionExist = false;
 

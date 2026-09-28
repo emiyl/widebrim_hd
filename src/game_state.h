@@ -27,6 +27,7 @@ typedef struct game_state_t {
     game_mode_t next_mode;
 
     int16_t story_flag;
+    uint8_t memo_flag;
     uint8_t event_viewed[MAX_EVENT_VIEWED];
     uint8_t bit_flags[BIT_FLAG_BYTES];
 
