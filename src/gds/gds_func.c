@@ -519,6 +519,30 @@ bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_AddEvent(gds_reader_t *reader, const gds_record_t *command,
+                       void *user_data) {
+    mode_room_impl_t *room = (mode_room_impl_t *)user_data;
+
+    if (!room) {
+        fprintf(stderr, "gds: AddEvent called without room context\n");
+        return false;
+    }
+
+    int32_t args[6];
+    if (!gds_read_s32_args(reader, args, 6, command)) {
+        return false;
+    }
+
+    int32_t x = args[0];
+    int32_t y = args[1];
+    int32_t width = args[2];
+    int32_t height = args[3];
+    int32_t sprite_id = args[4];
+    int32_t event_id = args[5];
+
+    return room->add_event(room, x, y, width, height, sprite_id, event_id);
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -575,6 +599,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_SetBitFlag:
         *handler = gds_func_SetBitFlag;
+        return true;
+    case SCRIPT_CMD_AddEvent:
+        *handler = gds_func_AddEvent;
         return true;
     default:
         *handler = NULL;

@@ -1,4 +1,5 @@
 #include "room.h"
+#include "event.h"
 #include "exit.h"
 #include "map.h"
 #include "textobj.h"
@@ -202,6 +203,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
 
     impl->exit_count = 0;
     impl->tobj_count = 0;
+    impl->event_count = 0;
 
     object_layer_add_object(impl->controller->object, impl->map_place);
     object_layer_add_object(impl->controller->object, impl->move_mode_btn);
@@ -357,6 +359,7 @@ mode_handler_t mode_room_create(game_state_t *state,
     impl->setmap = mode_room_setmap;
     impl->add_text_obj = mode_room_add_text_obj;
     impl->add_exit = room_add_exit;
+    impl->add_event = room_add_event;
 
     impl->move_mode_btn = smalloc(sizeof(object_t));
     impl->map_place = smalloc(sizeof(object_t));

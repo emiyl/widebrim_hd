@@ -21,6 +21,9 @@ typedef struct mode_room_impl_t {
     void (*add_exit)(struct mode_room_impl_t *impl, int32_t exit_sprite_id,
                      int32_t target_map_id, int32_t x, int32_t y, int32_t width,
                      int32_t height, int32_t param7, int32_t param8);
+    bool (*add_event)(struct mode_room_impl_t *impl, int32_t x, int32_t y,
+                      int32_t width, int32_t height, int32_t sprite_id,
+                      int32_t event_id);
 
     object_t *move_mode_btn;
     object_t *map_place;
@@ -30,6 +33,9 @@ typedef struct mode_room_impl_t {
 
     object_t *exits[8];
     int32_t exit_count;
+
+    object_t *event[16];
+    int32_t event_count;
 
     bool in_move_mode;
     bool done;
