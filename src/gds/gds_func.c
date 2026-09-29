@@ -448,6 +448,148 @@ bool gds_func_AddSubSprite(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_SetGameMode(gds_reader_t *reader, const gds_record_t *command,
+                          void *user_data) {
+    (void)user_data;
+
+    const char *event_mode_str = NULL;
+    const char *string_args[1];
+    if (!gds_read_string_args(reader, string_args, 1, command)) {
+        return false;
+    }
+    event_mode_str = string_args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: STUB %s(event_mode_str=\"%s\")\n", function_name,
+           event_mode_str);
+#endif
+
+    return true;
+}
+
+bool gds_func_SetCurrentEvent(gds_reader_t *reader, const gds_record_t *command,
+                              void *user_data) {
+    (void)user_data;
+
+    int32_t event_id;
+    int32_t args[1];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+    event_id = args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: STUB %s(event_id=%d)\n", function_name, event_id);
+#endif
+
+    return true;
+}
+
+bool gds_func_AddHintCoin(gds_reader_t *reader, const gds_record_t *command,
+                          void *user_data) {
+    (void)user_data;
+
+    int32_t args[6];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+
+    int32_t coin_id = args[0];
+    int32_t x = args[1];
+    int32_t y = args[2];
+    int32_t width = args[3];
+    int32_t height = args[4];
+    int32_t arg6 = args[5];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf(
+        "gds: STUB %s(coin_id=%d, x=%d, y=%d, width=%d, height=%d, arg6=%d)\n",
+        function_name, coin_id, x, y, width, height, arg6);
+#endif
+
+    return true;
+}
+
+bool gds_func_AddDogCoin(gds_reader_t *reader, const gds_record_t *command,
+                         void *user_data) {
+    (void)user_data;
+
+    int32_t args[6];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+
+    int32_t coin_id = args[0];
+    int32_t x = args[1];
+    int32_t y = args[2];
+    bool flag = args[3] != 0;
+    int32_t distance_or_size = args[4];
+    int32_t variant = args[5];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: STUB %s(coin_id=%d, x=%d, y=%d, flag=%d, distance_or_size=%d, "
+           "variant=%d)\n",
+           function_name, coin_id, x, y, flag, distance_or_size, variant);
+#endif
+
+    return true;
+}
+
+bool gds_func_AddSecretCoin(gds_reader_t *reader, const gds_record_t *command,
+                            void *user_data) {
+    (void)user_data;
+
+    int32_t args[6];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+
+    int32_t coin_id = args[0];
+    int32_t x = args[1];
+    int32_t y = args[2];
+    int32_t arg4 = args[3];
+    int32_t arg5 = args[4];
+    int32_t arg6 = args[5];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: STUB %s(coin_id=%d, x=%d, y=%d, arg4=%d, arg5=%d, arg6=%d)\n",
+           function_name, coin_id, x, y, arg4, arg5, arg6);
+#endif
+
+    return true;
+}
+
+bool gds_func_SetExitSound(gds_reader_t *reader, const gds_record_t *command,
+                           void *user_data) {
+    (void)user_data;
+
+    int32_t args[2];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+
+    int32_t exit_id = args[0];
+    int32_t sound_id = args[1];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: STUB %s(exit_id=%d, sound_id=%d)\n", function_name, exit_id,
+           sound_id);
+#endif
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -499,6 +641,24 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_AddSubSprite:
         *handler = gds_func_AddSubSprite;
+        return true;
+    case SCRIPT_CMD_SetGameMode:
+        *handler = gds_func_SetGameMode;
+        return true;
+    case SCRIPT_CMD_SetCurrentEvent:
+        *handler = gds_func_SetCurrentEvent;
+        return true;
+    case SCRIPT_CMD_AddHintCoin:
+        *handler = gds_func_AddHintCoin;
+        return true;
+    case SCRIPT_CMD_AddDogCoin:
+        *handler = gds_func_AddDogCoin;
+        return true;
+    case SCRIPT_CMD_AddSecretCoin:
+        *handler = gds_func_AddSecretCoin;
+        return true;
+    case SCRIPT_CMD_SetExitSound:
+        *handler = gds_func_SetExitSound;
         return true;
     default:
         *handler = NULL;

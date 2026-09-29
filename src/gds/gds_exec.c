@@ -27,6 +27,8 @@ static bool gds_execute_default_command(gds_reader_t *reader,
         switch (next_record.type) {
         case GDS_RECORD_COMMAND:
         case GDS_RECORD_BREAKPOINT:
+        case GDS_RECORD_BLOCK_START:
+        case GDS_RECORD_BLOCK_END:
             reader->offset = saved_offset;
             should_break = true;
             break;

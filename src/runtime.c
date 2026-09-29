@@ -8,7 +8,7 @@
 #include "renderer.h"
 
 #define TARGET_FRAMERATE 60.0
-#define WINDOW_SCALE 1.0f
+#define WINDOW_SCALE 0.5f
 
 int runtime_init(runtime_t *rt, const char *assets_root,
                  const char *resource_pack_root, language_t language) {
