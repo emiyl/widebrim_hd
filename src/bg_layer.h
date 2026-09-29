@@ -32,9 +32,9 @@ typedef void (*bg_layer_touch_callback_t)(void *user, bg_touch_kind_t kind,
 
 typedef struct bg_layer_t {
     renderer_t *renderer;
-    bg_layer_texture_t tex_main;
     bg_layer_texture_t tex_sub;
-    bg_layer_texture_t tex_sub2;
+    bg_layer_texture_t tex_main;
+    bg_layer_texture_t tex_main2;
     bool touch_pending;
     int touch_start_x;
     int touch_start_y;
@@ -44,19 +44,21 @@ typedef struct bg_layer_t {
     bg_layer_touch_callback_t touch_callback;
     void *touch_user;
 
-    bool (*load)(struct bg_layer_t *bg_layer, game_state_t *state,
-                 const char *bg_name);
     bool (*load_sub)(struct bg_layer_t *bg_layer, game_state_t *state,
                      const char *bg_name);
-    bool (*load_sub2)(struct bg_layer_t *bg_layer, game_state_t *state,
+    bool (*load_main)(struct bg_layer_t *bg_layer, game_state_t *state,
                       const char *bg_name);
+    bool (*load_main2)(struct bg_layer_t *bg_layer, game_state_t *state,
+                       const char *bg_name);
 
     void (*set_scroll)(struct bg_layer_t *bg_layer, float pixels_per_second,
                        bool repeating);
     void (*set_sub_scroll)(struct bg_layer_t *bg_layer, float pixels_per_second,
                            bool repeating);
-    void (*set_sub2_scroll)(struct bg_layer_t *bg_layer,
+    void (*set_main_scroll)(struct bg_layer_t *bg_layer,
                             float pixels_per_second, bool repeating);
+    void (*set_main2_scroll)(struct bg_layer_t *bg_layer,
+                             float pixels_per_second, bool repeating);
 } bg_layer_t;
 
 void bg_layer_init(bg_layer_t *bg_layer, renderer_t *renderer);
@@ -66,24 +68,24 @@ void bg_layer_set_touch_callback(bg_layer_t *bg_layer,
                                  bg_layer_touch_callback_t callback,
                                  void *user);
 
-void bg_layer_set_main_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
-                            int height);
 void bg_layer_set_sub_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
                            int height);
-void bg_layer_set_sub2_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
+void bg_layer_set_main_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
                             int height);
-void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness);
+void bg_layer_set_main2_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
+                             int height);
 void bg_layer_set_sub_darkness(bg_layer_t *bg, uint8_t darkness);
-void bg_layer_set_sub2_darkness(bg_layer_t *bg, uint8_t darkness);
-void bg_layer_set_main_shake(bg_layer_t *bg, float shake_remaining_ms);
+void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness);
+void bg_layer_set_main2_darkness(bg_layer_t *bg, uint8_t darkness);
 void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms);
-void bg_layer_set_sub2_shake(bg_layer_t *bg, float shake_remaining_ms);
-void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
-                              bool repeating);
+void bg_layer_set_main_shake(bg_layer_t *bg, float shake_remaining_ms);
+void bg_layer_set_main2_shake(bg_layer_t *bg, float shake_remaining_ms);
 void bg_layer_set_sub_scroll(bg_layer_t *bg, float pixels_per_second,
                              bool repeating);
-void bg_layer_set_sub2_scroll(bg_layer_t *bg, float pixels_per_second,
+void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
                               bool repeating);
+void bg_layer_set_main2_scroll(bg_layer_t *bg, float pixels_per_second,
+                               bool repeating);
 
 screen_layer_t bg_layer_as_screen_layer(bg_layer_t *bg_layer);
 

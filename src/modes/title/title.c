@@ -181,12 +181,12 @@ static void mode_title_load_bg(mode_title_impl_t *impl) {
     game_state_t *state = impl->base.state;
     bg_layer_t *bg = impl->base.controller->bg;
 
-    bg->load(bg, state, bg_path);
-    bg->load_sub(bg, state, sub_bg_path);
-    bg->load_sub2(bg, state, sub_bg_overlay_path);
+    bg->load_sub(bg, state, bg_path);
+    bg->load_main(bg, state, sub_bg_path);
+    bg->load_main2(bg, state, sub_bg_overlay_path);
 
-    bg->set_sub_scroll(bg, -45.0f, true);
-    bg->set_sub2_scroll(bg, -90.0f, true);
+    bg->set_main_scroll(bg, -45.0f, true);
+    bg->set_main2_scroll(bg, -90.0f, true);
 }
 
 static bool mode_title_is_done(void *user) {

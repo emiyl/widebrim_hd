@@ -64,7 +64,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     char bg_sub_path[256];
     snprintf(bg_sub_path, sizeof(bg_sub_path), "room_%d_bg.bgx", room_num);
 
-    if (!bg->load_sub(bg, state, bg_sub_path)) {
+    if (!bg->load_main(bg, state, bg_sub_path)) {
         fprintf(stderr, "widebrim: failed to load room %d background\n",
                 room_num);
     }

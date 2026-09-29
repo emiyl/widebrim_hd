@@ -652,7 +652,7 @@ bool gds_func_LoadBG(gds_reader_t *reader, const gds_record_t *command,
            layer);
 #endif
 
-    bg->load(bg, state, bg_name);
+    bg->load_main(bg, state, bg_name);
 
     return true;
 }

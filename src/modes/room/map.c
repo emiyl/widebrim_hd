@@ -124,7 +124,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     snprintf(map_background_path, sizeof(map_background_path), "map_%d.bgx",
              map_background_id);
 
-    if (!bg->load(bg, state, map_background_path)) {
+    if (!bg->load_sub(bg, state, map_background_path)) {
         fprintf(stderr, "widebrim: failed to load map background: %s\n",
                 map_background_path);
     }
