@@ -71,6 +71,25 @@ static void mode_event_load_center_line(mode_event_impl_t *impl) {
     sprite_take_object_position(spr, line);
 }
 
+static void mode_event_update(void *user, float delta_time) {
+    (void)delta_time;
+    if (!user) {
+        return;
+    }
+
+    mode_event_impl_t *impl = (mode_event_impl_t *)user;
+    if (!impl || impl->base.done) {
+        return;
+    }
+
+    game_state_t *state = impl->base.state;
+
+    if (!mode_event_load_script(impl)) {
+        fprintf(stderr, "widebrim: failed to load event script for event %d\n",
+                game_state_get_event_id(state));
+    }
+}
+
 mode_handler_t mode_event_create(game_state_t *state,
                                  screen_controller_t *screen_controller) {
     mode_handler_t handler;
@@ -92,16 +111,11 @@ mode_handler_t mode_event_create(game_state_t *state,
     mode_event_load_center_line(impl);
     object_layer_add_object(impl->base.controller->object, impl->center_line);
 
-    if (!mode_event_load_script(impl)) {
-        fprintf(stderr, "widebrim: failed to load event script for event %d\n",
-                game_state_get_event_id(state));
-    }
-
     screen_controller_fade_in(screen_controller, FADER_DEFAULT_DURATION_MS,
                               NULL, NULL);
 
     handler.layer.impl = impl;
-    handler.layer.update = NULL;
+    handler.layer.update = mode_event_update;
     handler.layer.draw = NULL;
     handler.layer.handle_event = NULL;
     handler.layer.on_quit = NULL;
