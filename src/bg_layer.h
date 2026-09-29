@@ -61,12 +61,6 @@ typedef struct bg_layer_t {
 
 void bg_layer_init(bg_layer_t *bg_layer, renderer_t *renderer);
 void bg_layer_destroy(bg_layer_t *bg_layer);
-bool bg_layer_load(bg_layer_t *bg_layer, game_state_t *state,
-                   const char *bg_name);
-bool bg_layer_load_sub(bg_layer_t *bg_layer, game_state_t *state,
-                       const char *bg_name);
-bool bg_layer_load_sub2(bg_layer_t *bg_layer, game_state_t *state,
-                        const char *bg_name);
 
 void bg_layer_set_touch_callback(bg_layer_t *bg_layer,
                                  bg_layer_touch_callback_t callback,

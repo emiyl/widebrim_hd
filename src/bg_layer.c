@@ -8,6 +8,68 @@
 
 #include "texture_loader.h"
 
+static void bg_layer_texture_set_rgba(bg_layer_texture_t *tex,
+                                      renderer_t *renderer, const uint8_t *rgba,
+                                      int width, int height);
+static void bg_layer_texture_set_darkness(bg_layer_texture_t *tex,
+                                          uint8_t darkness);
+
+static bool bg_layer_load_texture(bg_layer_t *bg_layer, game_state_t *state,
+                                  const char *bg_name,
+                                  bg_layer_texture_t *texture_slot,
+                                  const char *texture_name) {
+    texture_data_t *texture = NULL;
+    char bg_path[1024];
+    char full_bg_path[1024];
+
+    if (!bg_layer || !bg_layer->renderer || !bg_name || !texture_slot ||
+        !texture_name) {
+        return false;
+    }
+
+    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
+
+    if (!asset_path_resolve(state, bg_path, full_bg_path,
+                            sizeof(full_bg_path))) {
+        fprintf(stderr,
+                "widebrim: Failed to resolve path for background image '%s'\n",
+                bg_path);
+        return false;
+    }
+
+    texture = texture_load_rgba(full_bg_path);
+    if (!texture) {
+        fprintf(stderr, "widebrim: failed to load %s '%s'\n", texture_name,
+                bg_name);
+        return false;
+    }
+
+    bg_layer_texture_set_rgba(texture_slot, bg_layer->renderer, texture->pixels,
+                              texture->width, texture->height);
+    bg_layer_texture_set_darkness(texture_slot, 0);
+    texture_free(texture);
+
+    return true;
+}
+
+static bool bg_layer_load(bg_layer_t *bg_layer, game_state_t *state,
+                          const char *bg_name) {
+    return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->tex_main,
+                                 "background");
+}
+
+static bool bg_layer_load_sub(bg_layer_t *bg_layer, game_state_t *state,
+                              const char *bg_name) {
+    return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->tex_sub,
+                                 "sub background");
+}
+
+static bool bg_layer_load_sub2(bg_layer_t *bg_layer, game_state_t *state,
+                               const char *bg_name) {
+    return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->tex_sub2,
+                                 "sub background");
+}
+
 static void bg_layer_texture_init(bg_layer_texture_t *tex) {
     tex->tex = NULL;
     tex->darkness = 0;
@@ -68,110 +130,6 @@ void bg_layer_destroy(bg_layer_t *bg) {
     bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
     bg_layer_texture_destroy(&bg->tex_sub2, bg->renderer);
     bg->renderer = NULL;
-}
-
-bool bg_layer_load(bg_layer_t *bg_layer, game_state_t *state,
-                   const char *bg_name) {
-    texture_data_t *texture = NULL;
-
-    if (!bg_layer || !bg_layer->renderer || !bg_name) {
-        return false;
-    }
-
-    char bg_path[1024];
-    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
-
-    char full_bg_path[1024];
-    if (!asset_path_resolve(state, bg_path, full_bg_path,
-                            sizeof(full_bg_path))) {
-        fprintf(stderr,
-                "widebrim: Failed to resolve path for background image '%s'\n",
-                bg_path);
-        return false;
-    }
-
-    texture = texture_load_rgba(full_bg_path);
-    if (!texture) {
-        fprintf(stderr, "widebrim: failed to load background '%s'\n", bg_name);
-        return false;
-    }
-
-    bg_layer_set_main_rgba(bg_layer, texture->pixels, texture->width,
-                           texture->height);
-    bg_layer_set_main_darkness(bg_layer, 0);
-    texture_free(texture);
-
-    return true;
-}
-
-bool bg_layer_load_sub(bg_layer_t *bg_layer, game_state_t *state,
-                       const char *bg_name) {
-    texture_data_t *texture = NULL;
-
-    if (!bg_layer || !bg_layer->renderer || !bg_name) {
-        return false;
-    }
-
-    char bg_path[1024];
-    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
-
-    char full_bg_path[1024];
-    if (!asset_path_resolve(state, bg_path, full_bg_path,
-                            sizeof(full_bg_path))) {
-        fprintf(stderr,
-                "widebrim: Failed to resolve path for background image '%s'\n",
-                bg_path);
-        return false;
-    }
-
-    texture = texture_load_rgba(full_bg_path);
-    if (!texture) {
-        fprintf(stderr, "widebrim: failed to load sub background '%s'\n",
-                bg_name);
-        return false;
-    }
-
-    bg_layer_set_sub_rgba(bg_layer, texture->pixels, texture->width,
-                          texture->height);
-    bg_layer_set_sub_darkness(bg_layer, 0);
-    texture_free(texture);
-
-    return true;
-}
-
-bool bg_layer_load_sub2(bg_layer_t *bg_layer, game_state_t *state,
-                        const char *bg_name) {
-    texture_data_t *texture = NULL;
-
-    if (!bg_layer || !bg_layer->renderer || !bg_name) {
-        return false;
-    }
-
-    char bg_path[1024];
-    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
-
-    char full_bg_path[1024];
-    if (!asset_path_resolve(state, bg_path, full_bg_path,
-                            sizeof(full_bg_path))) {
-        fprintf(stderr,
-                "widebrim: Failed to resolve path for background image '%s'\n",
-                bg_path);
-        return false;
-    }
-
-    texture = texture_load_rgba(full_bg_path);
-    if (!texture) {
-        fprintf(stderr, "widebrim: failed to load sub background '%s'\n",
-                bg_name);
-        return false;
-    }
-
-    bg_layer_set_sub2_rgba(bg_layer, texture->pixels, texture->width,
-                           texture->height);
-    bg_layer_set_sub2_darkness(bg_layer, 0);
-    texture_free(texture);
-
-    return true;
 }
 
 void bg_layer_set_touch_callback(bg_layer_t *bg_layer,
