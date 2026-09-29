@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "event/event.h"
 #include "reset/reset.h"
 #include "room/room.h"
 #include "title/title.h"
@@ -21,6 +22,8 @@ mode_spawner_create_handler(game_mode_t mode, game_state_t *state,
         return mode_room_create(state, controller);
     case MODE_TITLE:
         return mode_title_create(state, controller);
+    case MODE_EVENT:
+        return mode_event_create(state, controller);
     default:
         invalid.layer.impl = NULL;
         invalid.layer.update = NULL;
