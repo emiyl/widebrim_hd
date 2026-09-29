@@ -1,7 +1,12 @@
 #include "bg_layer.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "texture_loader.h"
 
 static void bg_layer_texture_init(bg_layer_texture_t *tex) {
     tex->tex = NULL;
@@ -27,6 +32,12 @@ void bg_layer_init(bg_layer_t *bg, renderer_t *renderer) {
     }
 
     bg->renderer = renderer;
+    bg->load = bg_layer_load;
+    bg->load_sub = bg_layer_load_sub;
+    bg->load_sub2 = bg_layer_load_sub2;
+    bg->set_scroll = bg_layer_set_main_scroll;
+    bg->set_sub_scroll = bg_layer_set_sub_scroll;
+    bg->set_sub2_scroll = bg_layer_set_sub2_scroll;
 
     if (bg->tex_main.tex)
         bg_layer_texture_destroy(&bg->tex_main, bg->renderer);
@@ -57,6 +68,110 @@ void bg_layer_destroy(bg_layer_t *bg) {
     bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
     bg_layer_texture_destroy(&bg->tex_sub2, bg->renderer);
     bg->renderer = NULL;
+}
+
+bool bg_layer_load(bg_layer_t *bg_layer, game_state_t *state,
+                   const char *bg_name) {
+    texture_data_t *texture = NULL;
+
+    if (!bg_layer || !bg_layer->renderer || !bg_name) {
+        return false;
+    }
+
+    char bg_path[1024];
+    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
+
+    char full_bg_path[1024];
+    if (!asset_path_resolve(state, bg_path, full_bg_path,
+                            sizeof(full_bg_path))) {
+        fprintf(stderr,
+                "widebrim: Failed to resolve path for background image '%s'\n",
+                bg_path);
+        return false;
+    }
+
+    texture = texture_load_rgba(full_bg_path);
+    if (!texture) {
+        fprintf(stderr, "widebrim: failed to load background '%s'\n", bg_name);
+        return false;
+    }
+
+    bg_layer_set_main_rgba(bg_layer, texture->pixels, texture->width,
+                           texture->height);
+    bg_layer_set_main_darkness(bg_layer, 0);
+    texture_free(texture);
+
+    return true;
+}
+
+bool bg_layer_load_sub(bg_layer_t *bg_layer, game_state_t *state,
+                       const char *bg_name) {
+    texture_data_t *texture = NULL;
+
+    if (!bg_layer || !bg_layer->renderer || !bg_name) {
+        return false;
+    }
+
+    char bg_path[1024];
+    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
+
+    char full_bg_path[1024];
+    if (!asset_path_resolve(state, bg_path, full_bg_path,
+                            sizeof(full_bg_path))) {
+        fprintf(stderr,
+                "widebrim: Failed to resolve path for background image '%s'\n",
+                bg_path);
+        return false;
+    }
+
+    texture = texture_load_rgba(full_bg_path);
+    if (!texture) {
+        fprintf(stderr, "widebrim: failed to load sub background '%s'\n",
+                bg_name);
+        return false;
+    }
+
+    bg_layer_set_sub_rgba(bg_layer, texture->pixels, texture->width,
+                          texture->height);
+    bg_layer_set_sub_darkness(bg_layer, 0);
+    texture_free(texture);
+
+    return true;
+}
+
+bool bg_layer_load_sub2(bg_layer_t *bg_layer, game_state_t *state,
+                        const char *bg_name) {
+    texture_data_t *texture = NULL;
+
+    if (!bg_layer || !bg_layer->renderer || !bg_name) {
+        return false;
+    }
+
+    char bg_path[1024];
+    snprintf(bg_path, sizeof(bg_path), "bg/%s", bg_name);
+
+    char full_bg_path[1024];
+    if (!asset_path_resolve(state, bg_path, full_bg_path,
+                            sizeof(full_bg_path))) {
+        fprintf(stderr,
+                "widebrim: Failed to resolve path for background image '%s'\n",
+                bg_path);
+        return false;
+    }
+
+    texture = texture_load_rgba(full_bg_path);
+    if (!texture) {
+        fprintf(stderr, "widebrim: failed to load sub background '%s'\n",
+                bg_name);
+        return false;
+    }
+
+    bg_layer_set_sub2_rgba(bg_layer, texture->pixels, texture->width,
+                           texture->height);
+    bg_layer_set_sub2_darkness(bg_layer, 0);
+    texture_free(texture);
+
+    return true;
 }
 
 void bg_layer_set_touch_callback(bg_layer_t *bg_layer,

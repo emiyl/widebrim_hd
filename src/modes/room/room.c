@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bg_loader.h"
 #include "safe.h"
 #include "script.h"
 
@@ -43,13 +42,15 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
         return;
     }
 
-    int room_num = game_state_get_place_num(impl->base.state);
-    char bg_sub_path[256];
-    snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.bgx", room_num);
+    game_state_t *state = impl->base.state;
+    bg_layer_t *bg = impl->base.controller->bg;
 
-    if (!bg_loader_load(impl->base.state, impl->base.controller, bg_sub_path,
-                        screen_controller_set_bg_sub)) {
-        fprintf(stderr, "widebrim: failed to reload room %d background\n",
+    int room_num = game_state_get_place_num(state);
+    char bg_sub_path[256];
+    snprintf(bg_sub_path, sizeof(bg_sub_path), "room_%d_bg.bgx", room_num);
+
+    if (!bg->load_sub(bg, state, bg_sub_path)) {
+        fprintf(stderr, "widebrim: failed to load room %d background\n",
                 room_num);
     }
 

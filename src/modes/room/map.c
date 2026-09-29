@@ -1,6 +1,5 @@
 #include "map.h"
 
-#include "bg_loader.h"
 #include "text_loader.h"
 
 void mode_room_load_map_place(mode_room_impl_t *impl) {
@@ -113,6 +112,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     }
 
     game_state_t *state = room->base.state;
+    bg_layer_t *bg = room->base.controller->bg;
 
     char map_background_path[256];
     char map_title_path[256];
@@ -121,11 +121,10 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     char map_purpose_path[256];
     char map_purpose_buffer[256];
 
-    snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.bgx",
+    snprintf(map_background_path, sizeof(map_background_path), "map_%d.bgx",
              map_background_id);
 
-    if (!bg_loader_load(room->base.state, room->base.controller,
-                        map_background_path, screen_controller_set_bg_main)) {
+    if (!bg->load(bg, state, map_background_path)) {
         fprintf(stderr, "widebrim: failed to load map background: %s\n",
                 map_background_path);
     }

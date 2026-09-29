@@ -5,6 +5,7 @@
 
 #include <SDL3/SDL.h>
 
+#include "game_state.h"
 #include "renderer.h"
 #include "screen.h"
 
@@ -29,7 +30,7 @@ typedef enum {
 typedef void (*bg_layer_touch_callback_t)(void *user, bg_touch_kind_t kind,
                                           int x, int y);
 
-typedef struct {
+typedef struct bg_layer_t {
     renderer_t *renderer;
     bg_layer_texture_t tex_main;
     bg_layer_texture_t tex_sub;
@@ -42,10 +43,30 @@ typedef struct {
     bool touch_dragged;
     bg_layer_touch_callback_t touch_callback;
     void *touch_user;
+
+    bool (*load)(struct bg_layer_t *bg_layer, game_state_t *state,
+                 const char *bg_name);
+    bool (*load_sub)(struct bg_layer_t *bg_layer, game_state_t *state,
+                     const char *bg_name);
+    bool (*load_sub2)(struct bg_layer_t *bg_layer, game_state_t *state,
+                      const char *bg_name);
+
+    void (*set_scroll)(struct bg_layer_t *bg_layer, float pixels_per_second,
+                       bool repeating);
+    void (*set_sub_scroll)(struct bg_layer_t *bg_layer, float pixels_per_second,
+                           bool repeating);
+    void (*set_sub2_scroll)(struct bg_layer_t *bg_layer,
+                            float pixels_per_second, bool repeating);
 } bg_layer_t;
 
 void bg_layer_init(bg_layer_t *bg_layer, renderer_t *renderer);
 void bg_layer_destroy(bg_layer_t *bg_layer);
+bool bg_layer_load(bg_layer_t *bg_layer, game_state_t *state,
+                   const char *bg_name);
+bool bg_layer_load_sub(bg_layer_t *bg_layer, game_state_t *state,
+                       const char *bg_name);
+bool bg_layer_load_sub2(bg_layer_t *bg_layer, game_state_t *state,
+                        const char *bg_name);
 
 void bg_layer_set_touch_callback(bg_layer_t *bg_layer,
                                  bg_layer_touch_callback_t callback,

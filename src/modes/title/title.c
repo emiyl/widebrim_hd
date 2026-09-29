@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 
-#include "bg_loader.h"
 #include "safe.h"
 #include "sprite.h"
 
@@ -175,21 +174,19 @@ static void mode_title_load_sprites(mode_title_impl_t *impl) {
 }
 
 static void mode_title_load_bg(mode_title_impl_t *impl) {
-    const char *bg_path = "bg/select_title.bgx";
-    const char *sub_bg_path = "bg/start_select2.bgx";
-    const char *sub_bg_overlay_path = "bg/start_select.bgx";
+    const char *bg_path = "select_title.bgx";
+    const char *sub_bg_path = "start_select2.bgx";
+    const char *sub_bg_overlay_path = "start_select.bgx";
 
     game_state_t *state = impl->base.state;
-    screen_controller_t *controller = impl->base.controller;
+    bg_layer_t *bg = impl->base.controller->bg;
 
-    bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
-    bg_loader_load(state, controller, sub_bg_path,
-                   screen_controller_set_bg_sub);
-    bg_loader_load(state, controller, sub_bg_overlay_path,
-                   screen_controller_set_bg_sub2);
+    bg->load(bg, state, bg_path);
+    bg->load_sub(bg, state, sub_bg_path);
+    bg->load_sub2(bg, state, sub_bg_overlay_path);
 
-    screen_controller_set_bg_sub_scroll(controller, -45.0f, true);
-    screen_controller_set_bg_sub2_scroll(controller, -90.0f, true);
+    bg->set_sub_scroll(bg, -45.0f, true);
+    bg->set_sub2_scroll(bg, -90.0f, true);
 }
 
 static bool mode_title_is_done(void *user) {

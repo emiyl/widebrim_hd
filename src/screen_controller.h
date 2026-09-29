@@ -18,45 +18,6 @@ typedef struct {
     renderer_t *renderer;
 } screen_controller_t;
 
-static inline void screen_controller_set_bg_main(screen_controller_t *sc,
-                                                 const uint8_t *rgba, int w,
-                                                 int h) {
-    bg_layer_set_main_rgba(sc->bg, rgba, w, h);
-    bg_layer_set_main_darkness(sc->bg, 0);
-}
-
-static inline void screen_controller_set_bg_sub(screen_controller_t *sc,
-                                                const uint8_t *rgba, int w,
-                                                int h) {
-    bg_layer_set_sub_rgba(sc->bg, rgba, w, h);
-    bg_layer_set_sub_darkness(sc->bg, 0);
-}
-
-static inline void screen_controller_set_bg_sub2(screen_controller_t *sc,
-                                                 const uint8_t *rgba, int w,
-                                                 int h) {
-    bg_layer_set_sub2_rgba(sc->bg, rgba, w, h);
-    bg_layer_set_sub2_darkness(sc->bg, 0);
-}
-
-static inline void screen_controller_set_bg_main_scroll(screen_controller_t *sc,
-                                                        float pixels_per_second,
-                                                        bool repeating) {
-    bg_layer_set_main_scroll(sc->bg, pixels_per_second, repeating);
-}
-
-static inline void screen_controller_set_bg_sub_scroll(screen_controller_t *sc,
-                                                       float pixels_per_second,
-                                                       bool repeating) {
-    bg_layer_set_sub_scroll(sc->bg, pixels_per_second, repeating);
-}
-
-static inline void screen_controller_set_bg_sub2_scroll(screen_controller_t *sc,
-                                                        float pixels_per_second,
-                                                        bool repeating) {
-    bg_layer_set_sub2_scroll(sc->bg, pixels_per_second, repeating);
-}
-
 static inline void screen_controller_clear_bg_layer(screen_controller_t *sc) {
     if (!sc || !sc->bg) {
         return;

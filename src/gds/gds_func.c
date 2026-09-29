@@ -4,6 +4,7 @@
 
 #include "gds/gds.h"
 #include "gds/gds_opcode.h"
+#include "gds/gds_reader.h"
 #include "gds_branch.h"
 #include "gds_state.h"
 #include "room/room.h"
@@ -624,6 +625,36 @@ bool gds_func_ExitScript(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_LoadBG(gds_reader_t *reader, const gds_record_t *command,
+                     void *user_data) {
+    (void)reader;
+    (void)command;
+    (void)user_data;
+
+    const char *string_args[1];
+    int32_t int_args[1];
+    if (!gds_read_string_args(reader, string_args,
+                              sizeof(string_args) / sizeof(string_args[0]),
+                              command)) {
+        return false;
+    }
+    if (!gds_read_s32_args(reader, int_args,
+                           sizeof(int_args) / sizeof(int_args[0]), command)) {
+        return false;
+    }
+
+    const char *bg_name = string_args[0];
+    int32_t layer = int_args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: STUB %s(bg_name=\"%s\", layer=%d)\n", function_name, bg_name,
+           layer);
+#endif
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -696,6 +727,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_SetExitSound:
         *handler = gds_func_SetExitSound;
+        return true;
+    case SCRIPT_CMD_LoadBG:
+        *handler = gds_func_LoadBG;
         return true;
     default:
         *handler = NULL;
