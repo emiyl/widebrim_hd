@@ -483,7 +483,8 @@ bool gds_func_SetGameMode(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetCurrentEvent(gds_reader_t *reader, const gds_record_t *command,
                               void *user_data) {
-    (void)user_data;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->state;
 
     int32_t event_id;
     int32_t args[1];
@@ -495,8 +496,10 @@ bool gds_func_SetCurrentEvent(gds_reader_t *reader, const gds_record_t *command,
 
 #ifdef TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: STUB %s(event_id=%d)\n", function_name, event_id);
+    printf("gds: %s(event_id=%d)\n", function_name, event_id);
 #endif
+
+    state->set_current_event(state, event_id);
 
     return true;
 }

@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "script.h"
+
 static bool mode_event_is_done(void *user) {
     if (!user) {
         fprintf(stderr,
@@ -23,6 +25,19 @@ static void mode_event_destroy(void *user) {
     free(user);
 }
 
+static bool mode_event_load_script(mode_event_impl_t *impl) {
+    char script_path[64];
+
+    if (!impl || !impl->base.state) {
+        return false;
+    }
+
+    snprintf(script_path, sizeof(script_path), "script/event/e%d.gds",
+             game_state_get_event_id(impl->base.state));
+    return script_load_and_execute(impl->base.state, script_path, impl,
+                                   &impl->base.state->gds);
+}
+
 mode_handler_t mode_event_create(game_state_t *state,
                                  screen_controller_t *screen_controller) {
     mode_handler_t handler;
@@ -39,7 +54,11 @@ mode_handler_t mode_event_create(game_state_t *state,
     impl->base.state = state;
     impl->base.controller = screen_controller;
     impl->base.done = false;
-    game_state_reset(state);
+
+    if (!mode_event_load_script(impl)) {
+        fprintf(stderr, "widebrim: failed to load event script for event %d\n",
+                game_state_get_event_id(state));
+    }
 
     handler.layer.impl = impl;
     handler.layer.update = NULL;

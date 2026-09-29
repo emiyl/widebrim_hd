@@ -48,6 +48,8 @@ typedef struct game_state_t {
     uint8_t party_flags;
     bool font_event_loaded;
 
+    void (*set_current_event)(struct game_state_t *state, int event_id);
+
     bool (*bit_flag)(const struct game_state_t *state, int flag);
     void (*set_bit_flag)(struct game_state_t *state, int flag, bool value);
 
