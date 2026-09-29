@@ -321,8 +321,7 @@ static bool gds_branch_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
 
 static bool gds_branch_ELSE(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {
-    gds_record_t block_start;
-
+    (void)reader;
     (void)command;
     (void)user_data;
 
@@ -331,17 +330,7 @@ static bool gds_branch_ELSE(gds_reader_t *reader, const gds_record_t *command,
     printf("gds: %s()\n", function_name);
 #endif
 
-    if (reader == NULL || gds_reader_remaining(reader) == 0U) {
-        return true;
-    }
-
-    if (!gds_read_record(reader, &block_start) ||
-        block_start.type != GDS_RECORD_BLOCK_START) {
-        return true;
-    }
-
-    return gds_branch_jump_to_block_target(reader, block_start.type,
-                                           block_start.payload.value.u32);
+    return true;
 }
 
 static bool gds_branch_WHILE(gds_reader_t *reader, const gds_record_t *command,
