@@ -60,6 +60,9 @@ mode_handler_t mode_event_create(game_state_t *state,
                 game_state_get_event_id(state));
     }
 
+    screen_controller_fade_in(screen_controller, FADER_DEFAULT_DURATION_MS,
+                              NULL, NULL);
+
     handler.layer.impl = impl;
     handler.layer.update = NULL;
     handler.layer.draw = NULL;
