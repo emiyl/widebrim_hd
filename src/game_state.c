@@ -55,6 +55,8 @@ void game_state_reset(game_state_t *state) {
     const char *assets_root;
     const char *resource_pack_root;
     language_t language = LANGUAGE_EN;
+    game_mode_t current_mode = MODE_RESET;
+    game_mode_t next_mode = MODE_RESET;
 
     if (!state) {
         fprintf(stderr,
@@ -65,12 +67,15 @@ void game_state_reset(game_state_t *state) {
     assets_root = state->assets_root;
     resource_pack_root = state->resource_pack_root;
     language = state->language;
+    current_mode = state->current_mode;
+    next_mode = state->next_mode;
+
     memset(state, 0, sizeof(game_state_t));
     state->assets_root = assets_root;
     state->resource_pack_root = resource_pack_root;
     state->language = language;
-    state->current_mode = MODE_RESET;
-    state->next_mode = MODE_RESET;
+    state->current_mode = current_mode;
+    state->next_mode = next_mode;
     state->place_num = 0;
     state->event_id = 0;
     state->first_touch_enabled = false;
@@ -86,6 +91,9 @@ void game_state_reset(game_state_t *state) {
 
     state->bit_flag = game_state_bit_flag;
     state->set_bit_flag = game_state_set_bit_flag;
+
+    state->set_mode = game_state_set_mode;
+    state->set_next_mode = game_state_set_next_mode;
 
     gds_state_reset(&state->gds);
 }
@@ -252,6 +260,7 @@ void game_state_set_next_mode(game_state_t *state, game_mode_t mode) {
     }
     state->next_mode = mode;
 }
+
 game_mode_t game_state_consume_mode_next(game_state_t *state) {
     if (!state) {
         fprintf(stderr,

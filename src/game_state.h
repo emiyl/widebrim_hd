@@ -41,15 +41,18 @@ typedef struct game_state_t {
     bool isQuestionCheck;
     bool isQuestionExist;
 
-    bool (*bit_flag)(const struct game_state_t *state, int flag);
-    void (*set_bit_flag)(struct game_state_t *state, int flag, bool value);
-
     int place_num;
     int event_id;
     bool first_touch_enabled;
     hint_coin_state_t hint_coint_state;
     uint8_t party_flags;
     bool font_event_loaded;
+
+    bool (*bit_flag)(const struct game_state_t *state, int flag);
+    void (*set_bit_flag)(struct game_state_t *state, int flag, bool value);
+
+    void (*set_mode)(struct game_state_t *state, game_mode_t mode);
+    void (*set_next_mode)(struct game_state_t *state, game_mode_t mode);
 } game_state_t;
 
 int game_state_init(game_state_t *state, const char *assets_root,

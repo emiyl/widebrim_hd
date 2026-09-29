@@ -6,7 +6,6 @@
 #include "gds/gds_opcode.h"
 #include "gds_branch.h"
 #include "gds_state.h"
-#include "modes/spawner.h"
 #include "room/room.h"
 
 #define TRACE
@@ -462,8 +461,22 @@ bool gds_func_SetGameMode(gds_reader_t *reader, const gds_record_t *command,
 
 #ifdef TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: %s(event_mode_str=\"%s\")\n", function_name, event_mode_str);
+    printf("gds: %s(event_mode=\"%s\")\n", function_name, event_mode_str);
 #endif
+
+    game_mode_t mode = string_to_game_mode(event_mode_str);
+    if (mode == MODE_INVALID) {
+        fprintf(stderr,
+                "widebrim: gds_func_SetGameMode called with invalid mode "
+                "string \"%s\"\n",
+                event_mode_str);
+        return false;
+    }
+
+    if (impl) {
+        impl->done = true;
+    }
+    state->set_next_mode(state, mode);
 
     return true;
 }

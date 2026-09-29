@@ -101,25 +101,24 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
 
     object_layer_remove_all_objects(impl->base.controller->object);
 
-    impl->exit_count = 0;
-    impl->tobj_count = 0;
-    impl->event_count = 0;
-
     object_layer_add_object(impl->base.controller->object, impl->map_place);
     object_layer_add_object(impl->base.controller->object, impl->map_purpose);
     object_layer_add_object(impl->base.controller->object, impl->move_mode_btn);
+
+    set_move_mode(impl, false);
+    object_reset_fade(impl->move_mode_btn, impl->base.controller->renderer);
+
+    impl->exit_count = 0;
+    impl->tobj_count = 0;
+    impl->event_count = 0;
+    impl->base.done = false;
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
     }
 
-    set_move_mode(impl, false);
-    object_reset_fade(impl->move_mode_btn, impl->base.controller->renderer);
-
     screen_controller_fade_in(impl->base.controller, FADER_DEFAULT_DURATION_MS,
                               NULL, NULL);
-
-    impl->base.done = false;
 }
 
 static void mode_room_reload_room_after_fade_out(void *user) {

@@ -194,6 +194,10 @@ void mode_spawner_update(mode_spawner_t *spawner, float delta_ms) {
 
     screen_collection_update(&spawner->layers, delta_ms);
 
+    if (spawner->switch_pending) {
+        return;
+    }
+
     mode_done = spawner->has_active_mode &&
                 spawner->active_mode_handler.is_done &&
                 spawner->active_mode_handler.is_done(
@@ -201,18 +205,33 @@ void mode_spawner_update(mode_spawner_t *spawner, float delta_ms) {
 
     if (spawner->has_active_mode) {
         if (mode_done) {
-            mode_spawner_ready_switch(spawner,
-                                      game_state_get_mode(spawner->state));
+            game_mode_t current_mode = game_state_get_mode(spawner->state);
+            game_mode_t next_mode = game_state_get_next_mode(spawner->state);
+
+            if (next_mode == MODE_INVALID) {
+                next_mode = current_mode;
+            } else {
+                next_mode = game_state_consume_mode_next(spawner->state);
+            }
+
+            if (next_mode != MODE_INVALID && next_mode != current_mode) {
+                mode_spawner_ready_switch(spawner, next_mode);
+            } else {
+                mode_spawner_ready_switch(spawner, current_mode);
+            }
         }
     } else {
         game_mode_t current_mode = game_state_get_mode(spawner->state);
         if (spawner->current_active_mode != current_mode) {
             mode_spawner_ready_switch(spawner, current_mode);
-        } else if (game_state_get_next_mode(spawner->state) != current_mode) {
-            mode_spawner_ready_switch(spawner,
-                                      game_state_get_next_mode(spawner->state));
         } else {
-            spawner->should_quit = true;
+            game_mode_t next_mode = game_state_get_next_mode(spawner->state);
+            if (next_mode != MODE_INVALID && next_mode != current_mode) {
+                next_mode = game_state_consume_mode_next(spawner->state);
+                mode_spawner_ready_switch(spawner, next_mode);
+            } else {
+                spawner->should_quit = true;
+            }
         }
     }
 }

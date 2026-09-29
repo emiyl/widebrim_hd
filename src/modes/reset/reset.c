@@ -3,19 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void mode_reset_on_fade_out_done(void *user) {
-    if (!user) {
-        fprintf(stderr, "widebrim: mode_reset_on_fade_out_done called with "
-                        "NULL user pointer\n");
-        return;
-    }
-
-    mode_reset_impl_t *impl = (mode_reset_impl_t *)user;
-    game_state_set_mode(impl->base.state, MODE_TITLE);
-    game_state_set_place_num(impl->base.state, 3);
-    impl->base.done = true;
-}
-
 static bool mode_reset_is_done(void *user) {
     if (!user) {
         fprintf(stderr,
@@ -54,7 +41,11 @@ mode_handler_t mode_reset_create(game_state_t *state,
     impl->base.done = false;
     game_state_reset(state);
     screen_controller_fade_out(screen_controller, FADER_DEFAULT_DURATION_MS,
-                               mode_reset_on_fade_out_done, impl);
+                               NULL, impl);
+
+    game_state_set_mode(state, MODE_TITLE);
+    game_state_set_next_mode(state, MODE_TITLE);
+    impl->base.done = true;
 
     handler.layer.impl = impl;
     handler.layer.update = NULL;
