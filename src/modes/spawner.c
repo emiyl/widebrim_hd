@@ -209,15 +209,17 @@ void mode_spawner_update(mode_spawner_t *spawner, float delta_ms) {
             game_mode_t next_mode = game_state_get_next_mode(spawner->state);
 
             if (next_mode == MODE_INVALID) {
+                if (current_mode == spawner->current_active_mode) {
+                    return;
+                }
                 next_mode = current_mode;
             } else {
                 next_mode = game_state_consume_mode_next(spawner->state);
             }
 
-            if (next_mode != MODE_INVALID && next_mode != current_mode) {
+            if (next_mode != MODE_INVALID &&
+                next_mode != spawner->current_active_mode) {
                 mode_spawner_ready_switch(spawner, next_mode);
-            } else {
-                mode_spawner_ready_switch(spawner, current_mode);
             }
         }
     } else {
