@@ -12,8 +12,7 @@
 #include "safe.h"
 #include "script.h"
 
-static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
-                                              int room_num) {
+static bool mode_room_run_in_script(mode_room_impl_t *impl, int room_num) {
     char script_path[32];
 
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_in.gds",
@@ -23,9 +22,11 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
         return false;
     }
 
-    if (impl->base.done) {
-        return true;
-    }
+    return true;
+}
+
+static bool mode_room_run_param_script(mode_room_impl_t *impl, int room_num) {
+    char script_path[32];
 
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
              room_num);
@@ -42,10 +43,24 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
         return;
     }
 
+    impl->exit_count = 0;
+    impl->tobj_count = 0;
+    impl->event_count = 0;
+    impl->base.done = false;
+
     game_state_t *state = impl->base.state;
     bg_layer_t *bg = impl->base.controller->bg;
 
     int room_num = game_state_get_place_num(state);
+    if (!mode_room_run_in_script(impl, room_num)) {
+        fprintf(stderr, "widebrim: failed to run room %d in script\n",
+                room_num);
+    }
+
+    if (impl->base.done) {
+        return;
+    }
+
     char bg_sub_path[256];
     snprintf(bg_sub_path, sizeof(bg_sub_path), "room_%d_bg.bgx", room_num);
 
@@ -63,19 +78,12 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     set_move_mode(impl, false);
     object_reset_fade(impl->move_mode_btn, impl->base.controller->renderer);
 
-    impl->exit_count = 0;
-    impl->tobj_count = 0;
-    impl->event_count = 0;
-    impl->base.done = false;
-
-    if (!mode_room_load_and_execute_script(impl, room_num)) {
+    if (!mode_room_run_param_script(impl, room_num)) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
     }
 
-    if (!impl->base.done) {
-        screen_controller_fade_in(impl->base.controller,
-                                  FADER_DEFAULT_DURATION_MS, NULL, NULL);
-    }
+    screen_controller_fade_in(impl->base.controller, FADER_DEFAULT_DURATION_MS,
+                              NULL, NULL);
 }
 
 static void mode_room_reload_room_after_fade_out(void *user) {
