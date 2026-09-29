@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "safe.h"
 #include "script.h"
 
 static bool mode_event_is_done(void *user) {
@@ -15,6 +16,7 @@ static bool mode_event_is_done(void *user) {
     mode_event_impl_t *impl_ptr = (mode_event_impl_t *)user;
     return impl_ptr->base.done;
 }
+
 static void mode_event_destroy(void *user) {
     if (!user) {
         fprintf(stderr,
@@ -38,11 +40,42 @@ static bool mode_event_load_script(mode_event_impl_t *impl) {
                                    &impl->base.state->gds);
 }
 
+static void mode_event_load_center_line(mode_event_impl_t *impl) {
+    if (!impl || !impl->base.controller) {
+        return;
+    }
+
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
+
+    object_t *line = impl->center_line;
+
+    if (!line)
+        return;
+
+    object_clear(line, renderer);
+
+    sprite_t *spr = line->sprite;
+    sprite_new(spr, renderer, state, "center_line.spr", 0.0f, false);
+
+    if (!spr) {
+        fprintf(stderr, "widebrim: failed to create center line sprite\n");
+        return;
+    }
+
+    int spr_w, spr_h;
+    sprite_get_size(spr, renderer, &spr_w, &spr_h);
+
+    object_set_size(line, spr_w, spr_h);
+    object_center_position(line, WB_SCREEN_WIDTH, WB_SCREEN_HEIGHT * 2);
+    sprite_take_object_position(spr, line);
+}
+
 mode_handler_t mode_event_create(game_state_t *state,
                                  screen_controller_t *screen_controller) {
     mode_handler_t handler;
     mode_event_impl_t *impl =
-        (mode_event_impl_t *)malloc(sizeof(mode_event_impl_t));
+        (mode_event_impl_t *)smalloc(sizeof(mode_event_impl_t));
 
     if (!state || !screen_controller) {
         fprintf(stderr,
@@ -54,6 +87,10 @@ mode_handler_t mode_event_create(game_state_t *state,
     impl->base.state = state;
     impl->base.controller = screen_controller;
     impl->base.done = false;
+
+    impl->center_line = smalloc(sizeof(object_t));
+    mode_event_load_center_line(impl);
+    object_layer_add_object(impl->base.controller->object, impl->center_line);
 
     if (!mode_event_load_script(impl)) {
         fprintf(stderr, "widebrim: failed to load event script for event %d\n",
