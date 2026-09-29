@@ -42,6 +42,7 @@ typedef struct game_state_t {
     bool isQuestionExist;
 
     int place_num;
+    int last_entered_room_num;
     int event_id;
     bool first_touch_enabled;
     hint_coin_state_t hint_coint_state;

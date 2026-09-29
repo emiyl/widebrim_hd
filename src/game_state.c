@@ -77,6 +77,7 @@ void game_state_reset(game_state_t *state) {
     state->current_mode = current_mode;
     state->next_mode = next_mode;
     state->place_num = 0;
+    state->last_entered_room_num = -1;
     state->event_id = 0;
     state->first_touch_enabled = false;
     state->party_flags = 0;
@@ -96,6 +97,8 @@ void game_state_reset(game_state_t *state) {
     state->set_next_mode = game_state_set_next_mode;
 
     state->set_current_event = game_state_set_event_id;
+
+    state->set_bit_flag(state, 201, 1);
 
     gds_state_reset(&state->gds);
 }

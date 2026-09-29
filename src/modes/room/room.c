@@ -52,9 +52,13 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     bg_layer_t *bg = impl->base.controller->bg;
 
     int room_num = game_state_get_place_num(state);
-    if (!mode_room_run_in_script(impl, room_num)) {
-        fprintf(stderr, "widebrim: failed to run room %d in script\n",
-                room_num);
+    bool run_in_script = (state->last_entered_room_num != room_num);
+    if (run_in_script) {
+        if (!mode_room_run_in_script(impl, room_num)) {
+            fprintf(stderr, "widebrim: failed to run room %d in script\n",
+                    room_num);
+        }
+        state->last_entered_room_num = room_num;
     }
 
     if (impl->base.done) {
