@@ -657,6 +657,38 @@ bool gds_func_LoadBG(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_LoadSubBG(gds_reader_t *reader, const gds_record_t *command,
+                        void *user_data) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->state;
+    bg_layer_t *bg = impl->controller->bg;
+
+    const char *string_args[1];
+    int32_t int_args[1];
+    if (!gds_read_string_args(reader, string_args,
+                              sizeof(string_args) / sizeof(string_args[0]),
+                              command)) {
+        return false;
+    }
+    if (!gds_read_s32_args(reader, int_args,
+                           sizeof(int_args) / sizeof(int_args[0]), command)) {
+        return false;
+    }
+
+    const char *bg_name = string_args[0];
+    int32_t layer = int_args[0];
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(bg_name=\"%s\", layer=%d)\n", function_name, bg_name,
+           layer);
+#endif
+
+    bg->load_sub(bg, state, bg_name);
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -732,6 +764,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_LoadBG:
         *handler = gds_func_LoadBG;
+        return true;
+    case SCRIPT_CMD_LoadSubBG:
+        *handler = gds_func_LoadSubBG;
         return true;
     default:
         *handler = NULL;
