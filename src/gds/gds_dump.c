@@ -35,6 +35,16 @@ static bool gds_is_block_start(gds_opcode_t opcode) {
     }
 }
 
+static bool gds_is_ignored_record(const gds_record_t *record) {
+    switch (record->type) {
+    case GDS_RECORD_EMPTY_5:
+    case GDS_RECORD_EMPTY_11:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static void dump_value_record(const gds_record_t *record) {
     switch (record->type) {
     case GDS_RECORD_VALUE_S32:
@@ -131,9 +141,7 @@ static bool dump_condition_expression(gds_reader_t *reader) {
             continue;
         }
 
-        if (operand.type == GDS_RECORD_EMPTY_5 ||
-            operand.type == GDS_RECORD_EMPTY_11 ||
-            operand.type == GDS_RECORD_BREAKPOINT) {
+        if (gds_is_ignored_record(&operand)) {
             continue;
         }
 
@@ -189,9 +197,14 @@ static bool dump_command_call(gds_reader_t *reader, const gds_record_t *command,
 
             if (argument.type == GDS_RECORD_COMMAND ||
                 argument.type == GDS_RECORD_BLOCK_START ||
-                argument.type == GDS_RECORD_BLOCK_END) {
+                argument.type == GDS_RECORD_BLOCK_END ||
+                argument.type == GDS_RECORD_BREAKPOINT) {
                 reader->offset = saved_offset;
                 break;
+            }
+
+            if (gds_is_ignored_record(&argument)) {
+                continue;
             }
 
             if (!first_arg) {
@@ -289,6 +302,10 @@ bool dump_gds(const uint8_t *data, size_t size) {
         if (!gds_read_record(&reader, &record)) {
             fprintf(stderr, "Invalid record at offset %zu\n", old_offset);
             return false;
+        }
+
+        if (gds_is_ignored_record(&record)) {
+            continue;
         }
 
         if (record.type == GDS_RECORD_BLOCK_END && indent > 0U) {
