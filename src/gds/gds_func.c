@@ -627,9 +627,9 @@ bool gds_func_ExitScript(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_LoadBG(gds_reader_t *reader, const gds_record_t *command,
                      void *user_data) {
-    (void)reader;
-    (void)command;
-    (void)user_data;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->state;
+    bg_layer_t *bg = impl->controller->bg;
 
     const char *string_args[1];
     int32_t int_args[1];
@@ -648,9 +648,11 @@ bool gds_func_LoadBG(gds_reader_t *reader, const gds_record_t *command,
 
 #ifdef TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: STUB %s(bg_name=\"%s\", layer=%d)\n", function_name, bg_name,
+    printf("gds: %s(bg_name=\"%s\", layer=%d)\n", function_name, bg_name,
            layer);
 #endif
+
+    bg->load(bg, state, bg_name);
 
     return true;
 }
