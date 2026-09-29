@@ -95,6 +95,8 @@ static bool gds_branch_read_condition_term(gds_reader_t *reader, bool *result,
     if (record.type == GDS_RECORD_NOT) {
         bool value = false;
 
+        printf("gds: NOT\n");
+
         if (!gds_branch_read_condition_term(reader, &value, user_data)) {
             reader->offset = start;
             return false;
@@ -189,8 +191,10 @@ static bool gds_branch_read_condition(gds_reader_t *reader, bool *result,
         }
 
         if (record.type == GDS_RECORD_AND) {
+            printf("gds: AND\n");
             left = left && right;
         } else {
+            printf("gds: OR\n");
             left = left || right;
         }
     }
