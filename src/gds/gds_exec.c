@@ -110,7 +110,7 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
 
         if (record.type == GDS_RECORD_BREAKPOINT) {
             printf("gds: hit breakpoint at offset %zu\n", old_offset);
-            continue;
+            break;
         }
 
         if (record.type != GDS_RECORD_COMMAND) {
