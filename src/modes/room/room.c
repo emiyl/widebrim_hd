@@ -15,46 +15,11 @@
 #include "gds/gds.h"
 #include "gds/gds_exec.h"
 
-static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
-                                              int room_num) {
-    char script_path[32];
+static bool mode_room_load_script_file(mode_room_impl_t *impl,
+                                       const char *script_path, int room_num) {
     char resolved_path[1024];
     const uint8_t *script_payload = NULL;
     size_t script_payload_size = 0U;
-
-    // Run "in" script for the room
-
-    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_in.gds",
-             room_num);
-
-    if (!asset_path_resolve(impl->base.state, script_path, resolved_path,
-                            sizeof(resolved_path))) {
-        fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
-                script_path);
-        return false;
-    }
-
-    fprintf(stderr, "widebrim: Loading script for room %d: %s\n", room_num,
-            script_path);
-    if (!gds_load_from_file_path(resolved_path, &script_payload,
-                                 &script_payload_size)) {
-        fprintf(stderr, "widebrim: Failed to load script for room %d: %s\n",
-                room_num, script_path);
-        return false;
-    }
-
-    if (!gds_execute_script(script_payload, script_payload_size, impl,
-                            &impl->base.state->gds)) {
-        fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
-                room_num, script_path);
-        gds_free_payload(script_payload);
-        return false;
-    }
-
-    // Run "param" script for the room
-
-    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
-             room_num);
 
     if (!asset_path_resolve(impl->base.state, script_path, resolved_path,
                             sizeof(resolved_path))) {
@@ -81,6 +46,25 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     }
 
     gds_free_payload(script_payload);
+    return true;
+}
+
+static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
+                                              int room_num) {
+    char script_path[32];
+
+    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_in.gds",
+             room_num);
+    if (!mode_room_load_script_file(impl, script_path, room_num)) {
+        return false;
+    }
+
+    snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
+             room_num);
+    if (!mode_room_load_script_file(impl, script_path, room_num)) {
+        return false;
+    }
+
     return true;
 }
 
