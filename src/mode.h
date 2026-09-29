@@ -42,11 +42,22 @@ static inline const char *game_mode_to_string(game_mode_t mode) {
 }
 
 static inline game_mode_t string_to_game_mode(const char *input) {
+
+#ifdef _WIN32
+#define GAME_MODE_STRICMP _stricmp
+#else
+#define GAME_MODE_STRICMP strcasecmp
+#endif
+
 #define X(value, name, str)                                                    \
-    if (strcmp(input, str) == 0)                                               \
+    if (GAME_MODE_STRICMP(input, str) == 0)                                    \
         return name;
+
     GAME_MODES(X)
+
 #undef X
+#undef GAME_MODE_STRICMP
+
     return MODE_INVALID;
 }
 
