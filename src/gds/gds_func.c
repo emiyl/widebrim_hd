@@ -606,6 +606,24 @@ bool gds_func_SetExitSound(gds_reader_t *reader, const gds_record_t *command,
     return true;
 }
 
+bool gds_func_ExitScript(gds_reader_t *reader, const gds_record_t *command,
+                         void *user_data) {
+    (void)reader;
+    (void)command;
+
+#ifdef TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s()\n", function_name);
+#endif
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (impl) {
+        impl->done = true;
+    }
+
+    return true;
+}
+
 bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     if (handler == NULL) {
         return false;
@@ -657,6 +675,9 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
         return true;
     case SCRIPT_CMD_AddSubSprite:
         *handler = gds_func_AddSubSprite;
+        return true;
+    case SCRIPT_CMD_ExitScript:
+        *handler = gds_func_ExitScript;
         return true;
     case SCRIPT_CMD_SetGameMode:
         *handler = gds_func_SetGameMode;

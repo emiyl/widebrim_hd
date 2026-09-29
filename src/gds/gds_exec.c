@@ -99,13 +99,17 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
             return false;
         }
 
-        if (record.type == GDS_RECORD_BREAKPOINT ||
-            record.type == GDS_RECORD_EMPTY_5 ||
+        if (record.type == GDS_RECORD_EMPTY_5 ||
             record.type == GDS_RECORD_NOT || record.type == GDS_RECORD_AND ||
             record.type == GDS_RECORD_OR ||
             record.type == GDS_RECORD_EMPTY_11 ||
             record.type == GDS_RECORD_BLOCK_START ||
             record.type == GDS_RECORD_BLOCK_END) {
+            continue;
+        }
+
+        if (record.type == GDS_RECORD_BREAKPOINT) {
+            printf("gds: hit breakpoint at offset %zu\n", old_offset);
             continue;
         }
 
@@ -119,6 +123,11 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
             fprintf(stderr, "gds: failed to execute %s at offset %zu\n",
                     gds_opcode_to_string(record.payload.opcode), old_offset);
             return false;
+        }
+
+        if (record.payload.opcode == SCRIPT_CMD_ExitScript) {
+            printf("gds: exiting script at offset %zu\n", old_offset);
+            break;
         }
     }
 
