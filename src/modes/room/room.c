@@ -59,6 +59,9 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
         return false;
     }
 
+    if (impl->base.done)
+        return true;
+
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
              room_num);
     if (!mode_room_load_script_file(impl, script_path, room_num)) {
@@ -101,8 +104,10 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
     }
 
-    screen_controller_fade_in(impl->base.controller, FADER_DEFAULT_DURATION_MS,
-                              NULL, NULL);
+    if (!impl->base.done) {
+        screen_controller_fade_in(impl->base.controller,
+                                  FADER_DEFAULT_DURATION_MS, NULL, NULL);
+    }
 }
 
 static void mode_room_reload_room_after_fade_out(void *user) {
