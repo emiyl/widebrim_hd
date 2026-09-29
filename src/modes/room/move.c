@@ -37,10 +37,10 @@ void toggle_move_mode(mode_room_impl_t *impl) {
     set_move_mode(impl, !impl->in_move_mode);
 
     if (impl->in_move_mode) {
-        object_fade_out(impl->move_mode_btn, impl->controller->renderer,
+        object_fade_out(impl->move_mode_btn, impl->base.controller->renderer,
                         MOVE_MODE_TRANSITION);
     } else {
-        object_fade_in(impl->move_mode_btn, impl->controller->renderer,
+        object_fade_in(impl->move_mode_btn, impl->base.controller->renderer,
                        MOVE_MODE_TRANSITION);
     }
 
@@ -51,10 +51,10 @@ void toggle_move_mode(mode_room_impl_t *impl) {
             continue;
         }
         if (allow_exit_interaction) {
-            object_fade_in(exit, impl->controller->renderer,
+            object_fade_in(exit, impl->base.controller->renderer,
                            MOVE_MODE_TRANSITION);
         } else {
-            object_fade_out(exit, impl->controller->renderer,
+            object_fade_out(exit, impl->base.controller->renderer,
                             MOVE_MODE_TRANSITION);
         }
     }
@@ -100,8 +100,8 @@ void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
         return;
     }
 
-    renderer_t *renderer = impl->controller->renderer;
-    game_state_t *state = impl->state;
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
 
     object_t *btn = impl->move_mode_btn;
     if (!btn) {

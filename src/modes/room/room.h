@@ -4,6 +4,7 @@
 #include "exit.h"
 #include "game_state.h"
 #include "mode.h"
+#include "mode_impl.h"
 #include "object.h"
 #include "screen_controller.h"
 
@@ -12,9 +13,8 @@
 #define MAX_EVENTS 16
 
 typedef struct mode_room_impl_t {
-    // Game state and controller must be at the beginning of the struct
-    game_state_t *state;
-    screen_controller_t *controller;
+    // Base must be at the beginning of the struct
+    mode_impl_t base;
 
     void (*set_map)(struct mode_room_impl_t *impl, int32_t map_text_id,
                     int32_t map_background_id, int32_t param3, int32_t param4,
@@ -43,7 +43,6 @@ typedef struct mode_room_impl_t {
     int32_t event_count;
 
     bool in_move_mode;
-    bool done;
 } mode_room_impl_t;
 
 void mode_room_reload_room(mode_room_impl_t *impl);

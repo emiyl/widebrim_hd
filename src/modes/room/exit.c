@@ -37,7 +37,8 @@ bool room_exit_on_event(void *user, const input_event_t *event,
 
             printf("widebrim: exit clicked -> room %d\n",
                    exit_data->target_map_id);
-            game_state_set_place_num(impl->state, exit_data->target_map_id);
+            game_state_set_place_num(impl->base.state,
+                                     exit_data->target_map_id);
             mode_room_reload_room(impl);
             return true;
         }
@@ -86,8 +87,8 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
         return;
     }
 
-    renderer_t *renderer = impl->controller->renderer;
-    game_state_t *state = impl->state;
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
 
     char sprite_filename[14];
     bool has_sprite = false;
@@ -108,7 +109,7 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
     object_set_visible(exit, false);
     object_set_interaction_callback(exit, room_exit_on_event, impl);
     object_set_interactive(exit, false);
-    object_layer_add_object(impl->controller->object, exit);
+    object_layer_add_object(impl->base.controller->object, exit);
 
     impl->exit_count++;
 }

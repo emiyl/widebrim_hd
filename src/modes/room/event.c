@@ -43,8 +43,8 @@ bool room_add_event(struct mode_room_impl_t *room, int32_t x, int32_t y,
         return false;
     }
 
-    renderer_t *renderer = room->controller->renderer;
-    game_state_t *state = room->state;
+    renderer_t *renderer = room->base.controller->renderer;
+    game_state_t *state = room->base.state;
 
     char sprite_filename[12] = "";
     snprintf(sprite_filename, sizeof(sprite_filename), "obj_%d.spr", sprite_id);
@@ -60,7 +60,7 @@ bool room_add_event(struct mode_room_impl_t *room, int32_t x, int32_t y,
     sprite_take_object_position(sprite, event);
 
     object_set_visible(event, true);
-    object_layer_add_object(room->controller->object, event);
+    object_layer_add_object(room->base.controller->object, event);
 
     room->event_count++;
 

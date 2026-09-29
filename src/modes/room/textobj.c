@@ -24,7 +24,7 @@ static bool mode_room_textobj_on_click(void *user, const input_event_t *event,
         if (inst->clicked) {
             inst->clicked = false;
 
-            game_state_t *game_state = impl->state;
+            game_state_t *game_state = impl->base.state;
             int32_t text_id = tobj_impl->text_id;
             text_loader_load_room_text(game_state, text_id, tobj_impl->text,
                                        256);
@@ -45,7 +45,7 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
                                        int32_t text_id) {
     object_t *object;
 
-    if (!impl || !impl->controller || !impl->controller->object) {
+    if (!impl || !impl->base.controller || !impl->base.controller->object) {
         return;
     }
 
@@ -75,7 +75,7 @@ static void mode_room_add_textobj_area(mode_room_impl_t *impl, int32_t x,
     object_set_interactive(object, true);
     object_set_interaction_callback(object, mode_room_textobj_on_click, impl);
 
-    object_layer_add_object(impl->controller->object, object);
+    object_layer_add_object(impl->base.controller->object, object);
     impl->tobj_count++;
 }
 
@@ -85,7 +85,7 @@ void mode_room_add_text_obj(mode_room_impl_t *impl, int32_t type_or_flag,
     (void)type_or_flag;
     (void)param7;
 
-    if (!impl || !impl->controller) {
+    if (!impl || !impl->base.controller) {
         return;
     }
 

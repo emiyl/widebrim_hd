@@ -11,9 +11,9 @@ static void mode_reset_on_fade_out_done(void *user) {
     }
 
     mode_reset_impl_t *impl = (mode_reset_impl_t *)user;
-    game_state_set_mode(impl->state, MODE_TITLE);
-    game_state_set_place_num(impl->state, 3);
-    impl->done = true;
+    game_state_set_mode(impl->base.state, MODE_TITLE);
+    game_state_set_place_num(impl->base.state, 3);
+    impl->base.done = true;
 }
 
 static bool mode_reset_is_done(void *user) {
@@ -24,7 +24,7 @@ static bool mode_reset_is_done(void *user) {
     }
 
     mode_reset_impl_t *impl_ptr = (mode_reset_impl_t *)user;
-    return impl_ptr->done;
+    return impl_ptr->base.done;
 }
 static void mode_reset_destroy(void *user) {
     if (!user) {
@@ -49,9 +49,9 @@ mode_handler_t mode_reset_create(game_state_t *state,
         exit(EXIT_FAILURE);
     }
 
-    impl->state = state;
-    impl->controller = screen_controller;
-    impl->done = false;
+    impl->base.state = state;
+    impl->base.controller = screen_controller;
+    impl->base.done = false;
     game_state_reset(state);
     screen_controller_fade_out(screen_controller, FADER_DEFAULT_DURATION_MS,
                                mode_reset_on_fade_out_done, impl);

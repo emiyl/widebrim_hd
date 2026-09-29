@@ -27,7 +27,7 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_in.gds",
              room_num);
 
-    if (!asset_path_resolve(impl->state, script_path, resolved_path,
+    if (!asset_path_resolve(impl->base.state, script_path, resolved_path,
                             sizeof(resolved_path))) {
         fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 script_path);
@@ -44,7 +44,7 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     }
 
     if (!gds_execute_script(script_payload, script_payload_size, impl,
-                            &impl->state->gds)) {
+                            &impl->base.state->gds)) {
         fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
                 room_num, script_path);
         gds_free_payload(script_payload);
@@ -56,7 +56,7 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     snprintf(script_path, sizeof(script_path), "script/rooms/room%d_param.gds",
              room_num);
 
-    if (!asset_path_resolve(impl->state, script_path, resolved_path,
+    if (!asset_path_resolve(impl->base.state, script_path, resolved_path,
                             sizeof(resolved_path))) {
         fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 script_path);
@@ -73,7 +73,7 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
     }
 
     if (!gds_execute_script(script_payload, script_payload_size, impl,
-                            &impl->state->gds)) {
+                            &impl->base.state->gds)) {
         fprintf(stderr, "widebrim: failed to execute script for room %d: %s\n",
                 room_num, script_path);
         gds_free_payload(script_payload);
@@ -85,55 +85,55 @@ static bool mode_room_load_and_execute_script(mode_room_impl_t *impl,
 }
 
 static void mode_room_reset_room(mode_room_impl_t *impl) {
-    if (!impl || !impl->state || !impl->controller) {
+    if (!impl || !impl->base.state || !impl->base.controller) {
         return;
     }
 
-    int room_num = game_state_get_place_num(impl->state);
+    int room_num = game_state_get_place_num(impl->base.state);
     char bg_sub_path[256];
     snprintf(bg_sub_path, sizeof(bg_sub_path), "bg/room_%d_bg.bgx", room_num);
 
-    if (!bg_loader_load(impl->state, impl->controller, bg_sub_path,
+    if (!bg_loader_load(impl->base.state, impl->base.controller, bg_sub_path,
                         screen_controller_set_bg_sub)) {
         fprintf(stderr, "widebrim: failed to reload room %d background\n",
                 room_num);
     }
 
-    object_layer_remove_all_objects(impl->controller->object);
+    object_layer_remove_all_objects(impl->base.controller->object);
 
     impl->exit_count = 0;
     impl->tobj_count = 0;
     impl->event_count = 0;
 
-    object_layer_add_object(impl->controller->object, impl->map_place);
-    object_layer_add_object(impl->controller->object, impl->map_purpose);
-    object_layer_add_object(impl->controller->object, impl->move_mode_btn);
+    object_layer_add_object(impl->base.controller->object, impl->map_place);
+    object_layer_add_object(impl->base.controller->object, impl->map_purpose);
+    object_layer_add_object(impl->base.controller->object, impl->move_mode_btn);
 
     if (!mode_room_load_and_execute_script(impl, room_num)) {
         fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
     }
 
     set_move_mode(impl, false);
-    object_reset_fade(impl->move_mode_btn, impl->controller->renderer);
+    object_reset_fade(impl->move_mode_btn, impl->base.controller->renderer);
 
-    screen_controller_fade_in(impl->controller, FADER_DEFAULT_DURATION_MS, NULL,
-                              NULL);
+    screen_controller_fade_in(impl->base.controller, FADER_DEFAULT_DURATION_MS,
+                              NULL, NULL);
 
-    impl->done = false;
+    impl->base.done = false;
 }
 
 static void mode_room_reload_room_after_fade_out(void *user) {
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
-    text_layer_clear(impl->controller->text);
+    text_layer_clear(impl->base.controller->text);
     mode_room_reset_room(impl);
 }
 
 void mode_room_reload_room(mode_room_impl_t *impl) {
-    if (!impl || !impl->state || !impl->controller) {
+    if (!impl || !impl->base.state || !impl->base.controller) {
         return;
     }
 
-    screen_controller_fade_out(impl->controller, FADER_DEFAULT_DURATION_MS,
+    screen_controller_fade_out(impl->base.controller, FADER_DEFAULT_DURATION_MS,
                                mode_room_reload_room_after_fade_out, impl);
 }
 
@@ -145,7 +145,7 @@ static bool mode_room_is_done(void *user) {
     }
 
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
-    return impl->done;
+    return impl->base.done;
 }
 
 static void mode_room_destroy(void *user) {
@@ -157,20 +157,20 @@ static void mode_room_destroy(void *user) {
 
     mode_room_impl_t *impl = (mode_room_impl_t *)user;
 
-    object_layer_clear(impl->controller->object);
+    object_layer_clear(impl->base.controller->object);
 
     if (impl->move_mode_btn) {
-        object_destroy(impl->move_mode_btn, impl->controller->renderer);
+        object_destroy(impl->move_mode_btn, impl->base.controller->renderer);
         free(impl->move_mode_btn);
         impl->move_mode_btn = NULL;
     }
     if (impl->map_place) {
-        object_destroy(impl->map_place, impl->controller->renderer);
+        object_destroy(impl->map_place, impl->base.controller->renderer);
         free(impl->map_place);
         impl->map_place = NULL;
     }
     if (impl->map_purpose) {
-        object_destroy(impl->map_purpose, impl->controller->renderer);
+        object_destroy(impl->map_purpose, impl->base.controller->renderer);
         free(impl->map_purpose);
         impl->map_purpose = NULL;
     }
@@ -188,8 +188,8 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
         return false;
     }
 
-    if (impl->controller && impl->controller->object &&
-        object_layer_handle_event(impl->controller->object, event)) {
+    if (impl->base.controller && impl->base.controller->object &&
+        object_layer_handle_event(impl->base.controller->object, event)) {
         return true;
     }
 
@@ -219,7 +219,7 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
         }
     }
 
-    int place_num = game_state_get_place_num(impl->state);
+    int place_num = game_state_get_place_num(impl->base.state);
 
     switch (event->type) {
     case INPUT_EVENT_KEY_DOWN:
@@ -230,14 +230,14 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
             return true;
         case 'q':
             if (place_num > 1) {
-                game_state_set_place_num(impl->state, place_num - 1);
+                game_state_set_place_num(impl->base.state, place_num - 1);
                 mode_room_reload_room(impl);
                 printf("widebrim: moved to room %d\n", place_num - 1);
                 return true;
             }
             break;
         case 'w':
-            game_state_set_place_num(impl->state, place_num + 1);
+            game_state_set_place_num(impl->base.state, place_num + 1);
             mode_room_reload_room(impl);
             printf("widebrim: moved to room %d\n", place_num + 1);
             return true;
@@ -257,8 +257,8 @@ mode_handler_t mode_room_create(game_state_t *state,
     mode_handler_t handler = {0};
     mode_room_impl_t *impl = smalloc(sizeof(mode_room_impl_t));
 
-    impl->state = state;
-    impl->controller = controller;
+    impl->base.state = state;
+    impl->base.controller = controller;
     impl->tobj_count = 0;
     impl->exit_count = 0;
 

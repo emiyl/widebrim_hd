@@ -5,7 +5,7 @@
 #include "gds/gds.h"
 #include "gds/gds_opcode.h"
 #include "gds_state.h"
-#include "modes/spawner.h"
+#include "modes/mode_impl.h"
 
 #define TRACE
 
@@ -23,8 +23,8 @@ static bool gds_branch_is_ignored_record_type(gds_record_type_t type) {
 static game_state_t *gds_branch_get_game_state(void *user_data) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
 
-    if (impl != NULL && impl->game_state != NULL) {
-        return impl->game_state;
+    if (impl != NULL && impl->state != NULL) {
+        return impl->state;
     }
 
     return (game_state_t *)user_data;

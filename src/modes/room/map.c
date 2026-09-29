@@ -10,8 +10,8 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
         return;
     }
 
-    renderer_t *renderer = impl->controller->renderer;
-    game_state_t *state = impl->state;
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
 
     object_t *map_place = impl->map_place;
     if (!map_place) {
@@ -39,8 +39,8 @@ void mode_room_load_map_purpose(mode_room_impl_t *impl) {
         return;
     }
 
-    renderer_t *renderer = impl->controller->renderer;
-    game_state_t *state = impl->state;
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
 
     object_t *map_purpose = impl->map_purpose;
     if (!map_purpose) {
@@ -82,15 +82,15 @@ static void mode_room_draw_map_text(mode_room_impl_t *room, char *text_buffer,
         int sprite_w = 0;
         int sprite_h = 0;
 
-        sprite_get_size(anchor->sprite, room->controller->renderer, &sprite_w,
-                        &sprite_h);
+        sprite_get_size(anchor->sprite, room->base.controller->renderer,
+                        &sprite_w, &sprite_h);
         text_rect.x = (float)anchor->x;
         text_rect.y = (float)anchor->y;
         text_rect.w = (float)sprite_w;
         text_rect.h = (float)sprite_h;
     }
 
-    text = screen_controller_add_text(room->controller, 0, 0, text_buffer);
+    text = screen_controller_add_text(room->base.controller, 0, 0, text_buffer);
     if (text) {
         int text_x, text_y;
 
@@ -107,12 +107,12 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     (void)param4;
     (void)param5;
 
-    if (!room || !room->state) {
+    if (!room || !room->base.state) {
         fprintf(stderr, "widebrim: invalid game state\n");
         return;
     }
 
-    game_state_t *state = room->state;
+    game_state_t *state = room->base.state;
 
     char map_background_path[256];
     char map_title_path[256];
@@ -124,8 +124,8 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     snprintf(map_background_path, sizeof(map_background_path), "bg/map_%d.bgx",
              map_background_id);
 
-    if (!bg_loader_load(room->state, room->controller, map_background_path,
-                        screen_controller_set_bg_main)) {
+    if (!bg_loader_load(room->base.state, room->base.controller,
+                        map_background_path, screen_controller_set_bg_main)) {
         fprintf(stderr, "widebrim: failed to load map background: %s\n",
                 map_background_path);
     }
@@ -136,8 +136,8 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
 
     snprintf(map_title_path, sizeof(map_title_path), "storytext/map%d.txt",
              map_text_id);
-    if (!text_loader_load_path(room->state, map_title_path, map_title_buffer,
-                               sizeof(map_title_buffer))) {
+    if (!text_loader_load_path(room->base.state, map_title_path,
+                               map_title_buffer, sizeof(map_title_buffer))) {
         fprintf(stderr, "widebrim: failed to load map text asset: %s\n",
                 map_title_path);
         return;
@@ -145,7 +145,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
 
     snprintf(map_purpose_path, sizeof(map_purpose_path), "storytext/mt_%d.txt",
              state->memo_flag);
-    if (!text_loader_load_path(room->state, map_purpose_path,
+    if (!text_loader_load_path(room->base.state, map_purpose_path,
                                map_purpose_buffer,
                                sizeof(map_purpose_buffer))) {
         fprintf(stderr, "widebrim: failed to load map purpose: %s\n",

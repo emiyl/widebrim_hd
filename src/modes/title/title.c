@@ -60,8 +60,8 @@ static void mode_title_load_start_car(mode_title_impl_t *impl) {
         return;
     }
 
-    renderer_t *renderer = impl->controller->renderer;
-    game_state_t *state = impl->state;
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
 
     object_t *car = impl->start_car;
     object_init(car);
@@ -93,8 +93,8 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
         return;
     }
 
-    renderer_t *renderer = impl->controller->renderer;
-    game_state_t *state = impl->state;
+    renderer_t *renderer = impl->base.controller->renderer;
+    game_state_t *state = impl->base.state;
 
     object_t *logo = impl->title_logo;
     object_init(logo);
@@ -128,8 +128,8 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
         return;
     }
 
-    game_state_t *state = impl->state;
-    screen_controller_t *controller = impl->controller;
+    game_state_t *state = impl->base.state;
+    screen_controller_t *controller = impl->base.controller;
 
     object_t *buttons[3] = {impl->start_btn, impl->continue_btn,
                             impl->bonus_btn};
@@ -179,8 +179,8 @@ static void mode_title_load_bg(mode_title_impl_t *impl) {
     const char *sub_bg_path = "bg/start_select2.bgx";
     const char *sub_bg_overlay_path = "bg/start_select.bgx";
 
-    game_state_t *state = impl->state;
-    screen_controller_t *controller = impl->controller;
+    game_state_t *state = impl->base.state;
+    screen_controller_t *controller = impl->base.controller;
 
     bg_loader_load(state, controller, bg_path, screen_controller_set_bg_main);
     bg_loader_load(state, controller, sub_bg_path,
@@ -200,7 +200,7 @@ static bool mode_title_is_done(void *user) {
     }
 
     mode_title_impl_t *impl = (mode_title_impl_t *)user;
-    return impl->done;
+    return impl->base.done;
 }
 
 static void mode_title_destroy(void *user) {
@@ -211,9 +211,9 @@ static void mode_title_destroy(void *user) {
     }
 
     mode_title_impl_t *impl = (mode_title_impl_t *)user;
-    if (impl->controller) {
-        screen_controller_clear_object_layer(impl->controller);
-        screen_controller_clear_bg_layer(impl->controller);
+    if (impl->base.controller) {
+        screen_controller_clear_object_layer(impl->base.controller);
+        screen_controller_clear_bg_layer(impl->base.controller);
     }
 
     free(impl);
@@ -226,14 +226,14 @@ static bool mode_title_advance(mode_title_impl_t *impl) {
         return false;
     }
 
-    if (impl->done) {
+    if (impl->base.done) {
         return false;
     }
 
-    game_state_set_mode(impl->state, MODE_ROOM);
-    game_state_set_place_num(impl->state, 1);
+    game_state_set_mode(impl->base.state, MODE_ROOM);
+    game_state_set_place_num(impl->base.state, 1);
 
-    impl->done = true;
+    impl->base.done = true;
     return true;
 }
 
@@ -249,8 +249,8 @@ static bool mode_title_handle_event(void *user, const input_event_t *event) {
         return false;
     }
 
-    if (impl->controller && impl->controller->object &&
-        object_layer_handle_event(impl->controller->object, event)) {
+    if (impl->base.controller && impl->base.controller->object &&
+        object_layer_handle_event(impl->base.controller->object, event)) {
         return true;
     }
 
@@ -281,9 +281,9 @@ mode_handler_t mode_title_create(game_state_t *state,
         exit(EXIT_FAILURE);
     }
 
-    impl->state = state;
-    impl->controller = controller;
-    impl->done = false;
+    impl->base.state = state;
+    impl->base.controller = controller;
+    impl->base.done = false;
 
     object_t **objects[] = {&impl->start_car, &impl->title_logo,
                             &impl->start_btn, &impl->continue_btn,

@@ -78,8 +78,8 @@ static bool gds_func_AddTextObj(gds_reader_t *reader,
 static bool gds_func_AddBGObject(gds_reader_t *reader,
                                  const gds_record_t *command, void *user_data) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    game_state_t *state = impl->game_state;
-    screen_controller_t *sc = impl->screen_controller;
+    game_state_t *state = impl->state;
+    screen_controller_t *sc = impl->controller;
     object_layer_t *ol = sc->object;
 
     gds_record_t args[3];
@@ -111,7 +111,7 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr, "gds: StoryFlag called without game state context\n");
         return false;
     }
@@ -123,9 +123,9 @@ bool gds_func_StoryFlag(gds_reader_t *reader, const gds_record_t *command,
     printf("gds: %s(story_flag=%d)\n", function_name, story_flag);
 #endif
 
-    gds_state_t *gds = &impl->game_state->gds;
+    gds_state_t *gds = &impl->state->gds;
 
-    gds->condition_result = impl->game_state->story_flag == (int16_t)story_flag;
+    gds->condition_result = impl->state->story_flag == (int16_t)story_flag;
 
     return true;
 }
@@ -138,7 +138,7 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr,
                 "gds: SetStoryFlag called without game state context\n");
         return false;
@@ -151,7 +151,7 @@ bool gds_func_SetStoryFlag(gds_reader_t *reader, const gds_record_t *command,
     printf("gds: %s(story_flag=%d)\n", function_name, story_flag);
 #endif
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
     if (!state->isQuestionCheck)
         state->story_flag = (int16_t)story_flag;
 
@@ -166,7 +166,7 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr, "gds: ViewedEvent called without game state context\n");
         return false;
     }
@@ -182,7 +182,7 @@ bool gds_func_ViewedEvent(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
     gds_state_t *gds = &state->gds;
 
     gds->condition_result = (state->event_viewed[event_id] & 1) != 0;
@@ -198,7 +198,7 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr,
                 "gds: SetEventViewed called without game state context\n");
         return false;
@@ -215,7 +215,7 @@ bool gds_func_SetEventViewed(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
     if (!state->isQuestionCheck) {
         state->event_viewed[event_id] |= 1;
     }
@@ -272,12 +272,12 @@ bool gds_func_BitFlag(gds_reader_t *reader, const gds_record_t *command,
 #endif
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr, "gds: BitFlag called without game state context\n");
         return false;
     }
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
     gds_state_t *gds = &state->gds;
 
     gds->condition_result = state->bit_flag(state, args[0]);
@@ -293,7 +293,7 @@ bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr, "gds: SetBitFlag called without game state context\n");
         return false;
     }
@@ -306,7 +306,7 @@ bool gds_func_SetBitFlag(gds_reader_t *reader, const gds_record_t *command,
     printf("gds: %s(flag=%d, value=%d)\n", function_name, args[0], args[1]);
 #endif
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
 
     state->set_bit_flag(state, flag, value);
 
@@ -351,7 +351,7 @@ bool gds_func_SetCurrentQuestion(gds_reader_t *reader,
     }
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr,
                 "gds: SetCurrentQuestion called without game state context\n");
         return false;
@@ -368,7 +368,7 @@ bool gds_func_SetCurrentQuestion(gds_reader_t *reader,
         question = 0;
     }
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
 
     if (state->current_question != (int16_t)question) {
         state->question_state = 0;
@@ -385,13 +385,13 @@ bool gds_func_SolvedQuestion(gds_reader_t *reader, const gds_record_t *command,
     (void)command;
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    if (!impl || !impl->game_state) {
+    if (!impl || !impl->state) {
         fprintf(stderr,
                 "gds: SolvedQuestion called without game state context\n");
         return false;
     }
 
-    game_state_t *state = impl->game_state;
+    game_state_t *state = impl->state;
 
     int32_t question = state->current_question;
     size_t index = (size_t)question;
@@ -415,8 +415,8 @@ bool gds_func_SolvedQuestion(gds_reader_t *reader, const gds_record_t *command,
 bool gds_func_AddSubSprite(gds_reader_t *reader, const gds_record_t *command,
                            void *user_data) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
-    game_state_t *state = impl->game_state;
-    screen_controller_t *sc = impl->screen_controller;
+    game_state_t *state = impl->state;
+    screen_controller_t *sc = impl->controller;
     object_layer_t *ol = sc->object;
 
     int32_t int_args[2];
@@ -450,7 +450,8 @@ bool gds_func_AddSubSprite(gds_reader_t *reader, const gds_record_t *command,
 
 bool gds_func_SetGameMode(gds_reader_t *reader, const gds_record_t *command,
                           void *user_data) {
-    (void)user_data;
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl->state;
 
     const char *event_mode_str = NULL;
     const char *string_args[1];
@@ -461,8 +462,7 @@ bool gds_func_SetGameMode(gds_reader_t *reader, const gds_record_t *command,
 
 #ifdef TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: STUB %s(event_mode_str=\"%s\")\n", function_name,
-           event_mode_str);
+    printf("gds: %s(event_mode_str=\"%s\")\n", function_name, event_mode_str);
 #endif
 
     return true;
