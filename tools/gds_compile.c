@@ -158,6 +158,16 @@ static bool parser_match_char(parser_t *parser, char expected) {
 static void parser_skip_ws(parser_t *parser) {
     while (parser_has_more(parser)) {
         char c = parser->text[parser->offset];
+
+        if (c == '\r') {
+            parser->line++;
+            parser->offset++;
+            if (parser_has_more(parser) &&
+                parser->text[parser->offset] == '\n') {
+                parser->offset++;
+            }
+            continue;
+        }
         if (c == '\n') {
             parser->line++;
             parser->offset++;
@@ -167,30 +177,38 @@ static void parser_skip_ws(parser_t *parser) {
             parser->offset++;
             continue;
         }
-        if (c == '/' && parser->offset + 1U < parser->length &&
-            parser->text[parser->offset + 1U] == '/') {
-            parser->offset += 2U;
-            while (parser_has_more(parser) &&
-                   parser->text[parser->offset] != '\n') {
-                parser->offset++;
-            }
-            continue;
-        }
-        if (c == '/' && parser->offset + 1U < parser->length &&
-            parser->text[parser->offset + 1U] == '*') {
-            parser->offset += 2U;
-            while (parser->offset + 1U < parser->length) {
-                if (parser->text[parser->offset] == '*' &&
-                    parser->text[parser->offset + 1U] == '/') {
-                    parser->offset += 2U;
-                    break;
+        if (c == '/' && parser->offset + 1U < parser->length) {
+            char next = parser->text[parser->offset + 1U];
+            if (next == '/') {
+                parser->offset += 2U;
+                while (parser_has_more(parser) &&
+                       parser->text[parser->offset] != '\n' &&
+                       parser->text[parser->offset] != '\r') {
+                    parser->offset++;
                 }
-                if (parser->text[parser->offset] == '\n') {
-                    parser->line++;
-                }
-                parser->offset++;
+                continue;
             }
-            continue;
+            if (next == '*') {
+                parser->offset += 2U;
+                while (parser->offset + 1U < parser->length) {
+                    if (parser->text[parser->offset] == '*' &&
+                        parser->text[parser->offset + 1U] == '/') {
+                        parser->offset += 2U;
+                        break;
+                    }
+                    if (parser->text[parser->offset] == '\n' ||
+                        parser->text[parser->offset] == '\r') {
+                        parser->line++;
+                        if (parser->text[parser->offset] == '\r' &&
+                            parser->offset + 1U < parser->length &&
+                            parser->text[parser->offset + 1U] == '\n') {
+                            parser->offset++;
+                        }
+                    }
+                    parser->offset++;
+                }
+                continue;
+            }
         }
         break;
     }
