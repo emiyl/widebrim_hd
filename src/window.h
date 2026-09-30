@@ -22,6 +22,7 @@ struct window_t {
 
 window_t *window_create_sdl(const char *title, int width, int height,
                             unsigned int flags);
+window_t *window_create_none(void);
 
 static inline void window_destroy(window_t *self) {
     if (self && self->vt && self->vt->destroy) {

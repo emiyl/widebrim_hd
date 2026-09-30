@@ -24,23 +24,35 @@ int runtime_init(runtime_t *rt, const char *assets_root,
         return -1;
     }
 
+#ifdef USE_SDL_INPUT
     rt->input = input_create_sdl();
+#elif defined(USE_NONE_INPUT)
+    rt->input = input_create_none();
+#endif
     if (!rt->input) {
         fprintf(stderr, "widebrim: Failed to create input\n");
         runtime_destroy(rt);
         return -1;
     }
 
+#ifdef USE_SDL_WINDOW
     rt->window = window_create_sdl("widebrim", WB_SCREEN_WIDTH * WINDOW_SCALE,
                                    WB_SCREEN_HEIGHT * WINDOW_SCALE * 2, 0);
+#elif defined(USE_NONE_WINDOW)
+    rt->window = window_create_none();
+#endif
     if (!rt->window) {
         fprintf(stderr, "widebrim: Failed to create window\n");
         runtime_destroy(rt);
         return -1;
     }
 
+#ifdef USE_SDL_RENDERER
     renderer_t *renderer =
         renderer_create_sdl(window_as_sdl3_renderer(rt->window));
+#elif defined(USE_NONE_RENDERER)
+    renderer_t *renderer = renderer_create_none(NULL);
+#endif
     if (!renderer) {
         fprintf(stderr, "widebrim: Failed to create renderer\n");
         runtime_destroy(rt);

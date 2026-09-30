@@ -51,7 +51,11 @@ struct input_t {
     const input_vtable_t *vt;
 };
 
+#ifdef USE_SDL_INPUT
 input_t *input_create_sdl(void);
+#elif defined(USE_NONE_INPUT)
+input_t *input_create_none(void);
+#endif
 
 static inline void input_destroy(input_t *self) {
     if (self && self->vt && self->vt->destroy) {

@@ -41,7 +41,11 @@ struct renderer_t {
     const renderer_vtable_t *vt;
 };
 
+#ifdef USE_SDL_RENDERER
 renderer_t *renderer_create_sdl(void *renderer);
+#elif defined(USE_NONE_RENDERER)
+renderer_t *renderer_create_none(void *renderer);
+#endif
 
 static inline void renderer_destroy(renderer_t *self) {
     if (self && self->vt && self->vt->destroy) {
