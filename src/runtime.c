@@ -2,12 +2,12 @@
 
 #if defined(USE_SDL_WINDOW) || defined(USE_SDL_RENDERER) ||                    \
     defined(USE_SDL_INPUT)
+#define USE_SDL
 #include <SDL3/SDL.h>
 #endif
 #include <stdio.h>
 #include <string.h>
 
-#include "bg_layer.h"
 #include "renderer.h"
 
 #define TARGET_FRAMERATE 60.0
@@ -22,8 +22,7 @@ int runtime_init(runtime_t *rt, const char *assets_root,
 
     memset(rt, 0, sizeof(*rt));
 
-#if defined(USE_SDL_WINDOW) || defined(USE_SDL_RENDERER) ||                    \
-    defined(USE_SDL_INPUT)
+#ifdef USE_SDL
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         fprintf(stderr, "widebrim: SDL_Init failed: %s\n", SDL_GetError());
         return -1;
@@ -93,7 +92,9 @@ void runtime_destroy(runtime_t *rt) {
         rt->window = NULL;
     }
     rt->running = false;
+#ifdef USE_SDL
     SDL_Quit();
+#endif
 }
 
 void runtime_run(runtime_t *rt) {
