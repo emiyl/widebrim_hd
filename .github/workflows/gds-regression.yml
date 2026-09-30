@@ -1,0 +1,42 @@
+name: GDS regression
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gds-regression:
+    runs-on: ubuntu-latest
+    name: GDS regression (Ubuntu)
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake pkg-config libsdl3-dev
+
+      - name: Configure build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build GDS executor
+        run: |
+          cmake --build build --target gds_exec --parallel
+
+      - name: GDS branch regression
+        run: |
+          ./build/gds_exec tests/branch.gsc > /tmp/gds-branch-output.txt 2>&1 || {
+            cat /tmp/gds-branch-output.txt
+            exit 1
+          }
+          if grep -q "Failed" /tmp/gds-branch-output.txt; then
+            echo "Unexpected Failed output detected:"
+            cat /tmp/gds-branch-output.txt
+            exit 1
+          fi
+          echo "No Failed output detected."

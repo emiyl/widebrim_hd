@@ -68,9 +68,9 @@ target_compile_options(widebrim PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 add_executable(obb_extract "${CMAKE_CURRENT_SOURCE_DIR}/tools/obb_extract.c")
 target_compile_options(obb_extract PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 
-add_executable(gds_dump_cli "${CMAKE_CURRENT_SOURCE_DIR}/tools/gds_dump.c" ${GDS_SOURCES})
-target_include_directories(gds_dump_cli PRIVATE ${INCLUDE_DIRS})
-target_compile_options(gds_dump_cli PRIVATE -pedantic-errors -Wall -Wextra -Werror)
+add_executable(gds_dump "${CMAKE_CURRENT_SOURCE_DIR}/tools/gds_dump.c" ${GDS_SOURCES})
+target_include_directories(gds_dump PRIVATE ${INCLUDE_DIRS})
+target_compile_options(gds_dump PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 
 add_executable(gds_compile "${CMAKE_CURRENT_SOURCE_DIR}/tools/gds_compile.c" ${GDS_SOURCES})
 target_include_directories(gds_compile PRIVATE ${INCLUDE_DIRS})
