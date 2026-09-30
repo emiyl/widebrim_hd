@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#ifndef _WIN32
+#include <strings.h>
+#endif
+
 #include "screen.h"
 
 // value, name, display string
