@@ -2,277 +2,312 @@
 #define GDS_OPCODE_H
 
 #include <stdbool.h>
+#include <string.h>
 
-typedef enum {
-    SCRIPT_CMD_Invalid = 0,
-    SCRIPT_CMD_FadeIn,
-    SCRIPT_CMD_FadeInOnly,
-    SCRIPT_CMD_FadeInOnlySub,
-    SCRIPT_CMD_FadeInOnlyMain,
-    SCRIPT_CMD_FadeOut,
-    SCRIPT_CMD_FadeOutOnly,
-    SCRIPT_CMD_FadeOutOnlySub,
-    SCRIPT_CMD_FadeOutOnlyMain,
-    SCRIPT_CMD_WaitPenTouch,
-    SCRIPT_CMD_WaitInput,
-    SCRIPT_CMD_LoadBG,
-    SCRIPT_CMD_LoadSubBG,
-    SCRIPT_CMD_WaitVSyncOrPenTouch,
-    SCRIPT_CMD_UnloadAllGfx,
-    SCRIPT_CMD_VSyncProcess,
-    SCRIPT_CMD_PlaySound,
-    SCRIPT_CMD_PlayBGM,
-    SCRIPT_CMD_IF,
-    SCRIPT_CMD_CheckRoomNumber,
-    SCRIPT_CMD_Loop,
-    SCRIPT_CMD_WHILE,
-    SCRIPT_CMD_ELSEIF,
-    SCRIPT_CMD_ELSE,
-    SCRIPT_CMD_PressingStart,
-    SCRIPT_CMD_TRUE,
-    SCRIPT_CMD_FALSE,
-    SCRIPT_CMD_CreateQuestion,
-    SCRIPT_CMD_AddHints,
-    SCRIPT_CMD_AddButtons,
-    SCRIPT_CMD_SetCorrect,
-    SCRIPT_CMD_SetQuestionEndBG,
-    SCRIPT_CMD_AddHint,
-    SCRIPT_CMD_AddQuestionButton,
-    SCRIPT_CMD_AddExit,
-    SCRIPT_CMD_AddChr,
-    SCRIPT_CMD_SetNumberAnswer,
-    SCRIPT_CMD_AddCoin,
-    SCRIPT_CMD_AddCoinSolution,
-    SCRIPT_CMD_SetNumTouch,
-    SCRIPT_CMD_GridAddBlock,
-    SCRIPT_CMD_GridAddLetter,
-    SCRIPT_CMD_AddMatch,
-    SCRIPT_CMD_AddMatchSolution,
-    SCRIPT_CMD_SetQuestionEvent,
-    SCRIPT_CMD_AddWeights,
-    SCRIPT_CMD_RandomLightWeight,
-    SCRIPT_CMD_RandomHeavyWeight,
-    SCRIPT_CMD_RandomLightOrHeavyWeight,
-    SCRIPT_CMD_AddChicken,
-    SCRIPT_CMD_AddWolf,
-    SCRIPT_CMD_NewShape,
-    SCRIPT_CMD_AddVertex,
-    SCRIPT_CMD_AddTriangle,
-    SCRIPT_CMD_SetShapePosition,
-    SCRIPT_CMD_SetShapeRotation,
-    SCRIPT_CMD_SetShapeSolutionPosition,
-    SCRIPT_CMD_SetShapeSolutionRotation,
-    SCRIPT_CMD_AddCup,
-    SCRIPT_CMD_SetBoard,
-    SCRIPT_CMD_AddQueens,
-    SCRIPT_CMD_AddGoldQueen,
-    SCRIPT_CMD_SetQueenCheckMode,
-    SCRIPT_CMD_SetFillPos,
-    SCRIPT_CMD_AddInPoint,
-    SCRIPT_CMD_AddOutPoint,
-    SCRIPT_CMD_SetFontUserColor,
-    SCRIPT_CMD_AddTextObj,
-    SCRIPT_CMD_TextWindow,
-    SCRIPT_CMD_SetTextWindowLeft,
-    SCRIPT_CMD_SetTextWindowRight,
-    SCRIPT_CMD_SetWinNum,
-    SCRIPT_CMD_SetCurrentQuestion,
-    SCRIPT_CMD_FoundQuestion,
-    SCRIPT_CMD_EventModeStart,
-    SCRIPT_CMD_EventModeFinish,
-    SCRIPT_CMD_FailQuestion,
-    SCRIPT_CMD_CorrectQuestion,
-    SCRIPT_CMD_SolvedQuestion,
-    SCRIPT_CMD_ExitScript,
-    SCRIPT_CMD_AddEvent,
-    SCRIPT_CMD_SetGameMode,
-    SCRIPT_CMD_SetQuestionEndGameMode,
-    SCRIPT_CMD_SetCurrentRoom,
-    SCRIPT_CMD_CorrectQuestionN,
-    SCRIPT_CMD_SetEventFinished,
-    SCRIPT_CMD_DoPrizeScreen,
-    SCRIPT_CMD_DoStockScreen,
-    SCRIPT_CMD_ViewedEvent,
-    SCRIPT_CMD_PlayBridgeSound,
-    SCRIPT_CMD_SetMap,
-    SCRIPT_CMD_SetExitSound,
-    SCRIPT_CMD_AddBGObject,
-    SCRIPT_CMD_AddOnOffButton,
-    SCRIPT_CMD_SetTarget,
-    SCRIPT_CMD_UnloadMainGfx,
-    SCRIPT_CMD_SetCurrentEvent,
-    SCRIPT_CMD_DoSaveScreen,
-    SCRIPT_CMD_SetStoryFlag,
-    SCRIPT_CMD_StoryFlag,
-    SCRIPT_CMD_ForceTutorial,
-    SCRIPT_CMD_SetTextWindowCenter,
-    SCRIPT_CMD_PuzzleSolverLayton,
-    SCRIPT_CMD_PuzzleSolverLuke,
-    SCRIPT_CMD_AddHintCoin,
-    SCRIPT_CMD_FadeOutBGM,
-    SCRIPT_CMD_FadeInBGM,
-    SCRIPT_CMD_WaitFrame,
-    SCRIPT_CMD_AddSprite,
-    SCRIPT_CMD_AddSpriteChild,
-    SCRIPT_CMD_SetSpriteAnimation,
-    SCRIPT_CMD_SetSpriteAnimationChild,
-    SCRIPT_CMD_SetSpritePosition,
-    SCRIPT_CMD_SpriteOn,
-    SCRIPT_CMD_SpriteOff,
-    SCRIPT_CMD_AddTile,
-    SCRIPT_CMD_AddPoint,
-    SCRIPT_CMD_AddTileSolution,
-    SCRIPT_CMD_SetNumSolution,
-    SCRIPT_CMD_NumQuestionsSolved,
-    SCRIPT_CMD_SetSpriteFade,
-    SCRIPT_CMD_SetSpriteAlpha,
-    SCRIPT_CMD_DrawFrames,
-    SCRIPT_CMD_ModifyBGPal,
-    SCRIPT_CMD_ModifySubBGPal,
-    SCRIPT_CMD_FreeEventAniMemory,
-    SCRIPT_CMD_AddSubSprite,
-    SCRIPT_CMD_SetSubSpriteAnimation,
-    SCRIPT_CMD_SetSubSpritePosition,
-    SCRIPT_CMD_SubSpriteOn,
-    SCRIPT_CMD_SubSpriteOff,
-    SCRIPT_CMD_AddCoinType,
-    SCRIPT_CMD_AddCoinSolutionType,
-    SCRIPT_CMD_AddItem,
-    SCRIPT_CMD_CheckItem,
-    SCRIPT_CMD_ShakeBG,
-    SCRIPT_CMD_ShakeSubBG,
-    SCRIPT_CMD_AddMan,
-    SCRIPT_CMD_AddCabbage,
-    SCRIPT_CMD_AddSheep,
-    SCRIPT_CMD_SetRiverCrossMode,
-    SCRIPT_CMD_BitFlag,
-    SCRIPT_CMD_SetBitFlag,
-    SCRIPT_CMD_SetSpriteShake,
-    SCRIPT_CMD_SetSpriteState,
-    SCRIPT_CMD_SetSpriteTargetPosition,
-    SCRIPT_CMD_SetSpriteSpeed,
-    SCRIPT_CMD_SetSubSpriteShake,
-    SCRIPT_CMD_SetSubSpriteState,
-    SCRIPT_CMD_SetSubSpriteTargetPosition,
-    SCRIPT_CMD_SetSubSpriteSpeed,
-    SCRIPT_CMD_SetSpriteType,
-    SCRIPT_CMD_TextWindowK,
-    SCRIPT_CMD_TextWindowR,
-    SCRIPT_CMD_TextWindowL,
-    SCRIPT_CMD_TextWindowM,
-    SCRIPT_CMD_TextWindowKR,
-    SCRIPT_CMD_TextWindowKL,
-    SCRIPT_CMD_SetMemoFlag,
-    SCRIPT_CMD_SetGridTypeRange,
-    SCRIPT_CMD_AddTouchPoint,
-    SCRIPT_CMD_AddCheckLine,
-    SCRIPT_CMD_EnableNaname,
-    SCRIPT_CMD_SetGridPosition,
-    SCRIPT_CMD_SetGridSize,
-    SCRIPT_CMD_SetBlockSize,
-    SCRIPT_CMD_AddBlock,
-    SCRIPT_CMD_SetKatakanaAnswer,
-    SCRIPT_CMD_SetInputType,
-    SCRIPT_CMD_SetAlphabetAnswer,
-    SCRIPT_CMD_SetType,
-    SCRIPT_CMD_OnHintMedal,
-    SCRIPT_CMD_SetLineColor,
-    SCRIPT_CMD_SetPenColor,
-    SCRIPT_CMD_LoadBGSetFadeIn,
-    SCRIPT_CMD_DoSpriteFadeIn,
-    SCRIPT_CMD_DoSpriteFadeInFast,
-    SCRIPT_CMD_AddShapeSolutionType,
-    SCRIPT_CMD_SetShapeType,
-    SCRIPT_CMD_DoSpriteFadeOut,
-    SCRIPT_CMD_SetSpriteFlip,
-    SCRIPT_CMD_AddRotateBox,
-    SCRIPT_CMD_AddStoryScript,
-    SCRIPT_CMD_SetQuestionSolved,
-    SCRIPT_CMD_SetEventViewed,
-    SCRIPT_CMD_SetSingleNumberAnswer,
-    SCRIPT_CMD_SetPuzzleTitle,
-    SCRIPT_CMD_SetShapeSolutionMirror,
-    SCRIPT_CMD_AddLaytonFurniture,
-    SCRIPT_CMD_AddLukeFurniture,
-    SCRIPT_CMD_DisableResetButton,
-    SCRIPT_CMD_SetLiquidColor,
-    SCRIPT_CMD_SetQuestionFailBG,
-    SCRIPT_CMD_PenTouched,
-    SCRIPT_CMD_AddDogPart,
-    SCRIPT_CMD_SetQuestionCarot,
-    SCRIPT_CMD_DoDogItemScreen,
-    SCRIPT_CMD_DoJigsawScreen,
-    SCRIPT_CMD_AddLaytonItemText,
-    SCRIPT_CMD_AddLaytonItemTextParent,
-    SCRIPT_CMD_AddLukeItemText,
-    SCRIPT_CMD_AddLukeItemTextParent,
-    SCRIPT_CMD_AddLaytonHint,
-    SCRIPT_CMD_AddLukeHint,
-    SCRIPT_CMD_DoFurnitureScreen,
-    SCRIPT_CMD_TextWindowKM,
-    SCRIPT_CMD_RemoveItem,
-    SCRIPT_CMD_SetItemName,
-    SCRIPT_CMD_SetTraceCorrectZone,
-    SCRIPT_CMD_AddDogEvent,
-    SCRIPT_CMD_AddDogCoin,
-    SCRIPT_CMD_SetMovieNum,
-    SCRIPT_CMD_AddTracePoint,
-    SCRIPT_CMD_ChoiceWindow3,
-    SCRIPT_CMD_SetChoiceText1,
-    SCRIPT_CMD_SetChoiceText2,
-    SCRIPT_CMD_SetChoiceText3,
-    SCRIPT_CMD_SetChoiceQuestion,
-    SCRIPT_CMD_OnChoice,
-    SCRIPT_CMD_ChoiceWindow2,
-    SCRIPT_CMD_SetQuestionInfo,
-    SCRIPT_CMD_PlayMovieDual,
-    SCRIPT_CMD_SaveTextureMemoryState,
-    SCRIPT_CMD_SetButtonAnswerWifi,
-    SCRIPT_CMD_SetNumberAnswerWifi,
-    SCRIPT_CMD_SetLetterAnswerWifi,
-    SCRIPT_CMD_SetHiraganaAnswerWifi,
-    SCRIPT_CMD_SetKatakanaAnswerWifi,
-    SCRIPT_CMD_AddBabaQuestion,
-    SCRIPT_CMD_SetBabaParam,
-    SCRIPT_CMD_LoadBabaData,
-    SCRIPT_CMD_DoBabaAddScreen,
-    SCRIPT_CMD_DoHukamaruAddScreen,
-    SCRIPT_CMD_SetAraSujiEventNumber,
-    SCRIPT_CMD_DoAraSujiEvent,
-    SCRIPT_CMD_PressingX,
-    SCRIPT_CMD_FadeToVolumeBGM,
-    SCRIPT_CMD_LoadPlayBGM,
-    SCRIPT_CMD_LoadOtherSoundGroup,
-    SCRIPT_CMD_PlayBGMWait,
-    SCRIPT_CMD_FadeBGMWait,
-    SCRIPT_CMD_PlayMovieSound,
-    SCRIPT_CMD_SetMaxDist,
-    SCRIPT_CMD_PlaySoundDirect,
-    SCRIPT_CMD_LoadEventSoundGroup,
-    SCRIPT_CMD_SetChangeAnswerKomoji,
-    SCRIPT_CMD_NoTutorial,
-    SCRIPT_CMD_FadeOutBGMScript,
-    SCRIPT_CMD_FadeInBGMScript,
-    SCRIPT_CMD_FadeOutBGMQuick,
-    SCRIPT_CMD_SetAnswerBox,
-    SCRIPT_CMD_SetAnswer,
-    SCRIPT_CMD_SetDrawInputBG,
-    SCRIPT_CMD_SetSubTitle,
-    SCRIPT_CMD_SetMovie,
-    SCRIPT_CMD_SetFullScreen,
-    SCRIPT_CMD_DoNoChargedScreen,
-    SCRIPT_CMD_SetLaytonChallenge,
-    SCRIPT_CMD_DoDownload,
-    SCRIPT_CMD_SetBandType,
-    SCRIPT_CMD_AddSecretCoin,
-    SCRIPT_CMD_OnSecretMedal,
-    SCRIPT_CMD_SetCharmPoint,
-    SCRIPT_CMD_SetL5iDPoint,
-    SCRIPT_CMD_SetTopSecretPoint,
-    SCRIPT_CMD_MAX
-} gds_opcode_t;
+#define GDS_OPCODE_LIST(X)                                                     \
+    X(SCRIPT_CMD_Invalid, "Invalid")                                           \
+    X(SCRIPT_CMD_FadeIn, "FadeIn")                                             \
+    X(SCRIPT_CMD_FadeInOnly, "FadeInOnly")                                     \
+    X(SCRIPT_CMD_FadeInOnlySub, "FadeInOnlySub")                               \
+    X(SCRIPT_CMD_FadeInOnlyMain, "FadeInOnlyMain")                             \
+    X(SCRIPT_CMD_FadeOut, "FadeOut")                                           \
+    X(SCRIPT_CMD_FadeOutOnly, "FadeOutOnly")                                   \
+    X(SCRIPT_CMD_FadeOutOnlySub, "FadeOutOnlySub")                             \
+    X(SCRIPT_CMD_FadeOutOnlyMain, "FadeOutOnlyMain")                           \
+    X(SCRIPT_CMD_WaitPenTouch, "WaitPenTouch")                                 \
+    X(SCRIPT_CMD_WaitInput, "WaitInput")                                       \
+    X(SCRIPT_CMD_LoadBG, "LoadBG")                                             \
+    X(SCRIPT_CMD_LoadSubBG, "LoadSubBG")                                       \
+    X(SCRIPT_CMD_WaitVSyncOrPenTouch, "WaitVSyncOrPenTouch")                   \
+    X(SCRIPT_CMD_UnloadAllGfx, "UnloadAllGfx")                                 \
+    X(SCRIPT_CMD_VSyncProcess, "VSyncProcess")                                 \
+    X(SCRIPT_CMD_PlaySound, "PlaySound")                                       \
+    X(SCRIPT_CMD_PlayBGM, "PlayBGM")                                           \
+    X(SCRIPT_CMD_IF, "IF")                                                     \
+    X(SCRIPT_CMD_CheckRoomNumber, "CheckRoomNumber")                           \
+    X(SCRIPT_CMD_Loop, "Loop")                                                 \
+    X(SCRIPT_CMD_WHILE, "WHILE")                                               \
+    X(SCRIPT_CMD_ELSEIF, "ELSEIF")                                             \
+    X(SCRIPT_CMD_ELSE, "ELSE")                                                 \
+    X(SCRIPT_CMD_PressingStart, "PressingStart")                               \
+    X(SCRIPT_CMD_TRUE, "TRUE")                                                 \
+    X(SCRIPT_CMD_FALSE, "FALSE")                                               \
+    X(SCRIPT_CMD_CreateQuestion, "CreateQuestion")                             \
+    X(SCRIPT_CMD_AddHints, "AddHints")                                         \
+    X(SCRIPT_CMD_AddButtons, "AddButtons")                                     \
+    X(SCRIPT_CMD_SetCorrect, "SetCorrect")                                     \
+    X(SCRIPT_CMD_SetQuestionEndBG, "SetQuestionEndBG")                         \
+    X(SCRIPT_CMD_AddHint, "AddHint")                                           \
+    X(SCRIPT_CMD_AddQuestionButton, "AddQuestionButton")                       \
+    X(SCRIPT_CMD_AddExit, "AddExit")                                           \
+    X(SCRIPT_CMD_AddChr, "AddChr")                                             \
+    X(SCRIPT_CMD_SetNumberAnswer, "SetNumberAnswer")                           \
+    X(SCRIPT_CMD_AddCoin, "AddCoin")                                           \
+    X(SCRIPT_CMD_AddCoinSolution, "AddCoinSolution")                           \
+    X(SCRIPT_CMD_SetNumTouch, "SetNumTouch")                                   \
+    X(SCRIPT_CMD_GridAddBlock, "GridAddBlock")                                 \
+    X(SCRIPT_CMD_GridAddLetter, "GridAddLetter")                               \
+    X(SCRIPT_CMD_AddMatch, "AddMatch")                                         \
+    X(SCRIPT_CMD_AddMatchSolution, "AddMatchSolution")                         \
+    X(SCRIPT_CMD_SetQuestionEvent, "SetQuestionEvent")                         \
+    X(SCRIPT_CMD_AddWeights, "AddWeights")                                     \
+    X(SCRIPT_CMD_RandomLightWeight, "RandomLightWeight")                       \
+    X(SCRIPT_CMD_RandomHeavyWeight, "RandomHeavyWeight")                       \
+    X(SCRIPT_CMD_RandomLightOrHeavyWeight, "RandomLightOrHeavyWeight")         \
+    X(SCRIPT_CMD_AddChicken, "AddChicken")                                     \
+    X(SCRIPT_CMD_AddWolf, "AddWolf")                                           \
+    X(SCRIPT_CMD_NewShape, "NewShape")                                         \
+    X(SCRIPT_CMD_AddVertex, "AddVertex")                                       \
+    X(SCRIPT_CMD_AddTriangle, "AddTriangle")                                   \
+    X(SCRIPT_CMD_SetShapePosition, "SetShapePosition")                         \
+    X(SCRIPT_CMD_SetShapeRotation, "SetShapeRotation")                         \
+    X(SCRIPT_CMD_SetShapeSolutionPosition, "SetShapeSolutionPosition")         \
+    X(SCRIPT_CMD_SetShapeSolutionRotation, "SetShapeSolutionRotation")         \
+    X(SCRIPT_CMD_AddCup, "AddCup")                                             \
+    X(SCRIPT_CMD_SetBoard, "SetBoard")                                         \
+    X(SCRIPT_CMD_AddQueens, "AddQueens")                                       \
+    X(SCRIPT_CMD_AddGoldQueen, "AddGoldQueen")                                 \
+    X(SCRIPT_CMD_SetQueenCheckMode, "SetQueenCheckMode")                       \
+    X(SCRIPT_CMD_SetFillPos, "SetFillPos")                                     \
+    X(SCRIPT_CMD_AddInPoint, "AddInPoint")                                     \
+    X(SCRIPT_CMD_AddOutPoint, "AddOutPoint")                                   \
+    X(SCRIPT_CMD_SetFontUserColor, "SetFontUserColor")                         \
+    X(SCRIPT_CMD_AddTextObj, "AddTextObj")                                     \
+    X(SCRIPT_CMD_TextWindow, "TextWindow")                                     \
+    X(SCRIPT_CMD_SetTextWindowLeft, "SetTextWindowLeft")                       \
+    X(SCRIPT_CMD_SetTextWindowRight, "SetTextWindowRight")                     \
+    X(SCRIPT_CMD_SetWinNum, "SetWinNum")                                       \
+    X(SCRIPT_CMD_SetCurrentQuestion, "SetCurrentQuestion")                     \
+    X(SCRIPT_CMD_FoundQuestion, "FoundQuestion")                               \
+    X(SCRIPT_CMD_EventModeStart, "EventModeStart")                             \
+    X(SCRIPT_CMD_EventModeFinish, "EventModeFinish")                           \
+    X(SCRIPT_CMD_FailQuestion, "FailQuestion")                                 \
+    X(SCRIPT_CMD_CorrectQuestion, "CorrectQuestion")                           \
+    X(SCRIPT_CMD_SolvedQuestion, "SolvedQuestion")                             \
+    X(SCRIPT_CMD_ExitScript, "ExitScript")                                     \
+    X(SCRIPT_CMD_AddEvent, "AddEvent")                                         \
+    X(SCRIPT_CMD_SetGameMode, "SetGameMode")                                   \
+    X(SCRIPT_CMD_SetQuestionEndGameMode, "SetQuestionEndGameMode")             \
+    X(SCRIPT_CMD_SetCurrentRoom, "SetCurrentRoom")                             \
+    X(SCRIPT_CMD_CorrectQuestionN, "CorrectQuestionN")                         \
+    X(SCRIPT_CMD_SetEventFinished, "SetEventFinished")                         \
+    X(SCRIPT_CMD_DoPrizeScreen, "DoPrizeScreen")                               \
+    X(SCRIPT_CMD_DoStockScreen, "DoStockScreen")                               \
+    X(SCRIPT_CMD_ViewedEvent, "ViewedEvent")                                   \
+    X(SCRIPT_CMD_PlayBridgeSound, "PlayBridgeSound")                           \
+    X(SCRIPT_CMD_SetMap, "SetMap")                                             \
+    X(SCRIPT_CMD_SetExitSound, "SetExitSound")                                 \
+    X(SCRIPT_CMD_AddBGObject, "AddBGObject")                                   \
+    X(SCRIPT_CMD_AddOnOffButton, "AddOnOffButton")                             \
+    X(SCRIPT_CMD_SetTarget, "SetTarget")                                       \
+    X(SCRIPT_CMD_UnloadMainGfx, "UnloadMainGfx")                               \
+    X(SCRIPT_CMD_SetCurrentEvent, "SetCurrentEvent")                           \
+    X(SCRIPT_CMD_DoSaveScreen, "DoSaveScreen")                                 \
+    X(SCRIPT_CMD_SetStoryFlag, "SetStoryFlag")                                 \
+    X(SCRIPT_CMD_StoryFlag, "StoryFlag")                                       \
+    X(SCRIPT_CMD_ForceTutorial, "ForceTutorial")                               \
+    X(SCRIPT_CMD_SetTextWindowCenter, "SetTextWindowCenter")                   \
+    X(SCRIPT_CMD_PuzzleSolverLayton, "PuzzleSolverLayton")                     \
+    X(SCRIPT_CMD_PuzzleSolverLuke, "PuzzleSolverLuke")                         \
+    X(SCRIPT_CMD_AddHintCoin, "AddHintCoin")                                   \
+    X(SCRIPT_CMD_FadeOutBGM, "FadeOutBGM")                                     \
+    X(SCRIPT_CMD_FadeInBGM, "FadeInBGM")                                       \
+    X(SCRIPT_CMD_WaitFrame, "WaitFrame")                                       \
+    X(SCRIPT_CMD_AddSprite, "AddSprite")                                       \
+    X(SCRIPT_CMD_AddSpriteChild, "AddSpriteChild")                             \
+    X(SCRIPT_CMD_SetSpriteAnimation, "SetSpriteAnimation")                     \
+    X(SCRIPT_CMD_SetSpriteAnimationChild, "SetSpriteAnimationChild")           \
+    X(SCRIPT_CMD_SetSpritePosition, "SetSpritePosition")                       \
+    X(SCRIPT_CMD_SpriteOn, "SpriteOn")                                         \
+    X(SCRIPT_CMD_SpriteOff, "SpriteOff")                                       \
+    X(SCRIPT_CMD_AddTile, "AddTile")                                           \
+    X(SCRIPT_CMD_AddPoint, "AddPoint")                                         \
+    X(SCRIPT_CMD_AddTileSolution, "AddTileSolution")                           \
+    X(SCRIPT_CMD_SetNumSolution, "SetNumSolution")                             \
+    X(SCRIPT_CMD_NumQuestionsSolved, "NumQuestionsSolved")                     \
+    X(SCRIPT_CMD_SetSpriteFade, "SetSpriteFade")                               \
+    X(SCRIPT_CMD_SetSpriteAlpha, "SetSpriteAlpha")                             \
+    X(SCRIPT_CMD_DrawFrames, "DrawFrames")                                     \
+    X(SCRIPT_CMD_ModifyBGPal, "ModifyBGPal")                                   \
+    X(SCRIPT_CMD_ModifySubBGPal, "ModifySubBGPal")                             \
+    X(SCRIPT_CMD_FreeEventAniMemory, "FreeEventAniMemory")                     \
+    X(SCRIPT_CMD_AddSubSprite, "AddSubSprite")                                 \
+    X(SCRIPT_CMD_SetSubSpriteAnimation, "SetSubSpriteAnimation")               \
+    X(SCRIPT_CMD_SetSubSpritePosition, "SetSubSpritePosition")                 \
+    X(SCRIPT_CMD_SubSpriteOn, "SubSpriteOn")                                   \
+    X(SCRIPT_CMD_SubSpriteOff, "SubSpriteOff")                                 \
+    X(SCRIPT_CMD_AddCoinType, "AddCoinType")                                   \
+    X(SCRIPT_CMD_AddCoinSolutionType, "AddCoinSolutionType")                   \
+    X(SCRIPT_CMD_AddItem, "AddItem")                                           \
+    X(SCRIPT_CMD_CheckItem, "CheckItem")                                       \
+    X(SCRIPT_CMD_ShakeBG, "ShakeBG")                                           \
+    X(SCRIPT_CMD_ShakeSubBG, "ShakeSubBG")                                     \
+    X(SCRIPT_CMD_AddMan, "AddMan")                                             \
+    X(SCRIPT_CMD_AddCabbage, "AddCabbage")                                     \
+    X(SCRIPT_CMD_AddSheep, "AddSheep")                                         \
+    X(SCRIPT_CMD_SetRiverCrossMode, "SetRiverCrossMode")                       \
+    X(SCRIPT_CMD_BitFlag, "BitFlag")                                           \
+    X(SCRIPT_CMD_SetBitFlag, "SetBitFlag")                                     \
+    X(SCRIPT_CMD_SetSpriteShake, "SetSpriteShake")                             \
+    X(SCRIPT_CMD_SetSpriteState, "SetSpriteState")                             \
+    X(SCRIPT_CMD_SetSpriteTargetPosition, "SetSpriteTargetPosition")           \
+    X(SCRIPT_CMD_SetSpriteSpeed, "SetSpriteSpeed")                             \
+    X(SCRIPT_CMD_SetSubSpriteShake, "SetSubSpriteShake")                       \
+    X(SCRIPT_CMD_SetSubSpriteState, "SetSubSpriteState")                       \
+    X(SCRIPT_CMD_SetSubSpriteTargetPosition, "SetSubSpriteTargetPosition")     \
+    X(SCRIPT_CMD_SetSubSpriteSpeed, "SetSubSpriteSpeed")                       \
+    X(SCRIPT_CMD_SetSpriteType, "SetSpriteType")                               \
+    X(SCRIPT_CMD_TextWindowK, "TextWindowK")                                   \
+    X(SCRIPT_CMD_TextWindowR, "TextWindowR")                                   \
+    X(SCRIPT_CMD_TextWindowL, "TextWindowL")                                   \
+    X(SCRIPT_CMD_TextWindowM, "TextWindowM")                                   \
+    X(SCRIPT_CMD_TextWindowKR, "TextWindowKR")                                 \
+    X(SCRIPT_CMD_TextWindowKL, "TextWindowKL")                                 \
+    X(SCRIPT_CMD_SetMemoFlag, "SetMemoFlag")                                   \
+    X(SCRIPT_CMD_SetGridTypeRange, "SetGridTypeRange")                         \
+    X(SCRIPT_CMD_AddTouchPoint, "AddTouchPoint")                               \
+    X(SCRIPT_CMD_AddCheckLine, "AddCheckLine")                                 \
+    X(SCRIPT_CMD_EnableNaname, "EnableNaname")                                 \
+    X(SCRIPT_CMD_SetGridPosition, "SetGridPosition")                           \
+    X(SCRIPT_CMD_SetGridSize, "SetGridSize")                                   \
+    X(SCRIPT_CMD_SetBlockSize, "SetBlockSize")                                 \
+    X(SCRIPT_CMD_AddBlock, "AddBlock")                                         \
+    X(SCRIPT_CMD_SetKatakanaAnswer, "SetKatakanaAnswer")                       \
+    X(SCRIPT_CMD_SetInputType, "SetInputType")                                 \
+    X(SCRIPT_CMD_SetAlphabetAnswer, "SetAlphabetAnswer")                       \
+    X(SCRIPT_CMD_SetType, "SetType")                                           \
+    X(SCRIPT_CMD_OnHintMedal, "OnHintMedal")                                   \
+    X(SCRIPT_CMD_SetLineColor, "SetLineColor")                                 \
+    X(SCRIPT_CMD_SetPenColor, "SetPenColor")                                   \
+    X(SCRIPT_CMD_LoadBGSetFadeIn, "LoadBGSetFadeIn")                           \
+    X(SCRIPT_CMD_DoSpriteFadeIn, "DoSpriteFadeIn")                             \
+    X(SCRIPT_CMD_DoSpriteFadeInFast, "DoSpriteFadeInFast")                     \
+    X(SCRIPT_CMD_AddShapeSolutionType, "AddShapeSolutionType")                 \
+    X(SCRIPT_CMD_SetShapeType, "SetShapeType")                                 \
+    X(SCRIPT_CMD_DoSpriteFadeOut, "DoSpriteFadeOut")                           \
+    X(SCRIPT_CMD_SetSpriteFlip, "SetSpriteFlip")                               \
+    X(SCRIPT_CMD_AddRotateBox, "AddRotateBox")                                 \
+    X(SCRIPT_CMD_AddStoryScript, "AddStoryScript")                             \
+    X(SCRIPT_CMD_SetQuestionSolved, "SetQuestionSolved")                       \
+    X(SCRIPT_CMD_SetEventViewed, "SetEventViewed")                             \
+    X(SCRIPT_CMD_SetSingleNumberAnswer, "SetSingleNumberAnswer")               \
+    X(SCRIPT_CMD_SetPuzzleTitle, "SetPuzzleTitle")                             \
+    X(SCRIPT_CMD_SetShapeSolutionMirror, "SetShapeSolutionMirror")             \
+    X(SCRIPT_CMD_AddLaytonFurniture, "AddLaytonFurniture")                     \
+    X(SCRIPT_CMD_AddLukeFurniture, "AddLukeFurniture")                         \
+    X(SCRIPT_CMD_DisableResetButton, "DisableResetButton")                     \
+    X(SCRIPT_CMD_SetLiquidColor, "SetLiquidColor")                             \
+    X(SCRIPT_CMD_SetQuestionFailBG, "SetQuestionFailBG")                       \
+    X(SCRIPT_CMD_PenTouched, "PenTouched")                                     \
+    X(SCRIPT_CMD_AddDogPart, "AddDogPart")                                     \
+    X(SCRIPT_CMD_SetQuestionCarot, "SetQuestionCarot")                         \
+    X(SCRIPT_CMD_DoDogItemScreen, "DoDogItemScreen")                           \
+    X(SCRIPT_CMD_DoJigsawScreen, "DoJigsawScreen")                             \
+    X(SCRIPT_CMD_AddLaytonItemText, "AddLaytonItemText")                       \
+    X(SCRIPT_CMD_AddLaytonItemTextParent, "AddLaytonItemTextParent")           \
+    X(SCRIPT_CMD_AddLukeItemText, "AddLukeItemText")                           \
+    X(SCRIPT_CMD_AddLukeItemTextParent, "AddLukeItemTextParent")               \
+    X(SCRIPT_CMD_AddLaytonHint, "AddLaytonHint")                               \
+    X(SCRIPT_CMD_AddLukeHint, "AddLukeHint")                                   \
+    X(SCRIPT_CMD_DoFurnitureScreen, "DoFurnitureScreen")                       \
+    X(SCRIPT_CMD_TextWindowKM, "TextWindowKM")                                 \
+    X(SCRIPT_CMD_RemoveItem, "RemoveItem")                                     \
+    X(SCRIPT_CMD_SetItemName, "SetItemName")                                   \
+    X(SCRIPT_CMD_SetTraceCorrectZone, "SetTraceCorrectZone")                   \
+    X(SCRIPT_CMD_AddDogEvent, "AddDogEvent")                                   \
+    X(SCRIPT_CMD_AddDogCoin, "AddDogCoin")                                     \
+    X(SCRIPT_CMD_SetMovieNum, "SetMovieNum")                                   \
+    X(SCRIPT_CMD_AddTracePoint, "AddTracePoint")                               \
+    X(SCRIPT_CMD_ChoiceWindow3, "ChoiceWindow3")                               \
+    X(SCRIPT_CMD_SetChoiceText1, "SetChoiceText1")                             \
+    X(SCRIPT_CMD_SetChoiceText2, "SetChoiceText2")                             \
+    X(SCRIPT_CMD_SetChoiceText3, "SetChoiceText3")                             \
+    X(SCRIPT_CMD_SetChoiceQuestion, "SetChoiceQuestion")                       \
+    X(SCRIPT_CMD_OnChoice, "OnChoice")                                         \
+    X(SCRIPT_CMD_ChoiceWindow2, "ChoiceWindow2")                               \
+    X(SCRIPT_CMD_SetQuestionInfo, "SetQuestionInfo")                           \
+    X(SCRIPT_CMD_PlayMovieDual, "PlayMovieDual")                               \
+    X(SCRIPT_CMD_SaveTextureMemoryState, "SaveTextureMemoryState")             \
+    X(SCRIPT_CMD_SetButtonAnswerWifi, "SetButtonAnswerWifi")                   \
+    X(SCRIPT_CMD_SetNumberAnswerWifi, "SetNumberAnswerWifi")                   \
+    X(SCRIPT_CMD_SetLetterAnswerWifi, "SetLetterAnswerWifi")                   \
+    X(SCRIPT_CMD_SetHiraganaAnswerWifi, "SetHiraganaAnswerWifi")               \
+    X(SCRIPT_CMD_SetKatakanaAnswerWifi, "SetKatakanaAnswerWifi")               \
+    X(SCRIPT_CMD_AddBabaQuestion, "AddBabaQuestion")                           \
+    X(SCRIPT_CMD_SetBabaParam, "SetBabaParam")                                 \
+    X(SCRIPT_CMD_LoadBabaData, "LoadBabaData")                                 \
+    X(SCRIPT_CMD_DoBabaAddScreen, "DoBabaAddScreen")                           \
+    X(SCRIPT_CMD_DoHukamaruAddScreen, "DoHukamaruAddScreen")                   \
+    X(SCRIPT_CMD_SetAraSujiEventNumber, "SetAraSujiEventNumber")               \
+    X(SCRIPT_CMD_DoAraSujiEvent, "DoAraSujiEvent")                             \
+    X(SCRIPT_CMD_PressingX, "PressingX")                                       \
+    X(SCRIPT_CMD_FadeToVolumeBGM, "FadeToVolumeBGM")                           \
+    X(SCRIPT_CMD_LoadPlayBGM, "LoadPlayBGM")                                   \
+    X(SCRIPT_CMD_LoadOtherSoundGroup, "LoadOtherSoundGroup")                   \
+    X(SCRIPT_CMD_PlayBGMWait, "PlayBGMWait")                                   \
+    X(SCRIPT_CMD_FadeBGMWait, "FadeBGMWait")                                   \
+    X(SCRIPT_CMD_PlayMovieSound, "PlayMovieSound")                             \
+    X(SCRIPT_CMD_SetMaxDist, "SetMaxDist")                                     \
+    X(SCRIPT_CMD_PlaySoundDirect, "PlaySoundDirect")                           \
+    X(SCRIPT_CMD_LoadEventSoundGroup, "LoadEventSoundGroup")                   \
+    X(SCRIPT_CMD_SetChangeAnswerKomoji, "SetChangeAnswerKomoji")               \
+    X(SCRIPT_CMD_NoTutorial, "NoTutorial")                                     \
+    X(SCRIPT_CMD_FadeOutBGMScript, "FadeOutBGMScript")                         \
+    X(SCRIPT_CMD_FadeInBGMScript, "FadeInBGMScript")                           \
+    X(SCRIPT_CMD_FadeOutBGMQuick, "FadeOutBGMQuick")                           \
+    X(SCRIPT_CMD_SetAnswerBox, "SetAnswerBox")                                 \
+    X(SCRIPT_CMD_SetAnswer, "SetAnswer")                                       \
+    X(SCRIPT_CMD_SetDrawInputBG, "SetDrawInputBG")                             \
+    X(SCRIPT_CMD_SetSubTitle, "SetSubTitle")                                   \
+    X(SCRIPT_CMD_SetMovie, "SetMovie")                                         \
+    X(SCRIPT_CMD_SetFullScreen, "SetFullScreen")                               \
+    X(SCRIPT_CMD_DoNoChargedScreen, "DoNoChargedScreen")                       \
+    X(SCRIPT_CMD_SetLaytonChallenge, "SetLaytonChallenge")                     \
+    X(SCRIPT_CMD_DoDownload, "DoDownload")                                     \
+    X(SCRIPT_CMD_SetBandType, "SetBandType")                                   \
+    X(SCRIPT_CMD_AddSecretCoin, "AddSecretCoin")                               \
+    X(SCRIPT_CMD_OnSecretMedal, "OnSecretMedal")                               \
+    X(SCRIPT_CMD_SetCharmPoint, "SetCharmPoint")                               \
+    X(SCRIPT_CMD_SetL5iDPoint, "SetL5iDPoint")                                 \
+    X(SCRIPT_CMD_SetTopSecretPoint, "SetTopSecretPoint")
 
-const char *gds_opcode_to_string(gds_opcode_t opcode);
-bool gds_is_valid_opcode(gds_opcode_t opcode);
+#define GDS_OPCODE_ENUM(name, string) name,
+
+typedef enum { GDS_OPCODE_LIST(GDS_OPCODE_ENUM) SCRIPT_CMD_MAX } gds_opcode_t;
+
+#undef GDS_OPCODE_ENUM
+
+#define GDS_OPCODE_STRING(name, string) [name] = string,
+
+static const char *const gds_opcode_names[SCRIPT_CMD_MAX] = {
+    GDS_OPCODE_LIST(GDS_OPCODE_STRING)};
+
+#undef GDS_OPCODE_STRING
+
+static inline const char *gds_opcode_to_string(gds_opcode_t opcode) {
+    if ((unsigned)opcode >= SCRIPT_CMD_MAX)
+        return "UNKNOWN_OPCODE";
+
+    return gds_opcode_names[opcode];
+}
+
+static inline gds_opcode_t gds_opcode_from_string(const char *string) {
+#define GDS_OPCODE_MATCH(name, value)                                          \
+    if (strcmp(string, value) == 0)                                            \
+        return name;
+
+    GDS_OPCODE_LIST(GDS_OPCODE_MATCH)
+
+#undef GDS_OPCODE_MATCH
+
+    return SCRIPT_CMD_Invalid;
+}
+
+static inline bool gds_is_valid_opcode(gds_opcode_t opcode) {
+    if (opcode > SCRIPT_CMD_Invalid && opcode < SCRIPT_CMD_MAX) {
+        return true;
+    }
+    return false;
+}
 
 #endif // GDS_OPCODE_H

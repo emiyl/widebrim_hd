@@ -350,18 +350,8 @@ static bool parser_read_number(parser_t *parser, int32_t *value) {
 }
 
 static bool lookup_opcode(const char *name, gds_opcode_t *opcode) {
-    size_t i;
-
-    for (i = 1U; i < (size_t)SCRIPT_CMD_MAX; i++) {
-        const gds_opcode_t candidate = (gds_opcode_t)i;
-        const char *candidate_name = gds_opcode_to_string(candidate);
-        if (ci_strcmp(name, candidate_name)) {
-            *opcode = candidate;
-            return true;
-        }
-    }
-
-    return false;
+    *opcode = gds_opcode_from_string(name);
+    return *opcode != SCRIPT_CMD_Invalid;
 }
 
 static bool parse_statement(parser_t *parser, bytebuf_t *output);
