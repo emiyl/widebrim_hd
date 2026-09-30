@@ -15,6 +15,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 static void print_usage(const char *program_name) {
     fprintf(stderr, "Usage: %s <script.gsc|script.gds>\n", program_name);
 }
