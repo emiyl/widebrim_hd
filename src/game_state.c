@@ -98,7 +98,7 @@ void game_state_reset(game_state_t *state) {
 
     state->set_current_event = game_state_set_event_id;
 
-    state->set_bit_flag(state, 201, 1);
+    // state->set_bit_flag(state, 201, 1);
 
     gds_state_reset(&state->gds);
 }

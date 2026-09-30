@@ -30,6 +30,14 @@ static game_state_t *gds_branch_get_game_state(void *user_data) {
     return (game_state_t *)user_data;
 }
 
+static gds_state_t *gds_branch_get_gds_state(void *user_data) {
+    game_state_t *game_state = gds_branch_get_game_state(user_data);
+    if (game_state != NULL) {
+        return &game_state->gds;
+    }
+    return NULL;
+}
+
 static bool gds_branch_jump_to_block_target(gds_reader_t *reader,
                                             gds_record_type_t type,
                                             uint32_t target) {
@@ -284,6 +292,13 @@ static bool gds_branch_IF(gds_reader_t *reader, const gds_record_t *command,
                                                block_start.payload.value.u32);
     }
 
+    {
+        gds_state_t *gds_state = gds_branch_get_gds_state(user_data);
+        if (gds_state != NULL) {
+            gds_state->skip_next_else_depth += 1U;
+        }
+    }
+
     return true;
 }
 
@@ -318,6 +333,13 @@ static bool gds_branch_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
     if (!condition) {
         return gds_branch_jump_to_block_target(reader, block_start.type,
                                                block_start.payload.value.u32);
+    }
+
+    {
+        gds_state_t *gds_state = gds_branch_get_gds_state(user_data);
+        if (gds_state != NULL) {
+            gds_state->skip_next_else_depth += 1U;
+        }
     }
 
     return true;

@@ -7,4 +7,5 @@ void gds_state_reset(gds_state_t *state) {
     }
 
     state->condition_result = false;
+    state->skip_next_else_depth = 0U;
 }
