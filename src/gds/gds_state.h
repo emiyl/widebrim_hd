@@ -7,6 +7,7 @@
 typedef struct {
     bool condition_result;
     size_t skip_next_else_depth;
+    bool skipping_else_block;
 } gds_state_t;
 
 void gds_state_init(gds_state_t *state);

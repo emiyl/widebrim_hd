@@ -108,31 +108,40 @@ bool gds_execute_script(const uint8_t *data, size_t size, void *user_data,
         }
 
         if (record.type == GDS_RECORD_BLOCK_END) {
-            if (state != NULL && state->skip_next_else_depth > 0U) {
-                size_t after_block_end = reader.offset;
-                gds_record_t next_record;
+            if (state != NULL) {
+                if (state->skipping_else_block) {
+                    state->skipping_else_block = false;
+                    continue;
+                }
 
-                state->skip_next_else_depth -= 1U;
+                if (state->skip_next_else_depth > 0U) {
+                    size_t after_block_end = reader.offset;
+                    gds_record_t next_record;
 
-                if (gds_reader_remaining(&reader) > 0U &&
-                    gds_read_record(&reader, &next_record)) {
-                    if (next_record.type == GDS_RECORD_COMMAND &&
-                        (next_record.payload.opcode == SCRIPT_CMD_ELSE ||
-                         next_record.payload.opcode == SCRIPT_CMD_ELSEIF)) {
-                        size_t after_else_command = reader.offset;
-                        gds_record_t else_block_start;
+                    state->skip_next_else_depth -= 1U;
 
-                        if (gds_reader_remaining(&reader) > 0U &&
-                            gds_read_record(&reader, &else_block_start) &&
-                            else_block_start.type == GDS_RECORD_BLOCK_START) {
-                            reader.offset =
-                                (size_t)else_block_start.payload.value.u32;
-                            continue;
+                    if (gds_reader_remaining(&reader) > 0U &&
+                        gds_read_record(&reader, &next_record)) {
+                        if (next_record.type == GDS_RECORD_COMMAND &&
+                            (next_record.payload.opcode == SCRIPT_CMD_ELSE ||
+                             next_record.payload.opcode == SCRIPT_CMD_ELSEIF)) {
+                            size_t after_else_command = reader.offset;
+                            gds_record_t else_block_start;
+
+                            if (gds_reader_remaining(&reader) > 0U &&
+                                gds_read_record(&reader, &else_block_start) &&
+                                else_block_start.type ==
+                                    GDS_RECORD_BLOCK_START) {
+                                reader.offset =
+                                    (size_t)else_block_start.payload.value.u32;
+                                state->skipping_else_block = true;
+                                continue;
+                            }
+
+                            reader.offset = after_else_command;
+                        } else {
+                            reader.offset = after_block_end;
                         }
-
-                        reader.offset = after_else_command;
-                    } else {
-                        reader.offset = after_block_end;
                     }
                 }
             }
