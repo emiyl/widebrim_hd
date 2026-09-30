@@ -18,7 +18,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake pkg-config libsdl3-dev
+          sudo apt-get install -y cmake pkg-config libsdl3
 
       - name: Configure build
         run: |
