@@ -1,14 +1,28 @@
 #ifndef MODE_H
 #define MODE_H
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <string.h>
 
-#ifndef _WIN32
-#include <strings.h>
-#endif
-
 #include "screen.h"
+
+static inline int game_mode_stricmp(const char *lhs, const char *rhs) {
+    while (*lhs != '\0' && *rhs != '\0') {
+        unsigned char left = (unsigned char)*lhs;
+        unsigned char right = (unsigned char)*rhs;
+        int diff = (int)tolower(left) - (int)tolower(right);
+
+        if (diff != 0) {
+            return diff;
+        }
+
+        lhs++;
+        rhs++;
+    }
+
+    return (unsigned char)*lhs - (unsigned char)*rhs;
+}
 
 // value, name, display string
 #define GAME_MODES(X)                                                          \
@@ -46,21 +60,13 @@ static inline const char *game_mode_to_string(game_mode_t mode) {
 }
 
 static inline game_mode_t string_to_game_mode(const char *input) {
-
-#ifdef _WIN32
-#define GAME_MODE_STRICMP _stricmp
-#else
-#define GAME_MODE_STRICMP strcasecmp
-#endif
-
 #define X(value, name, str)                                                    \
-    if (GAME_MODE_STRICMP(input, str) == 0)                                    \
+    if (game_mode_stricmp(input, str) == 0)                                    \
         return name;
 
     GAME_MODES(X)
 
 #undef X
-#undef GAME_MODE_STRICMP
 
     return MODE_INVALID;
 }

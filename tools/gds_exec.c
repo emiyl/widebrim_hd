@@ -1,12 +1,11 @@
 #include "gds/gds_exec.h"
 #include "gds/gds.h"
-#include "gds/gds_state.h"
 
 #include "game_state.h"
 #include "modes/mode_impl.h"
 
 #include <errno.h>
-#include <limits.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,9 +14,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
+#define GDS_EXEC_PATH_MAX 4096
 
 static void print_usage(const char *program_name) {
     fprintf(stderr, "Usage: %s <script.gsc|script.gds>\n", program_name);
@@ -36,11 +33,12 @@ static bool has_suffix(const char *path, const char *suffix) {
 
 static bool compile_gsc_to_temp(const char *source_path, char *temp_path,
                                 size_t temp_path_size) {
-    char compiler_candidate[PATH_MAX];
-    char temp_template[] = "/tmp/gds_exec_XXXXXX";
+    char compiler_candidate[GDS_EXEC_PATH_MAX];
+    char temp_template[GDS_EXEC_PATH_MAX];
     int fd;
     pid_t child;
     int status;
+    static unsigned long long temp_counter = 0ULL;
 
     if (source_path == NULL || temp_path == NULL || temp_path_size == 0U) {
         return false;
@@ -58,7 +56,12 @@ static bool compile_gsc_to_temp(const char *source_path, char *temp_path,
         return false;
     }
 
-    fd = mkstemp(temp_template);
+    do {
+        snprintf(temp_template, sizeof(temp_template), "/tmp/gds_exec_%llu_%ld",
+                 temp_counter++, (long)getpid());
+        fd = open(temp_template, O_RDWR | O_CREAT | O_EXCL, 0600);
+    } while (fd < 0 && errno == EEXIST);
+
     if (fd < 0) {
         fprintf(stderr, "gds_exec: could not create temporary output: %s\n",
                 strerror(errno));
@@ -110,7 +113,7 @@ int main(int argc, char **argv) {
     size_t payload_size = 0U;
     game_state_t state;
     mode_impl_t impl;
-    char temp_script_path[PATH_MAX];
+    char temp_script_path[GDS_EXEC_PATH_MAX];
     bool temp_script_used = false;
 
     if (argc != 2) {
