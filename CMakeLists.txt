@@ -6,14 +6,29 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL3 REQUIRED sdl3)
 pkg_check_modules(LIBWEBP QUIET libwebp)
+
+set(WINDOW "sdl3" CACHE STRING "Window backend to use (e.g., sdl3)")
+set_property(CACHE WINDOW PROPERTY STRINGS "sdl3" "none")
+
+set(RENDERER "sdl3" CACHE STRING "Renderer backend to use (e.g., sdl3)")
+set_property(CACHE RENDERER PROPERTY STRINGS "sdl3" "none")
+
+set(INPUT "sdl3" CACHE STRING "Input backend to use (e.g., sdl3)")
+set_property(CACHE INPUT PROPERTY STRINGS "sdl3" "none")
+
+if(WINDOW STREQUAL "sdl3" OR RENDERER STREQUAL "sdl3" OR INPUT STREQUAL "sdl3")
+    pkg_check_modules(SDL3 REQUIRED sdl3)
+endif()
 
 set(INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/modes
-    ${SDL3_INCLUDE_DIRS}
 )
+
+if(SDL3_FOUND)
+    list(APPEND INCLUDE_DIRS ${SDL3_INCLUDE_DIRS})
+endif()
 
 if(LIBWEBP_FOUND)
     list(APPEND INCLUDE_DIRS ${LIBWEBP_INCLUDE_DIRS})
@@ -29,9 +44,6 @@ file(GLOB WIDEBRIM_SOURCES CONFIGURE_DEPENDS
 file(GLOB GDS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/gds/*.c")
 list(APPEND WIDEBRIM_SOURCES ${GDS_SOURCES})
 
-set(WINDOW "sdl3" CACHE STRING "Window backend to use (e.g., sdl3)")
-set_property(CACHE WINDOW PROPERTY STRINGS "sdl3" "none")
-
 if(WINDOW STREQUAL "sdl3")
     add_compile_definitions(USE_SDL_WINDOW)
     list(APPEND WIDEBRIM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/window/sdl.c")
@@ -42,9 +54,6 @@ else()
     message(FATAL_ERROR "Unsupported window backend: ${WINDOW}. Supported values: sdl3, none")
 endif()
 
-set(RENDERER "sdl3" CACHE STRING "Renderer backend to use (e.g., sdl3)")
-set_property(CACHE RENDERER PROPERTY STRINGS "sdl3" "none")
-
 if (RENDERER STREQUAL "sdl3")
     add_compile_definitions(USE_SDL_RENDERER)
     list(APPEND WIDEBRIM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/sdl.c")
@@ -54,9 +63,6 @@ elseif(RENDERER STREQUAL "none")
 else()
     message(FATAL_ERROR "Unsupported renderer backend: ${RENDERER}. Supported values: sdl3, none")
 endif()
-
-set(INPUT "sdl3" CACHE STRING "Input backend to use (e.g., sdl3)")
-set_property(CACHE INPUT PROPERTY STRINGS "sdl3" "none")
 
 if (INPUT STREQUAL "sdl3")
     add_compile_definitions(USE_SDL_INPUT)
@@ -74,7 +80,9 @@ if(LIBWEBP_FOUND)
     target_link_libraries(widebrim PRIVATE ${LIBWEBP_LINK_LIBRARIES})
     target_compile_definitions(widebrim PRIVATE HAVE_LIBWEBP=1)
 endif()
-target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
+if(SDL3_FOUND)
+    target_link_libraries(widebrim PRIVATE ${SDL3_LINK_LIBRARIES})
+endif()
 target_compile_options(widebrim PRIVATE -pedantic-errors -Wall -Wextra -Werror)
 
 add_executable(obb_extract "${CMAKE_CURRENT_SOURCE_DIR}/tools/obb_extract.c")

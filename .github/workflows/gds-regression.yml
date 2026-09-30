@@ -18,21 +18,11 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build git
-
-          git clone https://github.com/libsdl-org/SDL.git /tmp/SDL
-          cd /tmp/SDL
-          git checkout release-3.2.0
-          cmake -S . -B build -G Ninja \
-            -DSDL_TESTS=OFF \
-            -DSDL_EXAMPLES=OFF
-          cmake --build build
-          sudo cmake --install build
-          sudo ldconfig
+          sudo apt-get install -y cmake pkgconfig
 
       - name: Configure build
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWINDOW=none -DRENDERER=none -DINPUT=none
 
       - name: Build GDS executor
         run: |
