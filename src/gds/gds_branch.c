@@ -101,7 +101,9 @@ static bool gds_branch_read_condition_term(gds_reader_t *reader, bool *result,
     if (record.type == GDS_RECORD_NOT) {
         bool value = false;
 
+#ifdef GDS_TRACE
         printf("gds: NOT\n");
+#endif
 
         if (!gds_branch_read_condition_term(reader, &value, user_data)) {
             reader->offset = start;
@@ -197,10 +199,14 @@ static bool gds_branch_read_condition(gds_reader_t *reader, bool *result,
         }
 
         if (record.type == GDS_RECORD_AND) {
+#ifdef GDS_TRACE
             printf("gds: AND\n");
+#endif
             left = left && right;
         } else {
+#ifdef GDS_TRACE
             printf("gds: OR\n");
+#endif
             left = left || right;
         }
     }
