@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include <SDL3/SDL.h>
-
 #include "game_state.h"
 #include "renderer.h"
 #include "screen.h"

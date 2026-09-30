@@ -1,6 +1,9 @@
 #include "runtime.h"
 
+#if defined(USE_SDL_WINDOW) || defined(USE_SDL_RENDERER) ||                    \
+    defined(USE_SDL_INPUT)
 #include <SDL3/SDL.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -19,10 +22,13 @@ int runtime_init(runtime_t *rt, const char *assets_root,
 
     memset(rt, 0, sizeof(*rt));
 
+#if defined(USE_SDL_WINDOW) || defined(USE_SDL_RENDERER) ||                    \
+    defined(USE_SDL_INPUT)
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         fprintf(stderr, "widebrim: SDL_Init failed: %s\n", SDL_GetError());
         return -1;
     }
+#endif
 
 #ifdef USE_SDL_INPUT
     rt->input = input_create_sdl();

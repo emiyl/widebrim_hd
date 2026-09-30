@@ -1,10 +1,6 @@
 #ifndef FADER_LAYER_H
 #define FADER_LAYER_H
 
-#include <fader_layer.h>
-
-#include <SDL3/SDL.h>
-
 #include "screen.h"
 
 typedef void (*fader_callback)(void *user);
