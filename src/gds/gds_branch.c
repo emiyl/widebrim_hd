@@ -7,8 +7,6 @@
 #include "gds_state.h"
 #include "modes/mode_impl.h"
 
-#define TRACE
-
 static bool gds_branch_is_ignored_record_type(gds_record_type_t type) {
     switch (type) {
     case GDS_RECORD_EMPTY_5:
@@ -224,7 +222,7 @@ static bool gds_branch_TRUE(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
@@ -248,7 +246,7 @@ static bool gds_branch_FALSE(gds_reader_t *reader, const gds_record_t *command,
         return false;
     }
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
@@ -267,7 +265,7 @@ static bool gds_branch_IF(gds_reader_t *reader, const gds_record_t *command,
 
     (void)command;
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
@@ -310,7 +308,7 @@ static bool gds_branch_ELSEIF(gds_reader_t *reader, const gds_record_t *command,
 
     (void)command;
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
@@ -351,7 +349,7 @@ static bool gds_branch_ELSE(gds_reader_t *reader, const gds_record_t *command,
     (void)command;
     (void)user_data;
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
@@ -365,7 +363,7 @@ static bool gds_branch_WHILE(gds_reader_t *reader, const gds_record_t *command,
 
     (void)command;
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
@@ -399,7 +397,7 @@ static bool gds_branch_Loop(gds_reader_t *reader, const gds_record_t *command,
 
     (void)command;
 
-#ifdef TRACE
+#ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
     printf("gds: %s()\n", function_name);
 #endif
