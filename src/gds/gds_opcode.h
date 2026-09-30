@@ -269,7 +269,8 @@
     X(SCRIPT_CMD_OnSecretMedal, "OnSecretMedal")                               \
     X(SCRIPT_CMD_SetCharmPoint, "SetCharmPoint")                               \
     X(SCRIPT_CMD_SetL5iDPoint, "SetL5iDPoint")                                 \
-    X(SCRIPT_CMD_SetTopSecretPoint, "SetTopSecretPoint")
+    X(SCRIPT_CMD_SetTopSecretPoint, "SetTopSecretPoint")                       \
+    X(SCRIPT_CMDX_Print, "Print")
 
 #define GDS_OPCODE_ENUM(name, string) name,
 
