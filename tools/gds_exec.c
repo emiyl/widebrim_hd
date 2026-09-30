@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    printf("gds_exec: completed %s\n", script_path);
+    printf("gds_exec: completed %s\n", input_path);
     gds_free_payload(payload);
     if (temp_script_used) {
         unlink(script_path);
