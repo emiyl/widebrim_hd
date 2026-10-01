@@ -42,7 +42,8 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Release \
                 -DSDL_TESTS=OFF \
                 -DSDL_EXAMPLES=OFF \
-                -DSDL_X11_XSCRNSAVER=OFF
+                -DSDL_X11_XSCRNSAVER=OFF \
+                -DSDL_X11_XTEST=OFF
               cmake --build build
               sudo cmake --install build
               sudo ldconfig
