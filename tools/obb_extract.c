@@ -43,8 +43,26 @@ static int starts_with_prefix(const char *name, const char *prefix) {
     return memcmp(name, prefix, prefix_len) == 0;
 }
 
+static char *xstrdup(const char *text) {
+    size_t length;
+    char *copy;
+
+    if (text == NULL) {
+        return NULL;
+    }
+
+    length = strlen(text) + 1U;
+    copy = malloc(length);
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    memcpy(copy, text, length);
+    return copy;
+}
+
 static char *normalize_slashes(const char *path) {
-    char *copy = strdup(path);
+    char *copy = xstrdup(path);
     if (copy == NULL) {
         return NULL;
     }

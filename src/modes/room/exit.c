@@ -90,7 +90,7 @@ void room_add_exit(mode_room_impl_t *impl, int32_t exit_sprite_id,
     renderer_t *renderer = impl->base.controller->renderer;
     game_state_t *state = impl->base.state;
 
-    char sprite_filename[14];
+    char sprite_filename[32];
     bool has_sprite = false;
     if (exit_sprite_id == 0) {
         snprintf(sprite_filename, sizeof(sprite_filename), "exit_door.spr");

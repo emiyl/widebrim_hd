@@ -152,8 +152,11 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
                     continue;
                 }
                 if (access(candidate, F_OK) == 0) {
-                    snprintf(out_path, out_path_size, "%s", candidate);
-                    return true;
+                    size_t candidate_len = strlen(candidate);
+                    if (candidate_len < out_path_size) {
+                        snprintf(out_path, out_path_size, "%s", candidate);
+                        return true;
+                    }
                 }
             }
         }
@@ -163,8 +166,11 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
                                lang_dir, candidate_paths[k]);
             if (len >= 0 && (size_t)len < sizeof(candidate) &&
                 access(candidate, F_OK) == 0) {
-                snprintf(out_path, out_path_size, "%s", candidate);
-                return true;
+                size_t candidate_len = strlen(candidate);
+                if (candidate_len < out_path_size) {
+                    snprintf(out_path, out_path_size, "%s", candidate);
+                    return true;
+                }
             }
         }
 
@@ -173,8 +179,11 @@ static inline bool asset_path_resolve_roots(const char *assets_root,
                                candidate_paths[k]);
             if (len >= 0 && (size_t)len < sizeof(candidate) &&
                 access(candidate, F_OK) == 0) {
-                snprintf(out_path, out_path_size, "%s", candidate);
-                return true;
+                size_t candidate_len = strlen(candidate);
+                if (candidate_len < out_path_size) {
+                    snprintf(out_path, out_path_size, "%s", candidate);
+                    return true;
+                }
             }
         }
     }

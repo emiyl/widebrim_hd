@@ -194,11 +194,6 @@ static bool scale_sprite_file(const char *input_path, const char *output_path,
 
     frame_count = read_u32_le(input);
     offset = 4U;
-    if ((size_t)frame_count > (SIZE_MAX - 4U) / 8U) {
-        fprintf(stderr, "frame count in %s is absurdly large\n", input_path);
-        free(input);
-        return false;
-    }
     if (offset + (size_t)frame_count * 8U > size) {
         fprintf(stderr, "%s is truncated; frame table is incomplete\n",
                 input_path);
