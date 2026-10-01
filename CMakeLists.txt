@@ -10,6 +10,11 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LIBWEBP QUIET libwebp)
 endif()
 
+option(GDS_TRACE "Enable GDS_TRACE compiler definition" OFF)
+if(GDS_TRACE)
+    add_compile_definitions(GDS_TRACE)
+endif()
+
 set(WINDOW "sdl3" CACHE STRING "Window backend to use (e.g., sdl3)")
 set_property(CACHE WINDOW PROPERTY STRINGS "sdl3" "none")
 
