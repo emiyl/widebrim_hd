@@ -46,8 +46,13 @@ static bool resolve_tool_path(const char *argv0, const char *tool_name,
 
     if (last_slash != NULL) {
         size_t dir_len = (size_t)(last_slash - argv0);
+        size_t tool_len = strlen(tool_name);
 
         if (dir_len >= sizeof(dir_candidate)) {
+            return false;
+        }
+
+        if (dir_len + 1U + tool_len + 1U > out_path_size) {
             return false;
         }
 
