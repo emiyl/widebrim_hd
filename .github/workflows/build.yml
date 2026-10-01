@@ -20,7 +20,6 @@ jobs:
                 build-essential \
                 cmake \
                 ninja-build \
-                pkg-config \
                 libx11-dev \
                 libxext-dev \
                 libxrandr-dev \
@@ -48,7 +47,7 @@ jobs:
               sudo cmake --install build
               sudo ldconfig
             configure: |
-              cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+              cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/local
             build: |
               cmake --build build --parallel
 
@@ -67,18 +66,13 @@ jobs:
           - os: windows-latest
             name: Windows x64
             install: |
-              choco install cmake ninja pkgconf -y
+              choco install cmake ninja -y
               if (!(Test-Path "$env:USERPROFILE\vcpkg")) { git clone --depth 1 https://github.com/microsoft/vcpkg.git "$env:USERPROFILE\vcpkg" }
               & "$env:USERPROFILE\vcpkg\bootstrap-vcpkg.bat"
               & "$env:USERPROFILE\vcpkg\vcpkg.exe" install sdl3:x64-windows --triplet x64-windows
             configure: |
-              $pkgConfig = (Get-Command pkg-config -ErrorAction SilentlyContinue -CommandType Application)
-              if (-not $pkgConfig) { $pkgConfig = (Get-Command pkgconf -ErrorAction SilentlyContinue -CommandType Application) }
-              if (-not $pkgConfig) { throw "pkg-config/pkgconf could not be found in PATH after install." }
-              $env:PKG_CONFIG_EXECUTABLE = $pkgConfig.Source
-              $env:PKG_CONFIG_PATH = "$env:USERPROFILE\vcpkg\installed\x64-windows\lib\pkgconfig"
               $env:CMAKE_PREFIX_PATH = "$env:USERPROFILE\vcpkg\installed\x64-windows"
-              cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:USERPROFILE\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+              cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" -DCMAKE_TOOLCHAIN_FILE="$env:USERPROFILE\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
             build: |
               cmake --build build --parallel --config Release
 
