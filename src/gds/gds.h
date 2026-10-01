@@ -26,7 +26,7 @@ typedef enum {
     GDS_RECORD_BREAKPOINT = 12
 } gds_record_type_t;
 
-static inline char *gds_record_type_to_string(gds_record_type_t type) {
+static inline const char *gds_record_type_to_string(gds_record_type_t type) {
     switch (type) {
     case GDS_RECORD_COMMAND:
         return "COMMAND";
