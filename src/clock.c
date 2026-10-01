@@ -1,6 +1,10 @@
 
 #include "clock.h"
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <stdint.h>
 
 #define CLOCK_PRECISION_SEC 0.0015
