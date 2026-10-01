@@ -26,8 +26,8 @@ bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
 
     case GDS_RECORD_VALUE_S32:
         return gds_reader_read_int32(reader, &record->payload.value.s32);
-    case GDS_RECORD_VALUE_F32:
-        return gds_reader_read_float32(reader, &record->payload.value.f32);
+    case GDS_RECORD_VALUE_U32:
+        return gds_reader_read_uint32(reader, &record->payload.value.u32);
     case GDS_RECORD_BLOCK_START:
     case GDS_RECORD_BLOCK_END:
         return gds_reader_read_uint32(reader, &record->payload.value.u32);

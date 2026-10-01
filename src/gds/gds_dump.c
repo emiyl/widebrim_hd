@@ -51,8 +51,8 @@ static void dump_value_record(const gds_record_t *record) {
         printf("%" PRIi32, record->payload.value.s32);
         break;
 
-    case GDS_RECORD_VALUE_F32:
-        printf("%f", record->payload.value.f32);
+    case GDS_RECORD_VALUE_U32:
+        printf("%" PRIu32, record->payload.value.u32);
         break;
 
     case GDS_RECORD_BLOCK_START:
@@ -247,8 +247,8 @@ bool dump_gds_raw(const uint8_t *data, size_t size) {
                    record.payload.value.u32);
             break;
 
-        case GDS_RECORD_VALUE_F32:
-            printf("%f (0x%08" PRIx32 ")", record.payload.value.f32,
+        case GDS_RECORD_VALUE_U32:
+            printf("%" PRIu32 " (0x%08" PRIx32 ")", record.payload.value.u32,
                    record.payload.value.u32);
             break;
 

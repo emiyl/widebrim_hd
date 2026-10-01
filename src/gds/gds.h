@@ -13,7 +13,7 @@
 typedef enum {
     GDS_RECORD_COMMAND = 0,
     GDS_RECORD_VALUE_S32 = 1,
-    GDS_RECORD_VALUE_F32 = 2,
+    GDS_RECORD_VALUE_U32 = 2,
     GDS_RECORD_STRING = 3,
     GDS_RECORD_BYTES = 4,
     GDS_RECORD_EMPTY_5 = 5,
@@ -32,8 +32,8 @@ static inline const char *gds_record_type_to_string(gds_record_type_t type) {
         return "COMMAND";
     case GDS_RECORD_VALUE_S32:
         return "S32";
-    case GDS_RECORD_VALUE_F32:
-        return "F32";
+    case GDS_RECORD_VALUE_U32:
+        return "U32";
     case GDS_RECORD_STRING:
         return "STRING";
     case GDS_RECORD_BYTES:
@@ -67,7 +67,6 @@ typedef struct {
         union {
             int32_t s32;
             uint32_t u32;
-            float f32;
         } value;
         struct {
             const uint8_t *data;
@@ -92,8 +91,8 @@ static inline const char *gds_record_to_string(const gds_record_t *record) {
         snprintf(buffer, sizeof(buffer), "%" PRIi32, record->payload.value.s32);
         break;
 
-    case GDS_RECORD_VALUE_F32:
-        snprintf(buffer, sizeof(buffer), "%f", record->payload.value.f32);
+    case GDS_RECORD_VALUE_U32:
+        snprintf(buffer, sizeof(buffer), "%" PRIu32, record->payload.value.u32);
         break;
 
     case GDS_RECORD_BLOCK_START:
