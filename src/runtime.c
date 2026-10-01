@@ -33,6 +33,8 @@ int runtime_init(runtime_t *rt, const char *assets_root,
     rt->input = input_create_sdl();
 #elif defined(USE_NONE_INPUT)
     rt->input = input_create_none();
+#else
+    rt->input = NULL;
 #endif
     if (!rt->input) {
         fprintf(stderr, "widebrim: Failed to create input\n");
@@ -45,6 +47,8 @@ int runtime_init(runtime_t *rt, const char *assets_root,
                                    WB_SCREEN_HEIGHT * WINDOW_SCALE * 2, 0);
 #elif defined(USE_NONE_WINDOW)
     rt->window = window_create_none();
+#else
+    rt->window = NULL;
 #endif
     if (!rt->window) {
         fprintf(stderr, "widebrim: Failed to create window\n");
@@ -57,6 +61,8 @@ int runtime_init(runtime_t *rt, const char *assets_root,
         renderer_create_sdl(window_as_sdl3_renderer(rt->window));
 #elif defined(USE_NONE_RENDERER)
     renderer_t *renderer = renderer_create_none(NULL);
+#else
+    renderer_t *renderer = NULL;
 #endif
     if (!renderer) {
         fprintf(stderr, "widebrim: Failed to create renderer\n");
