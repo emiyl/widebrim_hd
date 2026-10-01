@@ -6,6 +6,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#define MAKE_DIR(path) _mkdir(path)
+#else
+#define MAKE_DIR(path) mkdir((path), 0777)
+#endif
+
 #define ARRAY_LEN(x) (sizeof(x) / sizeof((x)[0]))
 
 typedef struct {
@@ -89,7 +96,7 @@ static int ensure_directory(const char *path) {
     for (char *p = tmp + 1; *p != '\0'; ++p) {
         if (*p == '/') {
             *p = '\0';
-            if (mkdir(tmp, 0777) != 0 && errno != EEXIST) {
+            if (MAKE_DIR(tmp) != 0 && errno != EEXIST) {
                 fprintf(stderr, "mkdir(%s): %s\n", tmp, strerror(errno));
                 return -1;
             }
@@ -97,7 +104,7 @@ static int ensure_directory(const char *path) {
         }
     }
 
-    if (mkdir(tmp, 0777) != 0 && errno != EEXIST) {
+    if (MAKE_DIR(tmp) != 0 && errno != EEXIST) {
         fprintf(stderr, "mkdir(%s): %s\n", tmp, strerror(errno));
         return -1;
     }
