@@ -11,8 +11,19 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#define access _access
+#define unlink _unlink
+#ifndef X_OK
+#define X_OK 1
+#endif
+#else
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
 
 #define GDS_EXEC_PATH_MAX 4096
 
@@ -127,6 +138,25 @@ static bool compile_gsc_to_temp(const char *source_path,
         return false;
     }
 
+#ifdef _WIN32
+    {
+        const char *args[] = {"gds_compile", source_path, temp_template, NULL};
+        int rc = _spawnv(_P_WAIT, compiler_path, args);
+        if (rc == -1) {
+            fprintf(stderr, "gds_exec: failed to run %s: %s\n", compiler_path,
+                    strerror(errno));
+            unlink(temp_template);
+            return false;
+        }
+
+        if (rc != EXIT_SUCCESS) {
+            fprintf(stderr, "gds_exec: failed to compile source script: %s\n",
+                    source_path);
+            unlink(temp_template);
+            return false;
+        }
+    }
+#else
     child = fork();
     if (child == -1) {
         fprintf(stderr, "gds_exec: fork failed: %s\n", strerror(errno));
@@ -154,6 +184,7 @@ static bool compile_gsc_to_temp(const char *source_path,
         unlink(temp_template);
         return false;
     }
+#endif
 
     return true;
 }
