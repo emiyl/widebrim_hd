@@ -105,7 +105,7 @@ void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
 
     object_t *btn = impl->move_mode_btn;
     if (!btn) {
-        fprintf(stderr, "widebrim: failed to create move mode button\n");
+        fprintf(stderr, "widebrim: Failed to create move mode button\n");
         return;
     }
 
@@ -116,7 +116,7 @@ void mode_room_load_move_mode_btn(mode_room_impl_t *impl) {
 
     if (!spr) {
         fprintf(stderr,
-                "widebrim: failed to create sprite for move mode button\n");
+                "widebrim: Failed to create sprite for move mode button\n");
         return;
     }
 

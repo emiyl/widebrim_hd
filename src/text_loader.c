@@ -15,14 +15,14 @@ bool text_loader_load_path(game_state_t *state, const char *rel_path,
 
     if (!asset_path_resolve(state, rel_path, resolved_path,
                             sizeof(resolved_path))) {
-        fprintf(stderr, "widebrim: failed to resolve text asset: %s\n",
+        fprintf(stderr, "widebrim: Failed to resolve text asset: %s\n",
                 rel_path);
         return false;
     }
 
     file = fopen(resolved_path, "rb");
     if (!file) {
-        fprintf(stderr, "widebrim: failed to open text asset: %s\n",
+        fprintf(stderr, "widebrim: Failed to open text asset: %s\n",
                 resolved_path);
         return false;
     }

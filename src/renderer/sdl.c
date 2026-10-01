@@ -39,7 +39,7 @@ static void sdl_renderer_register_texture(sdl_renderer_t *self,
     size_t new_capacity;
 
     if (!tex) {
-        fprintf(stderr, "widebrim: attempted to register a NULL texture\n");
+        fprintf(stderr, "widebrim: Attempted to register a NULL texture\n");
         return;
     }
     if (self->texture_registry_size == self->texture_registry_capacity) {
@@ -49,7 +49,7 @@ static void sdl_renderer_register_texture(sdl_renderer_t *self,
         grown = realloc(self->texture_registry,
                         new_capacity * sizeof(SDL_Texture *));
         if (!grown) {
-            fprintf(stderr, "widebrim: failed to grow texture registry\n");
+            fprintf(stderr, "widebrim: Failed to grow texture registry\n");
             return;
         }
         self->texture_registry = grown;
@@ -93,7 +93,7 @@ static void sdl_renderer_destroy_texture(renderer_t *self,
                                          renderer_texture_t *tex) {
     sdl_renderer_t *impl = (sdl_renderer_t *)self->impl;
     if (!tex) {
-        fprintf(stderr, "widebrim: attempted to destroy a NULL texture\n");
+        fprintf(stderr, "widebrim: Attempted to destroy a NULL texture\n");
         return;
     }
     if (tex->texture) {
@@ -101,7 +101,7 @@ static void sdl_renderer_destroy_texture(renderer_t *self,
         SDL_DestroyTexture(tex->texture);
         tex->texture = NULL;
     } else {
-        fprintf(stderr, "widebrim: attempted to destroy a texture with a NULL "
+        fprintf(stderr, "widebrim: Attempted to destroy a texture with a NULL "
                         "SDL_Texture\n");
     }
     free(tex);
@@ -131,11 +131,11 @@ sdl_renderer_create_texture_from_rgba(renderer_t *self, const uint8_t *rgba,
 
     if (!texture) {
         fprintf(stderr,
-                "widebrim: failed to allocate memory for renderer_texture_t\n");
+                "widebrim: Failed to allocate memory for renderer_texture_t\n");
         return NULL;
     }
     if (!rgba) {
-        fprintf(stderr, "widebrim: attempted to create a texture with a NULL "
+        fprintf(stderr, "widebrim: Attempted to create a texture with a NULL "
                         "RGBA data\n");
         free(texture);
         return NULL;
@@ -144,7 +144,7 @@ sdl_renderer_create_texture_from_rgba(renderer_t *self, const uint8_t *rgba,
     sdl_tex = SDL_CreateTexture(impl->renderer, SDL_PIXELFORMAT_RGBA32,
                                 SDL_TEXTUREACCESS_STATIC, width, height);
     if (!sdl_tex) {
-        fprintf(stderr, "widebrim: failed to create SDL_Texture\n");
+        fprintf(stderr, "widebrim: Failed to create SDL_Texture\n");
         free(texture);
         return NULL;
     }
@@ -153,7 +153,7 @@ sdl_renderer_create_texture_from_rgba(renderer_t *self, const uint8_t *rgba,
     SDL_SetTextureScaleMode(sdl_tex, SDL_SCALEMODE_LINEAR);
     if (!SDL_UpdateTexture(sdl_tex, NULL, rgba, width * 4)) {
         fprintf(stderr,
-                "widebrim: failed to update SDL_Texture with RGBA data\n");
+                "widebrim: Failed to update SDL_Texture with RGBA data\n");
         SDL_DestroyTexture(sdl_tex);
         free(texture);
         return NULL;
@@ -168,12 +168,12 @@ static void sdl_renderer_draw_texture(renderer_t *self, renderer_texture_t *tex,
                                       const rect_t *rect) {
     sdl_renderer_t *impl = (sdl_renderer_t *)self->impl;
     if (!tex || !tex->texture) {
-        fprintf(stderr, "widebrim: attempted to draw a NULL texture\n");
+        fprintf(stderr, "widebrim: Attempted to draw a NULL texture\n");
         return;
     }
     if (!rect) {
         fprintf(stderr,
-                "widebrim: attempted to draw a texture with a NULL rect\n");
+                "widebrim: Attempted to draw a texture with a NULL rect\n");
         return;
     }
     SDL_FRect dst_rect = {rect->x, rect->y, rect->w, rect->h};
@@ -184,7 +184,7 @@ static void sdl_renderer_draw_rect(renderer_t *self, const rect_t *rect,
                                    uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     sdl_renderer_t *impl = (sdl_renderer_t *)self->impl;
     if (!rect) {
-        fprintf(stderr, "widebrim: attempted to draw a NULL rect\n");
+        fprintf(stderr, "widebrim: Attempted to draw a NULL rect\n");
         return;
     }
     SDL_FRect dst_rect = {rect->x, rect->y, rect->w, rect->h};
@@ -200,7 +200,7 @@ static void sdl_renderer_fill_rect(renderer_t *self, const rect_t *rect,
                                    uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     sdl_renderer_t *impl = (sdl_renderer_t *)self->impl;
     if (!rect) {
-        fprintf(stderr, "widebrim: attempted to fill a NULL rect\n");
+        fprintf(stderr, "widebrim: Attempted to fill a NULL rect\n");
         return;
     }
     SDL_FRect dst_rect = {rect->x, rect->y, rect->w, rect->h};
@@ -218,7 +218,7 @@ static void sdl_renderer_set_texture_alpha(renderer_t *self,
                                            uint8_t alpha) {
     (void)self;
     if (!tex || !tex->texture) {
-        fprintf(stderr, "widebrim: attempted to set alpha on a NULL texture\n");
+        fprintf(stderr, "widebrim: Attempted to set alpha on a NULL texture\n");
         return;
     }
     SDL_SetTextureAlphaMod(tex->texture, alpha);
@@ -229,7 +229,7 @@ static void sdl_renderer_get_texture_size(renderer_t *self,
                                           int *width, int *height) {
     (void)self;
     if (!texture || !texture->texture) {
-        fprintf(stderr, "widebrim: attempted to get size of a NULL texture\n");
+        fprintf(stderr, "widebrim: Attempted to get size of a NULL texture\n");
         return;
     }
 
@@ -245,7 +245,7 @@ static void sdl_renderer_get_texture_size(renderer_t *self,
         if (height)
             *height = (int)fh;
     } else {
-        fprintf(stderr, "widebrim: failed to get texture size\n");
+        fprintf(stderr, "widebrim: Failed to get texture size\n");
     }
 }
 
@@ -267,13 +267,13 @@ renderer_t *renderer_create_sdl(void *sdl_Renderer) {
     renderer_t *renderer = (renderer_t *)malloc(sizeof(renderer_t));
     if (!renderer) {
         fprintf(stderr,
-                "widebrim: failed to allocate memory for SDL renderer\n");
+                "widebrim: Failed to allocate memory for SDL renderer\n");
         return NULL;
     }
 
     sdl_renderer_t *impl = (sdl_renderer_t *)malloc(sizeof(sdl_renderer_t));
     if (!impl) {
-        fprintf(stderr, "widebrim: failed to allocate memory for SDL renderer "
+        fprintf(stderr, "widebrim: Failed to allocate memory for SDL renderer "
                         "implementation\n");
         free(renderer);
         return NULL;

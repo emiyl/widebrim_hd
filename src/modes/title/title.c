@@ -37,13 +37,13 @@ static bool mode_title_on_sprite_click(void *user, const input_event_t *event,
         }
 
         if (obj == impl->start_btn) {
-            printf("widebrim: start button clicked\n");
+            printf("widebrim: Start button clicked\n");
         }
         if (obj == impl->continue_btn) {
             return mode_title_advance(impl);
         }
         if (obj == impl->bonus_btn) {
-            printf("widebrim: bonus button clicked\n");
+            printf("widebrim: Bonus button clicked\n");
         }
 
         return false;
@@ -66,7 +66,7 @@ static void mode_title_load_start_car(mode_title_impl_t *impl) {
     object_init(car);
 
     if (!car) {
-        fprintf(stderr, "widebrim: failed to initialize start_car object\n");
+        fprintf(stderr, "widebrim: Failed to initialize start_car object\n");
         return;
     }
 
@@ -74,7 +74,7 @@ static void mode_title_load_start_car(mode_title_impl_t *impl) {
     sprite_new(spr, renderer, state, "start_car.spr", 100.0f, true);
 
     if (!spr) {
-        fprintf(stderr, "widebrim: failed to create start_car sprite\n");
+        fprintf(stderr, "widebrim: Failed to create start_car sprite\n");
         return;
     }
 
@@ -99,7 +99,7 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
     object_init(logo);
 
     if (!logo) {
-        fprintf(stderr, "widebrim: failed to initialize title_logo object\n");
+        fprintf(stderr, "widebrim: Failed to initialize title_logo object\n");
         return;
     }
 
@@ -107,7 +107,7 @@ static void mode_title_load_title_sprite(mode_title_impl_t *impl) {
     sprite_new(spr, renderer, state, "title_logo.spr", 0.0f, false);
 
     if (!spr) {
-        fprintf(stderr, "widebrim: failed to add title sprite asset\n");
+        fprintf(stderr, "widebrim: Failed to add title sprite asset\n");
         return;
     }
 
@@ -141,7 +141,7 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
     for (int i = 0; i < 3; i++) {
         object_init(buttons[i]);
         if (!buttons[i]) {
-            fprintf(stderr, "widebrim: failed to initialize button object\n");
+            fprintf(stderr, "widebrim: Failed to initialize button object\n");
             return;
         }
 
@@ -149,7 +149,7 @@ static void mode_title_load_button_sprites(mode_title_impl_t *impl) {
                    sprite_names[i], 0.0f, false);
         if (!buttons[i]->sprite) {
             fprintf(stderr,
-                    "widebrim: failed to create sprite for button object\n");
+                    "widebrim: Failed to create sprite for button object\n");
             return;
         }
 
@@ -262,7 +262,7 @@ mode_handler_t mode_title_create(game_state_t *state,
 
     if (!impl) {
         fprintf(stderr,
-                "widebrim: failed to allocate memory for mode_title_impl_t\n");
+                "widebrim: Failed to allocate memory for mode_title_impl_t\n");
         exit(EXIT_FAILURE);
     }
 

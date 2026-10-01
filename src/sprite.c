@@ -396,7 +396,7 @@ void sprite_new_animation(sprite_t *sprite, renderer_t *renderer,
         (renderer_texture_t **)calloc(frame_count, sizeof(*sprite->frames));
     if (!sprite->frames) {
         fprintf(stderr,
-                "widebrim: failed to allocate memory for sprite frames\n");
+                "widebrim: Failed to allocate memory for sprite frames\n");
         return;
     }
 
@@ -440,7 +440,7 @@ void sprite_new_animation(sprite_t *sprite, renderer_t *renderer,
             free(sprite->frames);
             sprite->frames = NULL;
             fprintf(stderr,
-                    "widebrim: failed to create texture for sprite frame %zu\n",
+                    "widebrim: Failed to create texture for sprite frame %zu\n",
                     i);
             return;
         }
@@ -463,7 +463,7 @@ void sprite_new_animation(sprite_t *sprite, renderer_t *renderer,
         sprite->frames = NULL;
         sprite->frame_count = 0U;
         fprintf(stderr,
-                "widebrim: failed to allocate sprite frame geometry arrays\n");
+                "widebrim: Failed to allocate sprite frame geometry arrays\n");
         return;
     }
     for (size_t j = 0; j < frame_count; ++j) {
@@ -485,7 +485,7 @@ void sprite_new_animation(sprite_t *sprite, renderer_t *renderer,
         sprite->frame_count = 0U;
         fprintf(
             stderr,
-            "widebrim: failed to allocate sprite frame names for animation\n");
+            "widebrim: Failed to allocate sprite frame names for animation\n");
         return;
     }
 
@@ -533,7 +533,7 @@ void sprite_new(sprite_t *sprite, renderer_t *renderer, game_state_t *state,
     if (!sprite_loader_load_animation_rgba(
             state, sprite_path, &frames, &sprite->frame_count, &frame_widths,
             &frame_heights, &sprite->width, &sprite->height)) {
-        fprintf(stderr, "widebrim: failed to load sprite sheet for %s\n",
+        fprintf(stderr, "widebrim: Failed to load sprite sheet for %s\n",
                 sprite_name);
         return;
     }

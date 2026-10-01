@@ -466,7 +466,7 @@ bool gds_func_SetGameMode(gds_reader_t *reader, const gds_record_t *command,
     game_mode_t mode = string_to_game_mode(event_mode_str);
     if (mode == MODE_INVALID) {
         fprintf(stderr,
-                "widebrim: gds_func_SetGameMode called with invalid mode "
+                "widebrim: SetGameMode called with invalid mode "
                 "string \"%s\"\n",
                 event_mode_str);
         return false;

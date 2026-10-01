@@ -62,7 +62,7 @@ text_layer_build_glyph_texture(text_layer_t *layer, const uint8_t *atlas,
     rgba = (uint8_t *)calloc((size_t)glyph_width * (size_t)glyph_height * 4U,
                              sizeof(uint8_t));
     if (!rgba) {
-        fprintf(stderr, "widebrim: failed to allocate glyph RGBA buffer\n");
+        fprintf(stderr, "widebrim: Failed to allocate glyph RGBA buffer\n");
         return NULL;
     }
 
@@ -86,7 +86,7 @@ text_layer_build_glyph_texture(text_layer_t *layer, const uint8_t *atlas,
                                             glyph_height);
     free(rgba);
     if (!tex) {
-        fprintf(stderr, "widebrim: failed to create glyph texture\n");
+        fprintf(stderr, "widebrim: Failed to create glyph texture\n");
     }
     return tex;
 }
@@ -303,25 +303,25 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
 
     file = fopen(font_path, "rb");
     if (!file) {
-        fprintf(stderr, "widebrim: failed to open font file: %s\n", font_path);
+        fprintf(stderr, "widebrim: Failed to open font file: %s\n", font_path);
         return false;
     }
 
     if (fseek(file, 0L, SEEK_END) != 0) {
-        fprintf(stderr, "widebrim: failed to seek font file: %s\n", font_path);
+        fprintf(stderr, "widebrim: Failed to seek font file: %s\n", font_path);
         fclose(file);
         return false;
     }
 
     file_size = ftell(file);
     if (file_size <= 0L) {
-        fprintf(stderr, "widebrim: empty font file: %s\n", font_path);
+        fprintf(stderr, "widebrim: Empty font file: %s\n", font_path);
         fclose(file);
         return false;
     }
 
     if (fseek(file, 0L, SEEK_SET) != 0) {
-        fprintf(stderr, "widebrim: failed to rewind font file: %s\n",
+        fprintf(stderr, "widebrim: Failed to rewind font file: %s\n",
                 font_path);
         fclose(file);
         return false;
@@ -329,13 +329,13 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
 
     data = (uint8_t *)malloc((size_t)file_size);
     if (!data) {
-        fprintf(stderr, "widebrim: failed to allocate font data\n");
+        fprintf(stderr, "widebrim: Failed to allocate font data\n");
         fclose(file);
         return false;
     }
 
     if (fread(data, 1U, (size_t)file_size, file) != (size_t)file_size) {
-        fprintf(stderr, "widebrim: failed to read font file: %s\n", font_path);
+        fprintf(stderr, "widebrim: Failed to read font file: %s\n", font_path);
         free(data);
         fclose(file);
         return false;
@@ -343,7 +343,7 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
     fclose(file);
 
     if (file_size < 12L) {
-        fprintf(stderr, "widebrim: font file too small: %s\n", font_path);
+        fprintf(stderr, "widebrim: Font file too small: %s\n", font_path);
         free(data);
         return false;
     }
@@ -354,7 +354,7 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
     atlas_width = text_layer_read_u16_le(data + 8U);
     atlas_height = text_layer_read_u16_le(data + 10U);
     if (symbol_count == 0U || atlas_width == 0U || atlas_height == 0U) {
-        fprintf(stderr, "widebrim: invalid font metadata in %s\n", font_path);
+        fprintf(stderr, "widebrim: Invalid font metadata in %s\n", font_path);
         free(data);
         return false;
     }
@@ -362,7 +362,7 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
     cell_size = (int)weight + (int)pad_x * 2;
     atlas_offset = 12U + (size_t)symbol_count * 4U;
     if (atlas_offset > (size_t)file_size) {
-        fprintf(stderr, "widebrim: truncated font table in %s\n", font_path);
+        fprintf(stderr, "widebrim: Truncated font table in %s\n", font_path);
         free(data);
         return false;
     }
@@ -380,7 +380,7 @@ bool text_layer_load_font_file(text_layer_t *layer, const char *font_path) {
         symbol_count, sizeof(*layer->glyph_textures));
     if (!layer->glyph_codes || !layer->glyph_widths || !layer->glyph_advances ||
         !layer->glyph_indices || !layer->glyph_textures) {
-        fprintf(stderr, "widebrim: failed to allocate glyph tables\n");
+        fprintf(stderr, "widebrim: Failed to allocate glyph tables\n");
         free(data);
         text_layer_clear_glyphs(layer);
         return false;

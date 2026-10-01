@@ -73,7 +73,7 @@ static void object_layer_add_sprite_object(object_layer_t *layer,
     sprite_new(spr, layer->renderer, state, sprite_name, frame_duration, loop);
 
     if (!spr) {
-        fprintf(stderr, "widebrim: failed to create sprite for %s object\n",
+        fprintf(stderr, "widebrim: Failed to create sprite for %s object\n",
                 label);
         free(object);
         return;
@@ -93,7 +93,7 @@ static void object_layer_add_sprite_object(object_layer_t *layer,
 
     if (!object_layer_ensure_capacity(layer, layer->count + 1U)) {
         fprintf(stderr,
-                "widebrim: failed to ensure capacity for object layer\n");
+                "widebrim: Failed to ensure capacity for object layer\n");
         free(object);
         return;
     }
@@ -199,18 +199,18 @@ void object_layer_destroy(object_layer_t *layer) {
 
 void object_layer_add_object(object_layer_t *layer, object_t *object) {
     if (!layer) {
-        fprintf(stderr, "widebrim: attempted to add object to NULL layer\n");
+        fprintf(stderr, "widebrim: Attempted to add object to NULL layer\n");
         return;
     }
 
     if (!object) {
-        fprintf(stderr, "widebrim: attempted to add NULL object to layer\n");
+        fprintf(stderr, "widebrim: Attempted to add NULL object to layer\n");
         return;
     }
 
     if (!object_layer_ensure_capacity(layer, layer->count + 1U)) {
         fprintf(stderr,
-                "widebrim: failed to ensure capacity for object layer\n");
+                "widebrim: Failed to ensure capacity for object layer\n");
         return;
     }
 

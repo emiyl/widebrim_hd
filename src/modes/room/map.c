@@ -14,7 +14,7 @@ void mode_room_load_map_place(mode_room_impl_t *impl) {
 
     object_t *map_place = impl->map_place;
     if (!map_place) {
-        fprintf(stderr, "widebrim: failed to create map place object\n");
+        fprintf(stderr, "widebrim: Failed to create map place object\n");
         return;
     }
 
@@ -43,7 +43,7 @@ void mode_room_load_map_purpose(mode_room_impl_t *impl) {
 
     object_t *map_purpose = impl->map_purpose;
     if (!map_purpose) {
-        fprintf(stderr, "widebrim: failed to create map purpose object\n");
+        fprintf(stderr, "widebrim: Failed to create map purpose object\n");
         return;
     }
 
@@ -107,7 +107,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     (void)param5;
 
     if (!room || !room->base.state) {
-        fprintf(stderr, "widebrim: invalid game state\n");
+        fprintf(stderr, "widebrim: Invalid game state\n");
         return;
     }
 
@@ -125,7 +125,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
              map_background_id);
 
     if (!bg->load_sub(bg, state, map_background_path)) {
-        fprintf(stderr, "widebrim: failed to load map background: %s\n",
+        fprintf(stderr, "widebrim: Failed to load map background: %s\n",
                 map_background_path);
     }
 
@@ -137,7 +137,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
              map_text_id);
     if (!text_loader_load_path(room->base.state, map_title_path,
                                map_title_buffer, sizeof(map_title_buffer))) {
-        fprintf(stderr, "widebrim: failed to load map text asset: %s\n",
+        fprintf(stderr, "widebrim: Failed to load map text asset: %s\n",
                 map_title_path);
         return;
     }
@@ -147,7 +147,7 @@ void mode_room_set_map(mode_room_impl_t *room, int32_t map_text_id,
     if (!text_loader_load_path(room->base.state, map_purpose_path,
                                map_purpose_buffer,
                                sizeof(map_purpose_buffer))) {
-        fprintf(stderr, "widebrim: failed to load map purpose: %s\n",
+        fprintf(stderr, "widebrim: Failed to load map purpose: %s\n",
                 map_purpose_path);
         return;
     }

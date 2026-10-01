@@ -59,7 +59,7 @@ static void mode_event_load_center_line(mode_event_impl_t *impl) {
     sprite_new(spr, renderer, state, "center_line.spr", 0.0f, false);
 
     if (!spr) {
-        fprintf(stderr, "widebrim: failed to create center line sprite\n");
+        fprintf(stderr, "widebrim: Failed to create center line sprite\n");
         return;
     }
 
@@ -85,7 +85,7 @@ static void mode_event_update(void *user, float delta_time) {
     game_state_t *state = impl->base.state;
 
     if (!mode_event_load_script(impl)) {
-        fprintf(stderr, "widebrim: failed to load event script for event %d\n",
+        fprintf(stderr, "widebrim: Failed to load event script for event %d\n",
                 game_state_get_event_id(state));
     }
 }

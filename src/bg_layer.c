@@ -39,7 +39,7 @@ static bool bg_layer_load_texture(bg_layer_t *bg_layer, game_state_t *state,
 
     texture = texture_load_rgba(full_bg_path);
     if (!texture) {
-        fprintf(stderr, "widebrim: failed to load %s '%s'\n", texture_name,
+        fprintf(stderr, "widebrim: Failed to load %s '%s'\n", texture_name,
                 bg_name);
         return false;
     }

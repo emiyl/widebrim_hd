@@ -87,7 +87,7 @@ static bool sprite_sheet_parse_animation_data(const uint8_t *bytes,
 
     sheet->animations = calloc(animation_count, sizeof(*sheet->animations));
     if (sheet->animations == NULL) {
-        fprintf(stderr, "widebrim: failed to allocate %u sprite animations\n",
+        fprintf(stderr, "widebrim: Failed to allocate %u sprite animations\n",
                 animation_count);
         return false;
     }
@@ -239,18 +239,18 @@ static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
     }
 
     if (fseek(file, 0L, SEEK_END) != 0) {
-        fprintf(stderr, "widebrim: failed to seek sprite file to end\n");
+        fprintf(stderr, "widebrim: Failed to seek sprite file to end\n");
         return false;
     }
 
     file_size = ftell(file);
     if (file_size < 0L) {
-        fprintf(stderr, "widebrim: failed to determine sprite file size\n");
+        fprintf(stderr, "widebrim: Failed to determine sprite file size\n");
         return false;
     }
 
     if (fseek(file, 0L, SEEK_SET) != 0) {
-        fprintf(stderr, "widebrim: failed to rewind sprite file\n");
+        fprintf(stderr, "widebrim: Failed to rewind sprite file\n");
         return false;
     }
 
@@ -258,7 +258,7 @@ static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
     sheet->frames =
         calloc(frame_count == 0U ? 1U : frame_count, sizeof(*sheet->frames));
     if (sheet->frames == NULL && frame_count > 0U) {
-        fprintf(stderr, "widebrim: failed to allocate %u sprite frames\n",
+        fprintf(stderr, "widebrim: Failed to allocate %u sprite frames\n",
                 frame_count);
         return false;
     }
@@ -268,7 +268,7 @@ static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
         uint8_t raw[8];
 
         if (!sprite_read_exact(file, raw, sizeof(raw))) {
-            fprintf(stderr, "widebrim: failed to read sprite frame %u\n",
+            fprintf(stderr, "widebrim: Failed to read sprite frame %u\n",
                     index);
             free(buffer);
             return false;
@@ -284,19 +284,19 @@ static bool sprite_sheet_parse_file(FILE *file, sprite_sheet_t *sheet) {
 
     buffer = malloc((size_t)file_size);
     if (buffer == NULL) {
-        fprintf(stderr, "widebrim: failed to allocate sprite file buffer\n");
+        fprintf(stderr, "widebrim: Failed to allocate sprite file buffer\n");
         return false;
     }
 
     if (fseek(file, 0L, SEEK_SET) != 0) {
         free(buffer);
-        fprintf(stderr, "widebrim: failed to rewind sprite file\n");
+        fprintf(stderr, "widebrim: Failed to rewind sprite file\n");
         return false;
     }
 
     if (fread(buffer, 1U, (size_t)file_size, file) != (size_t)file_size) {
         free(buffer);
-        fprintf(stderr, "widebrim: failed to read sprite file contents\n");
+        fprintf(stderr, "widebrim: Failed to read sprite file contents\n");
         return false;
     }
 
@@ -320,21 +320,21 @@ sprite_sheet_t *sprite_sheet_load(const char *path) {
 
     file = fopen(path, "rb");
     if (file == NULL) {
-        fprintf(stderr, "widebrim: failed to open sprite file '%s': %s\n", path,
+        fprintf(stderr, "widebrim: Failed to open sprite file '%s': %s\n", path,
                 strerror(errno));
         return NULL;
     }
 
     sheet = calloc(1U, sizeof(*sheet));
     if (sheet == NULL) {
-        fprintf(stderr, "widebrim: failed to allocate sprite_sheet_t\n");
+        fprintf(stderr, "widebrim: Failed to allocate sprite_sheet_t\n");
         fclose(file);
         return NULL;
     }
 
     sheet->path = sprite_strdup(path);
     if (sheet->path == NULL) {
-        fprintf(stderr, "widebrim: failed to duplicate sprite path\n");
+        fprintf(stderr, "widebrim: Failed to duplicate sprite path\n");
         free(sheet);
         fclose(file);
         return NULL;
@@ -728,7 +728,7 @@ bool sprite_loader_load_animation_rgba(
 
     if (!asset_path_resolve(state, rel_path, spritesheet_path,
                             sizeof(spritesheet_path))) {
-        fprintf(stderr, "widebrim: failed to resolve asset path for %s\n",
+        fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 rel_path);
         return false;
     }
@@ -744,14 +744,14 @@ bool sprite_loader_load_animation_rgba(
 
     spritesheet = texture_load_rgba(spritesheet_path);
     if (!spritesheet) {
-        fprintf(stderr, "widebrim: failed to load spritesheet from %s\n",
+        fprintf(stderr, "widebrim: Failed to load spritesheet from %s\n",
                 spritesheet_path);
         return false;
     }
 
     if (!sprite_loader_load(state, rel_path, &sheet)) {
         texture_free(spritesheet);
-        fprintf(stderr, "widebrim: failed to load sprite sheet for %s\n",
+        fprintf(stderr, "widebrim: Failed to load sprite sheet for %s\n",
                 rel_path);
         return false;
     }
@@ -775,7 +775,7 @@ bool sprite_loader_load_animation_rgba(
         sprite_sheet_free(sheet);
         texture_free(spritesheet);
         fprintf(stderr,
-                "widebrim: failed to allocate memory for sprite frames\n");
+                "widebrim: Failed to allocate memory for sprite frames\n");
         return false;
     }
 

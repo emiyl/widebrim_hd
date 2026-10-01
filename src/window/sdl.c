@@ -144,13 +144,13 @@ window_t *window_create_sdl(const char *title, int width, int height,
                             unsigned int flags) {
     window_t *window = (window_t *)calloc(1u, sizeof(*window));
     if (!window) {
-        fprintf(stderr, "widebrim: failed to allocate memory for SDL window\n");
+        fprintf(stderr, "widebrim: Failed to allocate memory for SDL window\n");
         return NULL;
     }
     sdl_window_t *impl = (sdl_window_t *)calloc(1u, sizeof(*impl));
 
     if (!impl) {
-        fprintf(stderr, "widebrim: failed to allocate memory for SDL window "
+        fprintf(stderr, "widebrim: Failed to allocate memory for SDL window "
                         "implementation\n");
         free(window);
         return NULL;
@@ -158,7 +158,7 @@ window_t *window_create_sdl(const char *title, int width, int height,
 
     if (!SDL_CreateWindowAndRenderer(title, width, height, flags, &impl->window,
                                      &impl->renderer)) {
-        fprintf(stderr, "widebrim: failed to create SDL window and renderer\n");
+        fprintf(stderr, "widebrim: Failed to create SDL window and renderer\n");
         free(impl);
         free(window);
         return NULL;

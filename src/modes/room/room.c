@@ -55,7 +55,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     bool run_in_script = (state->last_entered_room_num != room_num);
     if (run_in_script) {
         if (!mode_room_run_in_script(impl, room_num)) {
-            fprintf(stderr, "widebrim: failed to run room %d in script\n",
+            fprintf(stderr, "widebrim: Failed to run room %d in script\n",
                     room_num);
         }
         state->last_entered_room_num = room_num;
@@ -69,7 +69,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     snprintf(bg_sub_path, sizeof(bg_sub_path), "room_%d_bg.bgx", room_num);
 
     if (!bg->load_main(bg, state, bg_sub_path)) {
-        fprintf(stderr, "widebrim: failed to load room %d background\n",
+        fprintf(stderr, "widebrim: Failed to load room %d background\n",
                 room_num);
     }
 
@@ -83,7 +83,7 @@ static void mode_room_reset_room(mode_room_impl_t *impl) {
     object_reset_fade(impl->move_mode_btn, impl->base.controller->renderer);
 
     if (!mode_room_run_param_script(impl, room_num)) {
-        fprintf(stderr, "widebrim: failed to reset room %d script\n", room_num);
+        fprintf(stderr, "widebrim: Failed to reset room %d script\n", room_num);
     }
 
     screen_controller_fade_in(impl->base.controller, FADER_DEFAULT_DURATION_MS,
@@ -200,14 +200,14 @@ static bool mode_room_handle_event(void *user, const input_event_t *event) {
             if (place_num > 1) {
                 game_state_set_place_num(impl->base.state, place_num - 1);
                 mode_room_reload_room(impl);
-                printf("widebrim: moved to room %d\n", place_num - 1);
+                printf("widebrim: Moved to room %d\n", place_num - 1);
                 return true;
             }
             break;
         case 'w':
             game_state_set_place_num(impl->base.state, place_num + 1);
             mode_room_reload_room(impl);
-            printf("widebrim: moved to room %d\n", place_num + 1);
+            printf("widebrim: Moved to room %d\n", place_num + 1);
             return true;
         default:
             break;

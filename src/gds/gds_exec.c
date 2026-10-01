@@ -11,7 +11,7 @@ static bool gds_execute_default_command(gds_reader_t *reader,
     bool should_break = false;
     bool first_arg = true;
 
-    fprintf(stderr, "Unknown command: %s(",
+    fprintf(stderr, "gds: Unknown command: %s(",
             gds_opcode_to_string(record->payload.opcode));
 
     while (gds_reader_remaining(reader) > 0U) {

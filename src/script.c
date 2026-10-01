@@ -34,7 +34,7 @@ bool script_load_and_execute(game_state_t *state, const char *relative_path,
 
     if (!gds_execute_script(script_payload, script_payload_size, user_data,
                             gds_state)) {
-        fprintf(stderr, "widebrim: failed to execute script: %s\n",
+        fprintf(stderr, "widebrim: Failed to execute script: %s\n",
                 relative_path);
         gds_free_payload(script_payload);
         return false;

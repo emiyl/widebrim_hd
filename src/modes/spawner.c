@@ -69,11 +69,11 @@ static void mode_spawner_load_mode(mode_spawner_t *spawner, game_mode_t mode) {
     mode_handler_t handler;
 
     if (!spawner) {
-        fprintf(stderr, "widebrim: spawner is NULL\n");
+        fprintf(stderr, "widebrim: Spawner is NULL\n");
         return;
     }
 
-    fprintf(stderr, "widebrim: loading mode %s\n", game_mode_to_string(mode));
+    fprintf(stderr, "widebrim: Loading mode %s\n", game_mode_to_string(mode));
     game_state_set_mode(spawner->state, mode);
     spawner->current_active_mode = mode;
 
@@ -87,7 +87,7 @@ static void mode_spawner_load_mode(mode_spawner_t *spawner, game_mode_t mode) {
         spawner->active_mode_handler = handler;
         spawner->has_active_mode = true;
     } else {
-        fprintf(stderr, "widebrim: no handler registered for mode %d\n",
+        fprintf(stderr, "widebrim: No handler registered for mode %d\n",
                 (int)mode);
         spawner->has_active_mode = false;
     }
@@ -118,7 +118,7 @@ static void mode_spawner_ready_switch(mode_spawner_t *spawner,
     }
 
     if (target == MODE_INVALID) {
-        fprintf(stderr, "widebrim: ignoring mode switch to MODE_INVALID\n");
+        fprintf(stderr, "widebrim: Ignoring mode switch to MODE_INVALID\n");
         return;
     }
 
