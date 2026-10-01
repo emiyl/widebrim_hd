@@ -104,8 +104,10 @@ static bool compile_gsc_to_temp(const char *source_path,
                                 size_t temp_path_size) {
     char temp_template[GDS_EXEC_PATH_MAX];
     int fd;
+#ifndef _WIN32
     pid_t child;
     int status;
+#endif
     static unsigned long long temp_counter = 0ULL;
 
     if (source_path == NULL || compiler_path == NULL || temp_path == NULL ||
