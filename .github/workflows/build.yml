@@ -14,7 +14,6 @@ jobs:
         include:
           - os: ubuntu-latest
             name: Linux x64
-            shell: bash
             install: |
               sudo apt-get update
               sudo apt-get install -y cmake pkg-config libsdl3-dev libwebp-dev
@@ -25,7 +24,6 @@ jobs:
 
           - os: macos-14
             name: macOS arm64
-            shell: bash
             install: |
               brew update
               brew install cmake pkg-config sdl3
@@ -38,7 +36,6 @@ jobs:
 
           - os: windows-latest
             name: Windows x64
-            shell: pwsh
             install: |
               choco install cmake ninja pkgconf -y
               & "$env:VCPKG_ROOT\vcpkg.exe" install sdl3:x64-windows --triplet x64-windows
@@ -60,14 +57,32 @@ jobs:
         if: runner.os == 'Windows'
         uses: lukka/get-vcpkg@v11
 
-      - name: Install system dependencies
-        shell: ${{ matrix.shell }}
+      - name: Install system dependencies (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: ${{ matrix.install }}
 
-      - name: Configure build
-        shell: ${{ matrix.shell }}
+      - name: Install system dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ${{ matrix.install }}
+
+      - name: Configure build (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: ${{ matrix.configure }}
 
-      - name: Build
-        shell: ${{ matrix.shell }}
+      - name: Configure build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ${{ matrix.configure }}
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: ${{ matrix.build }}
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: ${{ matrix.build }}
