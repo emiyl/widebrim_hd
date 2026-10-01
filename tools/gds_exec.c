@@ -47,18 +47,22 @@ static bool resolve_tool_path(const char *argv0, const char *tool_name,
     if (last_slash != NULL) {
         size_t dir_len = (size_t)(last_slash - argv0);
         size_t tool_len = strlen(tool_name);
+        size_t candidate_len;
 
         if (dir_len >= sizeof(dir_candidate)) {
             return false;
         }
 
-        if (dir_len + 1U + tool_len + 1U > out_path_size) {
+        candidate_len = dir_len + 1U + tool_len + 1U;
+        if (candidate_len > out_path_size) {
             return false;
         }
 
         memcpy(dir_candidate, argv0, dir_len);
         dir_candidate[dir_len] = '\0';
-        snprintf(out_path, out_path_size, "%s/%s", dir_candidate, tool_name);
+        memcpy(out_path, dir_candidate, dir_len);
+        out_path[dir_len] = '/';
+        memcpy(out_path + dir_len + 1U, tool_name, tool_len + 1U);
         if (access(out_path, X_OK) == 0) {
             return true;
         }
@@ -69,7 +73,13 @@ static bool resolve_tool_path(const char *argv0, const char *tool_name,
     candidate_names[candidate_count++] = tool_name;
 
     for (i = 0U; i < candidate_count; ++i) {
-        snprintf(out_path, out_path_size, "%s", candidate_names[i]);
+        size_t candidate_len = strlen(candidate_names[i]);
+
+        if (candidate_len >= out_path_size) {
+            continue;
+        }
+
+        memcpy(out_path, candidate_names[i], candidate_len + 1U);
         if (access(out_path, X_OK) == 0) {
             return true;
         }
