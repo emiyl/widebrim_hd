@@ -38,11 +38,13 @@ jobs:
             name: Windows x64
             install: |
               choco install cmake ninja pkgconf -y
-              & "$env:VCPKG_ROOT\vcpkg.exe" install sdl3:x64-windows --triplet x64-windows
+              if (!(Test-Path "$env:USERPROFILE\vcpkg")) { git clone --depth 1 https://github.com/microsoft/vcpkg.git "$env:USERPROFILE\vcpkg" }
+              & "$env:USERPROFILE\vcpkg\bootstrap-vcpkg.bat"
+              & "$env:USERPROFILE\vcpkg\vcpkg.exe" install sdl3:x64-windows --triplet x64-windows
             configure: |
-              $env:PKG_CONFIG_PATH = "$env:VCPKG_ROOT\installed\x64-windows\lib\pkgconfig"
-              $env:CMAKE_PREFIX_PATH = "$env:VCPKG_ROOT\installed\x64-windows"
-              cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+              $env:PKG_CONFIG_PATH = "$env:USERPROFILE\vcpkg\installed\x64-windows\lib\pkgconfig"
+              $env:CMAKE_PREFIX_PATH = "$env:USERPROFILE\vcpkg\installed\x64-windows"
+              cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:USERPROFILE\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
             build: |
               cmake --build build --parallel --config Release
 
@@ -52,10 +54,6 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-
-      - name: Set up vcpkg
-        if: runner.os == 'Windows'
-        uses: lukka/get-vcpkg@v11
 
       - name: Install system dependencies (Linux/macOS)
         if: runner.os != 'Windows'
