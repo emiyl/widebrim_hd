@@ -24,9 +24,9 @@ jobs:
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWINDOW=none -DRENDERER=none -DINPUT=none
 
-      - name: Build GDS executor
+      - name: Build GDS tools
         run: |
-          cmake --build build --target gds_exec --parallel
+          cmake --build build --target gds_compile gds_exec --parallel
 
       - name: GDS branch regression
         run: |

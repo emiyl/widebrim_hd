@@ -31,26 +31,63 @@ static bool has_suffix(const char *path, const char *suffix) {
     return strcmp(path + path_len - suffix_len, suffix) == 0;
 }
 
-static bool compile_gsc_to_temp(const char *source_path, char *temp_path,
+static bool resolve_tool_path(const char *argv0, const char *tool_name,
+                              char *out_path, size_t out_path_size) {
+    const char *last_slash = strrchr(argv0, '/');
+    char dir_candidate[GDS_EXEC_PATH_MAX];
+    const char *candidate_names[4];
+    size_t candidate_count = 0U;
+    size_t i;
+
+    if (argv0 == NULL || tool_name == NULL || out_path == NULL ||
+        out_path_size == 0U) {
+        return false;
+    }
+
+    if (last_slash != NULL) {
+        size_t dir_len = (size_t)(last_slash - argv0);
+
+        if (dir_len >= sizeof(dir_candidate)) {
+            return false;
+        }
+
+        memcpy(dir_candidate, argv0, dir_len);
+        dir_candidate[dir_len] = '\0';
+        snprintf(out_path, out_path_size, "%s/%s", dir_candidate, tool_name);
+        if (access(out_path, X_OK) == 0) {
+            return true;
+        }
+    }
+
+    candidate_names[candidate_count++] = "./build/gds_compile";
+    candidate_names[candidate_count++] = "./gds_compile";
+    candidate_names[candidate_count++] = tool_name;
+
+    for (i = 0U; i < candidate_count; ++i) {
+        snprintf(out_path, out_path_size, "%s", candidate_names[i]);
+        if (access(out_path, X_OK) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool compile_gsc_to_temp(const char *source_path,
+                                const char *compiler_path, char *temp_path,
                                 size_t temp_path_size) {
-    char compiler_candidate[GDS_EXEC_PATH_MAX];
     char temp_template[GDS_EXEC_PATH_MAX];
     int fd;
     pid_t child;
     int status;
     static unsigned long long temp_counter = 0ULL;
 
-    if (source_path == NULL || temp_path == NULL || temp_path_size == 0U) {
+    if (source_path == NULL || compiler_path == NULL || temp_path == NULL ||
+        temp_path_size == 0U) {
         return false;
     }
 
-    snprintf(compiler_candidate, sizeof(compiler_candidate), "%s",
-             "./build/gds_compile");
-    if (access(compiler_candidate, X_OK) != 0) {
-        snprintf(compiler_candidate, sizeof(compiler_candidate), "%s",
-                 "./gds_compile");
-    }
-    if (access(compiler_candidate, X_OK) != 0) {
+    if (access(compiler_path, X_OK) != 0) {
         fprintf(stderr, "gds_exec: could not find gds_compile; expected it "
                         "next to the build output or in ./build\n");
         return false;
@@ -83,9 +120,9 @@ static bool compile_gsc_to_temp(const char *source_path, char *temp_path,
     }
 
     if (child == 0) {
-        execl(compiler_candidate, "gds_compile", source_path, temp_template,
+        execl(compiler_path, "gds_compile", source_path, temp_template,
               (char *)NULL);
-        fprintf(stderr, "gds_exec: failed to run %s: %s\n", compiler_candidate,
+        fprintf(stderr, "gds_exec: failed to run %s: %s\n", compiler_path,
                 strerror(errno));
         _exit(EXIT_FAILURE);
     }
@@ -113,6 +150,7 @@ int main(int argc, char **argv) {
     size_t payload_size = 0U;
     game_state_t state;
     mode_impl_t impl;
+    char compiler_path[GDS_EXEC_PATH_MAX];
     char temp_script_path[GDS_EXEC_PATH_MAX];
     bool temp_script_used = false;
 
@@ -128,8 +166,16 @@ int main(int argc, char **argv) {
     }
 
     if (has_suffix(input_path, ".gsc") || has_suffix(input_path, ".GSC")) {
+        memset(compiler_path, 0, sizeof(compiler_path));
+        if (!resolve_tool_path(argv[0], "gds_compile", compiler_path,
+                               sizeof(compiler_path))) {
+            fprintf(stderr, "gds_exec: could not find gds_compile; expected it "
+                            "next to the build output or in ./build\n");
+            return EXIT_FAILURE;
+        }
+
         memset(temp_script_path, 0, sizeof(temp_script_path));
-        if (!compile_gsc_to_temp(input_path, temp_script_path,
+        if (!compile_gsc_to_temp(input_path, compiler_path, temp_script_path,
                                  sizeof(temp_script_path))) {
             return EXIT_FAILURE;
         }
