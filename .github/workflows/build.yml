@@ -27,6 +27,7 @@ jobs:
                 libxinerama-dev \
                 libxcursor-dev \
                 libxi-dev \
+                libxss-dev \
                 libwayland-dev \
                 libxkbcommon-dev \
                 libdrm-dev \
@@ -40,7 +41,8 @@ jobs:
                 -G Ninja \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DSDL_TESTS=OFF \
-                -DSDL_EXAMPLES=OFF
+                -DSDL_EXAMPLES=OFF \
+                -DSDL_X11_XSCRNSAVER=OFF
               cmake --build build
               sudo cmake --install build
               sudo ldconfig
