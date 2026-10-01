@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux x64
+            shell: bash
+            install: |
+              sudo apt-get update
+              sudo apt-get install -y cmake pkg-config libsdl3-dev libwebp-dev
+            configure: |
+              cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+            build: |
+              cmake --build build --parallel
+
+          - os: macos-14
+            name: macOS arm64
+            shell: bash
+            install: |
+              brew update
+              brew install cmake pkg-config sdl3
+            configure: |
+              export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
+              export CMAKE_PREFIX_PATH="/opt/homebrew"
+              cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+            build: |
+              cmake --build build --parallel
+
+          - os: windows-latest
+            name: Windows x64
+            shell: pwsh
+            install: |
+              choco install cmake ninja pkgconf -y
+              & "$env:VCPKG_ROOT\vcpkg.exe" install sdl3:x64-windows --triplet x64-windows
+            configure: |
+              $env:PKG_CONFIG_PATH = "$env:VCPKG_ROOT\installed\x64-windows\lib\pkgconfig"
+              $env:CMAKE_PREFIX_PATH = "$env:VCPKG_ROOT\installed\x64-windows"
+              cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+            build: |
+              cmake --build build --parallel --config Release
+
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.name }})
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up vcpkg
+        if: runner.os == 'Windows'
+        uses: lukka/get-vcpkg@v11
+
+      - name: Install system dependencies
+        shell: ${{ matrix.shell }}
+        run: ${{ matrix.install }}
+
+      - name: Configure build
+        shell: ${{ matrix.shell }}
+        run: ${{ matrix.configure }}
+
+      - name: Build
+        shell: ${{ matrix.shell }}
+        run: ${{ matrix.build }}
