@@ -51,7 +51,7 @@ jobs:
             build: |
               cmake --build build --parallel
 
-          - os: macos-14
+          - os: macos-latest
             name: macOS arm64
             install: |
               brew update
