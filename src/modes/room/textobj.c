@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "safe.h"
-#include "text_loader.h"
+#include "../../safe.h"
+#include "../../text_loader.h"
 
 static bool mode_room_textobj_on_click(void *user, const input_event_t *event,
                                        object_t *inst) {

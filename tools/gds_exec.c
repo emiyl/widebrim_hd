@@ -1,8 +1,8 @@
-#include "gds/gds_exec.h"
-#include "gds/gds.h"
+#include "../src/gds/gds_exec.h"
+#include "../src/gds/gds.h"
 
-#include "game_state.h"
-#include "modes/mode_impl.h"
+#include "../src/game_state.h"
+#include "../src/modes/mode_impl.h"
 
 #include <errno.h>
 #include <fcntl.h>

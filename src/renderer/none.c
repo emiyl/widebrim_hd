@@ -1,9 +1,9 @@
-#include "renderer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "safe.h"
+#include "../renderer.h"
+#include "../safe.h"
 
 typedef struct none_renderer_t {
     void *renderer;

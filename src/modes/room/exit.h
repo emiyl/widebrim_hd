@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "object.h"
+#include "../../object.h"
 
 struct mode_room_impl_t;
 

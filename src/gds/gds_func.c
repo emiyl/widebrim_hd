@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 
-#include "gds/gds.h"
-#include "gds/gds_opcode.h"
-#include "gds/gds_reader.h"
+#include "../modes/room/room.h"
+#include "gds.h"
 #include "gds_branch.h"
+#include "gds_opcode.h"
+#include "gds_reader.h"
 #include "gds_state.h"
-#include "room/room.h"
 
 static bool gds_func_SetMap(gds_reader_t *reader, const gds_record_t *command,
                             void *user_data) {

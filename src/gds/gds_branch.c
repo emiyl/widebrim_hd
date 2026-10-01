@@ -2,10 +2,10 @@
 
 #include <stdio.h>
 
-#include "gds/gds.h"
-#include "gds/gds_opcode.h"
+#include "../modes/mode_impl.h"
+#include "gds.h"
+#include "gds_opcode.h"
 #include "gds_state.h"
-#include "modes/mode_impl.h"
 
 static bool gds_branch_is_ignored_record_type(gds_record_type_t type) {
     switch (type) {

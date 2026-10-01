@@ -1,8 +1,7 @@
-#include "window.h"
-
 #include <stdio.h>
 
-#include "safe.h"
+#include "../safe.h"
+#include "../window.h"
 
 typedef struct none_window_t {
     void *window;

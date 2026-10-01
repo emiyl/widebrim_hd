@@ -1,9 +1,10 @@
 #include "gds.h"
-#include "gds/gds_opcode.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "gds_opcode.h"
 
 bool gds_read_record(gds_reader_t *reader, gds_record_t *record) {
     uint16_t type;

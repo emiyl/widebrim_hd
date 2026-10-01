@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "safe.h"
-#include "script.h"
+#include "../../safe.h"
+#include "../../script.h"
 
 static bool mode_room_run_in_script(mode_room_impl_t *impl, int room_num) {
     char script_path[32];

@@ -1,7 +1,7 @@
 #ifndef MODE_TITLE_H
 #define MODE_TITLE_H
 
-#include "mode_impl.h"
+#include "../mode_impl.h"
 
 typedef struct {
     // Base must be at the beginning of the struct

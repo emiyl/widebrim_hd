@@ -1,7 +1,7 @@
 #ifndef MODE_EVENT_H
 #define MODE_EVENT_H
 
-#include "mode_impl.h"
+#include "../mode_impl.h"
 
 typedef struct {
     // Base must be at beginning of struct

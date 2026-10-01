@@ -1,5 +1,5 @@
-#include "gds/gds.h"
-#include "gds/gds_opcode.h"
+#include "../src/gds/gds.h"
+#include "../src/gds/gds_opcode.h"
 
 #include <ctype.h>
 #include <errno.h>

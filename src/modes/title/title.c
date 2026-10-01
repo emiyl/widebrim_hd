@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-#include "safe.h"
-#include "sprite.h"
+#include "../../safe.h"
+#include "../../sprite.h"
 
 static bool mode_title_advance(mode_title_impl_t *impl);
 

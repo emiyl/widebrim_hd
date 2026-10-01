@@ -3,16 +3,16 @@
 
 #include <stdbool.h>
 
-#include "bg_layer.h"
-#include "fader_layer.h"
-#include "game_state.h"
-#include "input.h"
-#include "mode.h"
-#include "object_layer.h"
-#include "renderer.h"
-#include "screen.h"
-#include "screen_controller.h"
-#include "text_layer.h"
+#include "../bg_layer.h"
+#include "../fader_layer.h"
+#include "../game_state.h"
+#include "../input.h"
+#include "../mode.h"
+#include "../object_layer.h"
+#include "../renderer.h"
+#include "../screen.h"
+#include "../screen_controller.h"
+#include "../text_layer.h"
 
 typedef struct {
     screen_collection_t layers;

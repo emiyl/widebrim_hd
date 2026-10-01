@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "safe.h"
-#include "script.h"
+#include "../../safe.h"
+#include "../../script.h"
 
 static bool mode_event_is_done(void *user) {
     if (!user) {

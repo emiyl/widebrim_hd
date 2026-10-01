@@ -1,6 +1,6 @@
 #include "map.h"
 
-#include "text_loader.h"
+#include "../../text_loader.h"
 
 void mode_room_load_map_place(mode_room_impl_t *impl) {
     int x, y, w, h;

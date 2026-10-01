@@ -1,7 +1,7 @@
 #ifndef MODE_RESET_H
 #define MODE_RESET_H
 
-#include "mode_impl.h"
+#include "../mode_impl.h"
 
 typedef struct {
     // Base must be at beginning of struct

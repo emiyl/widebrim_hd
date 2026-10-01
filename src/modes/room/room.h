@@ -1,12 +1,12 @@
 #ifndef MODE_ROOM_H
 #define MODE_ROOM_H
 
+#include "../../game_state.h"
+#include "../../mode.h"
+#include "../../object.h"
+#include "../../screen_controller.h"
+#include "../mode_impl.h"
 #include "exit.h"
-#include "game_state.h"
-#include "mode.h"
-#include "mode_impl.h"
-#include "object.h"
-#include "screen_controller.h"
 
 #define MAX_TOBJ 16
 #define MAX_EXITS 8

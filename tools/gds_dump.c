@@ -1,5 +1,5 @@
-#include "gds/gds_dump.h"
-#include "gds/gds.h"
+#include "../src/gds/gds_dump.h"
+#include "../src/gds/gds.h"
 
 #include <stdio.h>
 #include <stdlib.h>

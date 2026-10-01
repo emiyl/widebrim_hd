@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "game_state.h"
+#include "../game_state.h"
 #include "gds.h"
 
 bool gds_execute_command(gds_reader_t *reader, const gds_record_t *record,

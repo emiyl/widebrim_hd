@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 
+#include "../../safe.h"
 #include "room.h"
-#include "safe.h"
 
 bool room_add_event(struct mode_room_impl_t *room, int32_t x, int32_t y,
                     int32_t width, int32_t height, int32_t sprite_id,
