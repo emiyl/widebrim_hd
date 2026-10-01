@@ -1,9 +1,8 @@
-
-#include "clock.h"
-
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
 #endif
+
+#include "clock.h"
 
 #include <stdint.h>
 
