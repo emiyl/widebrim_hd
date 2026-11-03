@@ -273,30 +273,30 @@
     X(Print)
 
 #define GDS_OPCODE_HANDLER_LIST(X)                                             \
-    X(SetMap, SCRIPT_CMD_SetMap)                                               \
-    X(AddTextObj, SCRIPT_CMD_AddTextObj)                                       \
-    X(AddBGObject, SCRIPT_CMD_AddBGObject)                                     \
-    X(StoryFlag, SCRIPT_CMD_StoryFlag)                                         \
-    X(SetStoryFlag, SCRIPT_CMD_SetStoryFlag)                                   \
-    X(ViewedEvent, SCRIPT_CMD_ViewedEvent)                                     \
-    X(SetEventViewed, SCRIPT_CMD_SetEventViewed)                               \
-    X(AddExit, SCRIPT_CMD_AddExit)                                             \
-    X(BitFlag, SCRIPT_CMD_BitFlag)                                             \
-    X(SetBitFlag, SCRIPT_CMD_SetBitFlag)                                       \
-    X(AddEvent, SCRIPT_CMD_AddEvent)                                           \
-    X(SetCurrentQuestion, SCRIPT_CMD_SetCurrentQuestion)                       \
-    X(SolvedQuestion, SCRIPT_CMD_SolvedQuestion)                               \
-    X(AddSubSprite, SCRIPT_CMD_AddSubSprite)                                   \
-    X(ExitScript, SCRIPT_CMD_ExitScript)                                       \
-    X(SetGameMode, SCRIPT_CMD_SetGameMode)                                     \
-    X(SetCurrentEvent, SCRIPT_CMD_SetCurrentEvent)                             \
-    X(AddHintCoin, SCRIPT_CMD_AddHintCoin)                                     \
-    X(AddDogCoin, SCRIPT_CMD_AddDogCoin)                                       \
-    X(AddSecretCoin, SCRIPT_CMD_AddSecretCoin)                                 \
-    X(SetExitSound, SCRIPT_CMD_SetExitSound)                                   \
-    X(LoadBG, SCRIPT_CMD_LoadBG)                                               \
-    X(LoadSubBG, SCRIPT_CMD_LoadSubBG)                                         \
-    X(Print, SCRIPT_CMD_Print)
+    X(SetMap)                                                                  \
+    X(AddTextObj)                                                              \
+    X(AddBGObject)                                                             \
+    X(StoryFlag)                                                               \
+    X(SetStoryFlag)                                                            \
+    X(ViewedEvent)                                                             \
+    X(SetEventViewed)                                                          \
+    X(AddExit)                                                                 \
+    X(BitFlag)                                                                 \
+    X(SetBitFlag)                                                              \
+    X(AddEvent)                                                                \
+    X(SetCurrentQuestion)                                                      \
+    X(SolvedQuestion)                                                          \
+    X(AddSubSprite)                                                            \
+    X(ExitScript)                                                              \
+    X(SetGameMode)                                                             \
+    X(SetCurrentEvent)                                                         \
+    X(AddHintCoin)                                                             \
+    X(AddDogCoin)                                                              \
+    X(AddSecretCoin)                                                           \
+    X(SetExitSound)                                                            \
+    X(LoadBG)                                                                  \
+    X(LoadSubBG)                                                               \
+    X(Print)
 
 #define GDS_OPCODE_ENUM(name) SCRIPT_CMD_##name,
 

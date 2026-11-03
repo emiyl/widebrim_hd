@@ -12,8 +12,8 @@
 
 #define GDS_FUNC_LOOKUP_TABLE(X) GDS_OPCODE_HANDLER_LIST(X)
 
-#define GDS_FUNC_LOOKUP_CASE(name, opcode)                                     \
-    case opcode:                                                               \
+#define GDS_FUNC_LOOKUP_CASE(name)                                             \
+    case SCRIPT_CMD_##name:                                                                 \
         *handler = gds_func_##name;                                            \
         return true;
 
