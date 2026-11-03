@@ -9,10 +9,7 @@
 #include "gds_reader.h"
 #include "gds_state.h"
 
-#define GDS_ARGS gds_reader_t *reader, const gds_record_t *command, void *user_data
-#define GDS_FUNC(name) static bool gds_func_##name(GDS_ARGS)
-
-GDS_FUNC(SetMap) {
+DEF(SetMap) {
     int32_t args[5];
     if (!gds_read_s32_args(reader, args, 5, command)) {
         return false;
@@ -42,7 +39,7 @@ GDS_FUNC(SetMap) {
     return true;
 }
 
-GDS_FUNC(AddTextObj) {
+DEF(AddTextObj) {
     int32_t args[7];
     if (!gds_read_s32_args(reader, args, 7, command)) {
         return false;
@@ -74,7 +71,7 @@ GDS_FUNC(AddTextObj) {
     return true;
 }
 
-GDS_FUNC(AddBGObject) {
+DEF(AddBGObject) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     screen_controller_t *sc = impl->controller;
@@ -101,7 +98,7 @@ GDS_FUNC(AddBGObject) {
     return true;
 }
 
-GDS_FUNC(StoryFlag) {
+DEF(StoryFlag) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -127,7 +124,7 @@ GDS_FUNC(StoryFlag) {
     return true;
 }
 
-GDS_FUNC(SetStoryFlag) {
+DEF(SetStoryFlag) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -154,7 +151,7 @@ GDS_FUNC(SetStoryFlag) {
     return true;
 }
 
-GDS_FUNC(ViewedEvent) {
+DEF(ViewedEvent) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -185,7 +182,7 @@ GDS_FUNC(ViewedEvent) {
     return true;
 }
 
-GDS_FUNC(SetEventViewed) {
+DEF(SetEventViewed) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -217,7 +214,7 @@ GDS_FUNC(SetEventViewed) {
     return true;
 }
 
-GDS_FUNC(AddExit) {
+DEF(AddExit) {
     int32_t args[8];
     if (!gds_read_s32_args(reader, args, 8, command)) {
         return false;
@@ -252,7 +249,7 @@ GDS_FUNC(AddExit) {
     return true;
 }
 
-GDS_FUNC(BitFlag) {
+DEF(BitFlag) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -277,7 +274,7 @@ GDS_FUNC(BitFlag) {
     return true;
 }
 
-GDS_FUNC(SetBitFlag) {
+DEF(SetBitFlag) {
     int32_t args[2];
     if (!gds_read_s32_args(reader, args, 2, command)) {
         return false;
@@ -304,7 +301,7 @@ GDS_FUNC(SetBitFlag) {
     return true;
 }
 
-GDS_FUNC(AddEvent) {
+DEF(AddEvent) {
     int32_t args[6];
     if (!gds_read_s32_args(reader, args, 6, command)) {
         return false;
@@ -333,7 +330,7 @@ GDS_FUNC(AddEvent) {
     return room->add_event(room, x, y, width, height, sprite_id, event_id);
 }
 
-GDS_FUNC(SetCurrentQuestion) {
+DEF(SetCurrentQuestion) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -368,7 +365,7 @@ GDS_FUNC(SetCurrentQuestion) {
     return true;
 }
 
-GDS_FUNC(SolvedQuestion) {
+DEF(SolvedQuestion) {
     (void)reader;
     (void)command;
 
@@ -400,7 +397,7 @@ GDS_FUNC(SolvedQuestion) {
     return true;
 }
 
-GDS_FUNC(AddSubSprite) {
+DEF(AddSubSprite) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     screen_controller_t *sc = impl->controller;
@@ -435,7 +432,7 @@ GDS_FUNC(AddSubSprite) {
     return true;
 }
 
-GDS_FUNC(SetGameMode) {
+DEF(SetGameMode) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
 
@@ -468,7 +465,7 @@ GDS_FUNC(SetGameMode) {
     return true;
 }
 
-GDS_FUNC(SetCurrentEvent) {
+DEF(SetCurrentEvent) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
 
@@ -490,7 +487,7 @@ GDS_FUNC(SetCurrentEvent) {
     return true;
 }
 
-GDS_FUNC(AddHintCoin) {
+DEF(AddHintCoin) {
     (void)user_data;
 
     int32_t args[6];
@@ -523,7 +520,7 @@ GDS_FUNC(AddHintCoin) {
     return true;
 }
 
-GDS_FUNC(AddDogCoin) {
+DEF(AddDogCoin) {
     (void)user_data;
 
     int32_t args[6];
@@ -556,7 +553,7 @@ GDS_FUNC(AddDogCoin) {
     return true;
 }
 
-GDS_FUNC(AddSecretCoin) {
+DEF(AddSecretCoin) {
     (void)user_data;
 
     int32_t args[6];
@@ -588,7 +585,7 @@ GDS_FUNC(AddSecretCoin) {
     return true;
 }
 
-GDS_FUNC(SetExitSound) {
+DEF(SetExitSound) {
     (void)user_data;
 
     int32_t args[2];
@@ -612,7 +609,7 @@ GDS_FUNC(SetExitSound) {
     return true;
 }
 
-GDS_FUNC(ExitScript) {
+DEF(ExitScript) {
     (void)reader;
     (void)command;
 
@@ -629,7 +626,7 @@ GDS_FUNC(ExitScript) {
     return true;
 }
 
-GDS_FUNC(LoadBG) {
+DEF(LoadBG) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     bg_layer_t *bg = impl->controller->bg;
@@ -663,7 +660,7 @@ GDS_FUNC(LoadBG) {
     return true;
 }
 
-GDS_FUNC(LoadSubBG) {
+DEF(LoadSubBG) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     bg_layer_t *bg = impl->controller->bg;
@@ -697,11 +694,7 @@ GDS_FUNC(LoadSubBG) {
     return true;
 }
 
-GDS_FUNC(ModifyBGPal) {
-    return true;
-}
-
-GDS_FUNC(CMDX_Print) {
+DEF(Print) {
     (void)user_data;
     const char *str_args[1];
     if (!gds_read_string_args(reader, str_args, 1, command)) {
@@ -729,78 +722,7 @@ bool gds_func_lookup(gds_opcode_t opcode, gds_command_handler_fn *handler) {
     }
 
     switch (opcode) {
-    case SCRIPT_CMD_SetMap:
-        *handler = gds_func_SetMap;
-        return true;
-    case SCRIPT_CMD_AddTextObj:
-        *handler = gds_func_AddTextObj;
-        return true;
-    case SCRIPT_CMD_AddBGObject:
-        *handler = gds_func_AddBGObject;
-        return true;
-    case SCRIPT_CMD_StoryFlag:
-        *handler = gds_func_StoryFlag;
-        return true;
-    case SCRIPT_CMD_SetStoryFlag:
-        *handler = gds_func_SetStoryFlag;
-        return true;
-    case SCRIPT_CMD_ViewedEvent:
-        *handler = gds_func_ViewedEvent;
-        return true;
-    case SCRIPT_CMD_SetEventViewed:
-        *handler = gds_func_SetEventViewed;
-        return true;
-    case SCRIPT_CMD_AddExit:
-        *handler = gds_func_AddExit;
-        return true;
-    case SCRIPT_CMD_BitFlag:
-        *handler = gds_func_BitFlag;
-        return true;
-    case SCRIPT_CMD_SetBitFlag:
-        *handler = gds_func_SetBitFlag;
-        return true;
-    case SCRIPT_CMD_AddEvent:
-        *handler = gds_func_AddEvent;
-        return true;
-    case SCRIPT_CMD_SetCurrentQuestion:
-        *handler = gds_func_SetCurrentQuestion;
-        return true;
-    case SCRIPT_CMD_SolvedQuestion:
-        *handler = gds_func_SolvedQuestion;
-        return true;
-    case SCRIPT_CMD_AddSubSprite:
-        *handler = gds_func_AddSubSprite;
-        return true;
-    case SCRIPT_CMD_ExitScript:
-        *handler = gds_func_ExitScript;
-        return true;
-    case SCRIPT_CMD_SetGameMode:
-        *handler = gds_func_SetGameMode;
-        return true;
-    case SCRIPT_CMD_SetCurrentEvent:
-        *handler = gds_func_SetCurrentEvent;
-        return true;
-    case SCRIPT_CMD_AddHintCoin:
-        *handler = gds_func_AddHintCoin;
-        return true;
-    case SCRIPT_CMD_AddDogCoin:
-        *handler = gds_func_AddDogCoin;
-        return true;
-    case SCRIPT_CMD_AddSecretCoin:
-        *handler = gds_func_AddSecretCoin;
-        return true;
-    case SCRIPT_CMD_SetExitSound:
-        *handler = gds_func_SetExitSound;
-        return true;
-    case SCRIPT_CMD_LoadBG:
-        *handler = gds_func_LoadBG;
-        return true;
-    case SCRIPT_CMD_LoadSubBG:
-        *handler = gds_func_LoadSubBG;
-        return true;
-    case SCRIPT_CMDX_Print:
-        *handler = gds_func_CMDX_Print;
-        return true;
+        GDS_FUNC_LOOKUP_TABLE(GDS_FUNC_LOOKUP_CASE)
     default:
         *handler = NULL;
         return false;
