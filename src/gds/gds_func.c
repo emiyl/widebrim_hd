@@ -9,7 +9,7 @@
 #include "gds_reader.h"
 #include "gds_state.h"
 
-DEF(SetMap) {
+GDS_DEF(SetMap) {
     int32_t args[5];
     if (!gds_read_s32_args(reader, args, 5, command)) {
         return false;
@@ -39,7 +39,7 @@ DEF(SetMap) {
     return true;
 }
 
-DEF(AddTextObj) {
+GDS_DEF(AddTextObj) {
     int32_t args[7];
     if (!gds_read_s32_args(reader, args, 7, command)) {
         return false;
@@ -71,7 +71,7 @@ DEF(AddTextObj) {
     return true;
 }
 
-DEF(AddBGObject) {
+GDS_DEF(AddBGObject) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     screen_controller_t *sc = impl->controller;
@@ -98,7 +98,7 @@ DEF(AddBGObject) {
     return true;
 }
 
-DEF(StoryFlag) {
+GDS_DEF(StoryFlag) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -124,7 +124,7 @@ DEF(StoryFlag) {
     return true;
 }
 
-DEF(SetStoryFlag) {
+GDS_DEF(SetStoryFlag) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -151,7 +151,7 @@ DEF(SetStoryFlag) {
     return true;
 }
 
-DEF(ViewedEvent) {
+GDS_DEF(ViewedEvent) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -182,7 +182,7 @@ DEF(ViewedEvent) {
     return true;
 }
 
-DEF(SetEventViewed) {
+GDS_DEF(SetEventViewed) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -214,7 +214,7 @@ DEF(SetEventViewed) {
     return true;
 }
 
-DEF(AddExit) {
+GDS_DEF(AddExit) {
     int32_t args[8];
     if (!gds_read_s32_args(reader, args, 8, command)) {
         return false;
@@ -249,7 +249,7 @@ DEF(AddExit) {
     return true;
 }
 
-DEF(BitFlag) {
+GDS_DEF(BitFlag) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -274,7 +274,7 @@ DEF(BitFlag) {
     return true;
 }
 
-DEF(SetBitFlag) {
+GDS_DEF(SetBitFlag) {
     int32_t args[2];
     if (!gds_read_s32_args(reader, args, 2, command)) {
         return false;
@@ -301,7 +301,7 @@ DEF(SetBitFlag) {
     return true;
 }
 
-DEF(AddEvent) {
+GDS_DEF(AddEvent) {
     int32_t args[6];
     if (!gds_read_s32_args(reader, args, 6, command)) {
         return false;
@@ -330,7 +330,7 @@ DEF(AddEvent) {
     return room->add_event(room, x, y, width, height, sprite_id, event_id);
 }
 
-DEF(SetCurrentQuestion) {
+GDS_DEF(SetCurrentQuestion) {
     int32_t args[1];
     if (!gds_read_s32_args(reader, args, 1, command)) {
         return false;
@@ -365,7 +365,7 @@ DEF(SetCurrentQuestion) {
     return true;
 }
 
-DEF(SolvedQuestion) {
+GDS_DEF(SolvedQuestion) {
     (void)reader;
     (void)command;
 
@@ -397,7 +397,7 @@ DEF(SolvedQuestion) {
     return true;
 }
 
-DEF(AddSubSprite) {
+GDS_DEF(AddSubSprite) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     screen_controller_t *sc = impl->controller;
@@ -432,7 +432,7 @@ DEF(AddSubSprite) {
     return true;
 }
 
-DEF(SetGameMode) {
+GDS_DEF(SetGameMode) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
 
@@ -465,7 +465,7 @@ DEF(SetGameMode) {
     return true;
 }
 
-DEF(SetCurrentEvent) {
+GDS_DEF(SetCurrentEvent) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
 
@@ -487,7 +487,7 @@ DEF(SetCurrentEvent) {
     return true;
 }
 
-DEF(AddHintCoin) {
+GDS_DEF(AddHintCoin) {
     (void)user_data;
 
     int32_t args[6];
@@ -520,7 +520,7 @@ DEF(AddHintCoin) {
     return true;
 }
 
-DEF(AddDogCoin) {
+GDS_DEF(AddDogCoin) {
     (void)user_data;
 
     int32_t args[6];
@@ -553,7 +553,7 @@ DEF(AddDogCoin) {
     return true;
 }
 
-DEF(AddSecretCoin) {
+GDS_DEF(AddSecretCoin) {
     (void)user_data;
 
     int32_t args[6];
@@ -585,7 +585,7 @@ DEF(AddSecretCoin) {
     return true;
 }
 
-DEF(SetExitSound) {
+GDS_DEF(SetExitSound) {
     (void)user_data;
 
     int32_t args[2];
@@ -609,7 +609,7 @@ DEF(SetExitSound) {
     return true;
 }
 
-DEF(ExitScript) {
+GDS_DEF(ExitScript) {
     (void)reader;
     (void)command;
 
@@ -626,7 +626,7 @@ DEF(ExitScript) {
     return true;
 }
 
-DEF(LoadBG) {
+GDS_DEF(LoadBG) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     bg_layer_t *bg = impl->controller->bg;
@@ -660,7 +660,7 @@ DEF(LoadBG) {
     return true;
 }
 
-DEF(LoadSubBG) {
+GDS_DEF(LoadSubBG) {
     mode_impl_t *impl = (mode_impl_t *)user_data;
     game_state_t *state = impl->state;
     bg_layer_t *bg = impl->controller->bg;
@@ -694,7 +694,7 @@ DEF(LoadSubBG) {
     return true;
 }
 
-DEF(Print) {
+GDS_DEF(Print) {
     (void)user_data;
     const char *str_args[1];
     if (!gds_read_string_args(reader, str_args, 1, command)) {

@@ -272,32 +272,6 @@
     X(SetTopSecretPoint)                                                       \
     X(Print)
 
-#define GDS_OPCODE_HANDLER_LIST(X)                                             \
-    X(SetMap)                                                                  \
-    X(AddTextObj)                                                              \
-    X(AddBGObject)                                                             \
-    X(StoryFlag)                                                               \
-    X(SetStoryFlag)                                                            \
-    X(ViewedEvent)                                                             \
-    X(SetEventViewed)                                                          \
-    X(AddExit)                                                                 \
-    X(BitFlag)                                                                 \
-    X(SetBitFlag)                                                              \
-    X(AddEvent)                                                                \
-    X(SetCurrentQuestion)                                                      \
-    X(SolvedQuestion)                                                          \
-    X(AddSubSprite)                                                            \
-    X(ExitScript)                                                              \
-    X(SetGameMode)                                                             \
-    X(SetCurrentEvent)                                                         \
-    X(AddHintCoin)                                                             \
-    X(AddDogCoin)                                                              \
-    X(AddSecretCoin)                                                           \
-    X(SetExitSound)                                                            \
-    X(LoadBG)                                                                  \
-    X(LoadSubBG)                                                               \
-    X(Print)
-
 #define GDS_OPCODE_ENUM(name) SCRIPT_CMD_##name,
 
 typedef enum { GDS_OPCODE_LIST(GDS_OPCODE_ENUM) SCRIPT_CMD_MAX } gds_opcode_t;
