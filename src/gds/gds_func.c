@@ -694,6 +694,30 @@ GDS_DEF(LoadSubBG) {
     return true;
 }
 
+GDS_DEF(ModifyBGPal) {
+    int32_t args[3];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]), command)) {
+        return false;
+    }
+
+    int32_t red = args[0];
+    int32_t green = args[1];
+    int32_t blue = args[2];
+
+#ifdef GDS_TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(red=%d, green=%d, blue=%d)\n", function_name, red, green, blue);
+#else
+    (void)red;
+    (void)green;
+    (void)blue;
+#endif
+
+    (void)user_data;
+
+    return true;
+}
+
 GDS_DEF(Print) {
     (void)user_data;
     const char *str_args[1];
