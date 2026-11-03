@@ -6,8 +6,13 @@
 #include "gds.h"
 #include "gds_opcode.h"
 
-#define GDS_ARGS                                                               \
-    gds_reader_t *reader, const gds_record_t *command, void *user_data
+#if defined(__GNUC__) || defined(__clang__)
+#define POSSIBLY_UNUSED __attribute__((unused))
+#else
+#define POSSIBLY_UNUSED
+#endif
+
+#define GDS_ARGS gds_reader_t *reader,  const gds_record_t *command, void *user_data POSSIBLY_UNUSED
 #define GDS_DEF(name) static bool gds_func_##name(GDS_ARGS)
 
 #define GDS_OPCODE_HANDLER_LIST(X)                                             \

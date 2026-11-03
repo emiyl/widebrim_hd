@@ -488,8 +488,6 @@ GDS_DEF(SetCurrentEvent) {
 }
 
 GDS_DEF(AddHintCoin) {
-    (void)user_data;
-
     int32_t args[6];
     if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
                            command)) {
@@ -521,8 +519,6 @@ GDS_DEF(AddHintCoin) {
 }
 
 GDS_DEF(AddDogCoin) {
-    (void)user_data;
-
     int32_t args[6];
     if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
                            command)) {
@@ -554,8 +550,6 @@ GDS_DEF(AddDogCoin) {
 }
 
 GDS_DEF(AddSecretCoin) {
-    (void)user_data;
-
     int32_t args[6];
     if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
                            command)) {
@@ -586,8 +580,6 @@ GDS_DEF(AddSecretCoin) {
 }
 
 GDS_DEF(SetExitSound) {
-    (void)user_data;
-
     int32_t args[2];
     if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
                            command)) {
@@ -713,13 +705,10 @@ GDS_DEF(ModifyBGPal) {
     (void)blue;
 #endif
 
-    (void)user_data;
-
     return true;
 }
 
 GDS_DEF(Print) {
-    (void)user_data;
     const char *str_args[1];
     if (!gds_read_string_args(reader, str_args, 1, command)) {
         return false;
