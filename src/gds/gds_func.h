@@ -12,7 +12,9 @@
 #define POSSIBLY_UNUSED
 #endif
 
-#define GDS_ARGS gds_reader_t *reader,  const gds_record_t *command, void *user_data POSSIBLY_UNUSED
+#define GDS_ARGS                                                               \
+    gds_reader_t *reader, const gds_record_t *command,                         \
+        void *user_data POSSIBLY_UNUSED
 #define GDS_DEF(name) static bool gds_func_##name(GDS_ARGS)
 
 #define GDS_OPCODE_HANDLER_LIST(X)                                             \
@@ -41,6 +43,7 @@
     X(LoadSubBG)                                                               \
     X(ModifyBGPal)                                                             \
     X(ModifySubBGPal)                                                          \
+    X(AddSprite)                                                               \
     X(Print)
 
 #define GDS_FUNC_LOOKUP_TABLE(X) GDS_OPCODE_HANDLER_LIST(X)

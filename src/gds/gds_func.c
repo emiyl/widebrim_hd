@@ -706,8 +706,8 @@ GDS_DEF(ModifyBGPal) {
 
 #ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: %s(red=%d, green=%d, blue=%d, intensity=%d)\n",
-           function_name, red, green, blue, intensity);
+    printf("gds: %s(red=%d, green=%d, blue=%d, intensity=%d)\n", function_name,
+           red, green, blue, intensity);
 #endif
 
     if (!impl->state || impl->state->isQuestionCheck) {
@@ -716,7 +716,7 @@ GDS_DEF(ModifyBGPal) {
 
     if (impl->controller->bg->set_main_palette) {
         impl->controller->bg->set_main_palette(impl->controller->bg, red, green,
-                                              blue, intensity);
+                                               blue, intensity);
     }
     return true;
 }
@@ -730,7 +730,8 @@ GDS_DEF(ModifySubBGPal) {
 
     mode_impl_t *impl = (mode_impl_t *)user_data;
     if (!impl || !impl->controller || !impl->controller->bg) {
-        fprintf(stderr, "gds: ModifySubBGPal called without background context\n");
+        fprintf(stderr,
+                "gds: ModifySubBGPal called without background context\n");
         return false;
     }
 
@@ -741,8 +742,8 @@ GDS_DEF(ModifySubBGPal) {
 
 #ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: %s(red=%d, green=%d, blue=%d, intensity=%d)\n",
-           function_name, red, green, blue, intensity);
+    printf("gds: %s(red=%d, green=%d, blue=%d, intensity=%d)\n", function_name,
+           red, green, blue, intensity);
 #endif
 
     if (!impl->state || impl->state->isQuestionCheck) {
@@ -751,8 +752,43 @@ GDS_DEF(ModifySubBGPal) {
 
     if (impl->controller->bg->set_sub_palette) {
         impl->controller->bg->set_sub_palette(impl->controller->bg, red, green,
-                                             blue, intensity);
+                                              blue, intensity);
     }
+    return true;
+}
+
+GDS_DEF(AddSprite) {
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    game_state_t *state = impl ? impl->state : NULL;
+    screen_controller_t *sc = impl ? impl->controller : NULL;
+    object_layer_t *ol = sc ? sc->object : NULL;
+
+    int32_t int_args[2];
+    const char *str_args[2];
+
+    if (!gds_read_s32_args(reader, int_args,
+                           sizeof(int_args) / sizeof(int_args[0]), command)) {
+        return false;
+    }
+    if (!gds_read_string_args(reader, str_args, 2, command)) {
+        return false;
+    }
+
+    int32_t x = int_args[0];
+    int32_t y = int_args[1];
+    const char *sprite_name = str_args[0];
+    const char *animation_name = str_args[1];
+
+#ifdef GDS_TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(x=%d, y=%d, sprite_name=\"%s\", animation_name=\"%s\")\n",
+           function_name, x, y, sprite_name, animation_name);
+#endif
+
+    if (ol && ol->add_sprite) {
+        ol->add_sprite(ol, state, x, y, sprite_name, animation_name);
+    }
+
     return true;
 }
 

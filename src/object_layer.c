@@ -101,6 +101,22 @@ static void object_layer_add_sprite_object(object_layer_t *layer,
     layer->objects[layer->count++] = object;
 }
 
+static void object_layer_add_sprite(object_layer_t *layer, game_state_t *state,
+                                   int32_t x, int32_t y,
+                                   const char *sprite_name,
+                                   const char *animation_name) {
+    const char *asset_name = sprite_name;
+    if (!asset_name || *asset_name == '\0') {
+        asset_name = animation_name;
+    }
+    if (!asset_name || *asset_name == '\0') {
+        return;
+    }
+
+    object_layer_add_sprite_object(layer, state, x, y + WB_SCREEN_HEIGHT, asset_name, NULL,
+                                   OBJECT_KIND_NONE, 0.0f, false);
+}
+
 static void object_layer_add_sub_sprite(object_layer_t *layer,
                                         game_state_t *state, int32_t x,
                                         int32_t y, const char *sprite_name,
@@ -127,6 +143,7 @@ void object_layer_init(object_layer_t *layer, renderer_t *renderer) {
     layer->count = 0U;
     layer->capacity = 0U;
     layer->add_bg_object = object_layer_add_bg_object;
+    layer->add_sprite = object_layer_add_sprite;
     layer->add_sub_sprite = object_layer_add_sub_sprite;
 }
 
