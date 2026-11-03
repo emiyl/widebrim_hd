@@ -52,23 +52,16 @@ static bool bg_layer_load_texture(bg_layer_t *bg_layer, game_state_t *state,
     return true;
 }
 
-static bool bg_layer_load_sub(bg_layer_t *bg_layer, game_state_t *state,
-                              const char *bg_name) {
-    return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->tex_sub,
-                                 "sub background");
-}
+#define BG_LAYER_DEFINE_LOADER(name, member, label)                             \
+    static bool bg_layer_load_##name(bg_layer_t *bg_layer, game_state_t *state, \
+                                    const char *bg_name) {                    \
+        return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->member, \
+                                    label);                                  \
+    }
 
-static bool bg_layer_load_main(bg_layer_t *bg_layer, game_state_t *state,
-                               const char *bg_name) {
-    return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->tex_main,
-                                 "main background");
-}
-
-static bool bg_layer_load_main2(bg_layer_t *bg_layer, game_state_t *state,
-                                const char *bg_name) {
-    return bg_layer_load_texture(bg_layer, state, bg_name, &bg_layer->tex_main2,
-                                 "main2 background");
-}
+BG_LAYER_DEFINE_LOADER(sub, tex_sub, "sub background")
+BG_LAYER_DEFINE_LOADER(main, tex_main, "main background")
+BG_LAYER_DEFINE_LOADER(main2, tex_main2, "main2 background")
 
 static void bg_layer_texture_init(bg_layer_texture_t *tex) {
     tex->tex = NULL;
@@ -181,33 +174,42 @@ static void bg_layer_texture_set_scroll(bg_layer_texture_t *tex,
     }
 }
 
-void bg_layer_set_sub_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
-                           int height) {
-    bg_layer_texture_set_rgba(&bg->tex_sub, bg->renderer, rgba, width, height);
+static void bg_layer_set_rgba_for(bg_layer_t *bg, bg_layer_texture_t *tex,
+                                 const uint8_t *rgba, int width, int height) {
+    if (!bg || !tex) {
+        return;
+    }
+
+    bg_layer_texture_set_rgba(tex, bg->renderer, rgba, width, height);
 }
 
-void bg_layer_set_main_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
-                            int height) {
-    bg_layer_texture_set_rgba(&bg->tex_main, bg->renderer, rgba, width, height);
+static void bg_layer_set_darkness_for(bg_layer_t *bg, bg_layer_texture_t *tex,
+                                     uint8_t darkness) {
+    if (!bg || !tex) {
+        return;
+    }
+
+    bg_layer_texture_set_darkness(tex, darkness);
 }
 
-void bg_layer_set_main2_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
-                             int height) {
-    bg_layer_texture_set_rgba(&bg->tex_main2, bg->renderer, rgba, width,
-                              height);
-}
+#define BG_LAYER_DEFINE_RGBA_SETTER(name, member)                                \
+    void bg_layer_set_##name##_rgba(bg_layer_t *bg, const uint8_t *rgba, int width, \
+                                   int height) {                                  \
+        bg_layer_set_rgba_for(bg, &bg->member, rgba, width, height);             \
+    }
 
-void bg_layer_set_sub_darkness(bg_layer_t *bg, uint8_t darkness) {
-    bg_layer_texture_set_darkness(&bg->tex_sub, darkness);
-}
+#define BG_LAYER_DEFINE_DARKNESS_SETTER(name, member)                             \
+    void bg_layer_set_##name##_darkness(bg_layer_t *bg, uint8_t darkness) {       \
+        bg_layer_set_darkness_for(bg, &bg->member, darkness);                     \
+    }
 
-void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness) {
-    bg_layer_texture_set_darkness(&bg->tex_main, darkness);
-}
+BG_LAYER_DEFINE_RGBA_SETTER(sub, tex_sub)
+BG_LAYER_DEFINE_RGBA_SETTER(main, tex_main)
+BG_LAYER_DEFINE_RGBA_SETTER(main2, tex_main2)
 
-void bg_layer_set_main2_darkness(bg_layer_t *bg, uint8_t darkness) {
-    bg_layer_texture_set_darkness(&bg->tex_main2, darkness);
-}
+BG_LAYER_DEFINE_DARKNESS_SETTER(sub, tex_sub)
+BG_LAYER_DEFINE_DARKNESS_SETTER(main, tex_main)
+BG_LAYER_DEFINE_DARKNESS_SETTER(main2, tex_main2)
 
 static void bg_layer_texture_set_palette(bg_layer_texture_t *tex, int red,
                                         int green, int blue, int intensity) {
@@ -269,57 +271,71 @@ static void bg_layer_texture_set_palette(bg_layer_texture_t *tex, int red,
     tex->tint_intensity = (uint8_t)clamped_intensity;
 }
 
-void bg_layer_set_sub_palette(bg_layer_t *bg, int red, int green, int blue,
-                             int intensity) {
-    if (!bg) {
+static void bg_layer_set_palette_for(bg_layer_t *bg, bg_layer_texture_t *tex,
+                                    int red, int green, int blue,
+                                    int intensity) {
+    if (!bg || !tex) {
         return;
     }
-    bg_layer_texture_set_palette(&bg->tex_sub, red, green, blue, intensity);
+
+    bg_layer_texture_set_palette(tex, red, green, blue, intensity);
 }
+
+#define BG_LAYER_DEFINE_PALETTE_SETTER(name, member)                             \
+    void bg_layer_set_##name##_palette(bg_layer_t *bg, int red, int green, int blue, \
+                                      int intensity) {                           \
+        bg_layer_set_palette_for(bg, &bg->member, red, green, blue, intensity);    \
+    }
+
+BG_LAYER_DEFINE_PALETTE_SETTER(sub, tex_sub)
+BG_LAYER_DEFINE_PALETTE_SETTER(main2, tex_main2)
 
 void bg_layer_set_main_palette(bg_layer_t *bg, int red, int green, int blue,
                               int intensity) {
     if (!bg) {
         return;
     }
+
     bg_layer_texture_set_palette(&bg->tex_main, red, green, blue, intensity);
     bg_layer_texture_set_palette(&bg->tex_main2, red, green, blue, intensity);
 }
 
-void bg_layer_set_main2_palette(bg_layer_t *bg, int red, int green, int blue,
-                               int intensity) {
-    if (!bg) {
+static void bg_layer_set_shake_for(bg_layer_t *bg, bg_layer_texture_t *tex,
+                                  float shake_remaining_ms) {
+    if (!bg || !tex) {
         return;
     }
-    bg_layer_texture_set_palette(&bg->tex_main2, red, green, blue, intensity);
+
+    bg_layer_texture_set_shake(tex, shake_remaining_ms);
 }
 
-void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms) {
-    bg_layer_texture_set_shake(&bg->tex_sub, shake_remaining_ms);
+static void bg_layer_set_scroll_for(bg_layer_t *bg, bg_layer_texture_t *tex,
+                                   float pixels_per_second, bool repeating) {
+    if (!bg || !tex) {
+        return;
+    }
+
+    bg_layer_texture_set_scroll(tex, pixels_per_second, repeating);
 }
 
-void bg_layer_set_main_shake(bg_layer_t *bg, float shake_remaining_ms) {
-    bg_layer_texture_set_shake(&bg->tex_main, shake_remaining_ms);
-}
+#define BG_LAYER_DEFINE_SHAKE_SETTER(name, member)                                \
+    void bg_layer_set_##name##_shake(bg_layer_t *bg, float shake_remaining_ms) {   \
+        bg_layer_set_shake_for(bg, &bg->member, shake_remaining_ms);               \
+    }
 
-void bg_layer_set_main2_shake(bg_layer_t *bg, float shake_remaining_ms) {
-    bg_layer_texture_set_shake(&bg->tex_main2, shake_remaining_ms);
-}
+#define BG_LAYER_DEFINE_SCROLL_SETTER(name, member)                                \
+    void bg_layer_set_##name##_scroll(bg_layer_t *bg, float pixels_per_second,      \
+                                    bool repeating) {                             \
+        bg_layer_set_scroll_for(bg, &bg->member, pixels_per_second, repeating);     \
+    }
 
-void bg_layer_set_sub_scroll(bg_layer_t *bg, float pixels_per_second,
-                             bool repeating) {
-    bg_layer_texture_set_scroll(&bg->tex_sub, pixels_per_second, repeating);
-}
+BG_LAYER_DEFINE_SHAKE_SETTER(sub, tex_sub)
+BG_LAYER_DEFINE_SHAKE_SETTER(main, tex_main)
+BG_LAYER_DEFINE_SHAKE_SETTER(main2, tex_main2)
 
-void bg_layer_set_main_scroll(bg_layer_t *bg, float pixels_per_second,
-                              bool repeating) {
-    bg_layer_texture_set_scroll(&bg->tex_main, pixels_per_second, repeating);
-}
-
-void bg_layer_set_main2_scroll(bg_layer_t *bg, float pixels_per_second,
-                               bool repeating) {
-    bg_layer_texture_set_scroll(&bg->tex_main2, pixels_per_second, repeating);
-}
+BG_LAYER_DEFINE_SCROLL_SETTER(sub, tex_sub)
+BG_LAYER_DEFINE_SCROLL_SETTER(main, tex_main)
+BG_LAYER_DEFINE_SCROLL_SETTER(main2, tex_main2)
 
 static void bg_layer_texture_update(bg_layer_texture_t *tex, float delta_ms) {
     if (tex->shake_remaining_ms > 0.0f) {
