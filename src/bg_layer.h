@@ -13,6 +13,10 @@
 typedef struct {
     renderer_texture_t *tex;
     uint8_t darkness;
+    uint8_t tint_r;
+    uint8_t tint_g;
+    uint8_t tint_b;
+    uint8_t tint_intensity;
     float shake_remaining_ms;
     bool repeating;
     float scroll_x;
@@ -57,6 +61,12 @@ typedef struct bg_layer_t {
                             float pixels_per_second, bool repeating);
     void (*set_main2_scroll)(struct bg_layer_t *bg_layer,
                              float pixels_per_second, bool repeating);
+    void (*set_sub_palette)(struct bg_layer_t *bg_layer, int red, int green,
+                           int blue, int intensity);
+    void (*set_main_palette)(struct bg_layer_t *bg_layer, int red, int green,
+                            int blue, int intensity);
+    void (*set_main2_palette)(struct bg_layer_t *bg_layer, int red, int green,
+                             int blue, int intensity);
 } bg_layer_t;
 
 void bg_layer_init(bg_layer_t *bg_layer, renderer_t *renderer);
@@ -75,6 +85,12 @@ void bg_layer_set_main2_rgba(bg_layer_t *bg, const uint8_t *rgba, int width,
 void bg_layer_set_sub_darkness(bg_layer_t *bg, uint8_t darkness);
 void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness);
 void bg_layer_set_main2_darkness(bg_layer_t *bg, uint8_t darkness);
+void bg_layer_set_sub_palette(bg_layer_t *bg, int red, int green, int blue,
+                             int intensity);
+void bg_layer_set_main_palette(bg_layer_t *bg, int red, int green, int blue,
+                              int intensity);
+void bg_layer_set_main2_palette(bg_layer_t *bg, int red, int green, int blue,
+                               int intensity);
 void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms);
 void bg_layer_set_main_shake(bg_layer_t *bg, float shake_remaining_ms);
 void bg_layer_set_main2_shake(bg_layer_t *bg, float shake_remaining_ms);

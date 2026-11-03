@@ -687,24 +687,72 @@ GDS_DEF(LoadSubBG) {
 }
 
 GDS_DEF(ModifyBGPal) {
-    int32_t args[3];
-    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]), command)) {
+    int32_t args[4];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->controller || !impl->controller->bg) {
+        fprintf(stderr, "gds: ModifyBGPal called without background context\n");
         return false;
     }
 
     int32_t red = args[0];
     int32_t green = args[1];
     int32_t blue = args[2];
+    int32_t intensity = args[3];
 
 #ifdef GDS_TRACE
     const char *function_name = gds_record_to_string(command);
-    printf("gds: %s(red=%d, green=%d, blue=%d)\n", function_name, red, green, blue);
-#else
-    (void)red;
-    (void)green;
-    (void)blue;
+    printf("gds: %s(red=%d, green=%d, blue=%d, intensity=%d)\n",
+           function_name, red, green, blue, intensity);
 #endif
 
+    if (!impl->state || impl->state->isQuestionCheck) {
+        return true;
+    }
+
+    if (impl->controller->bg->set_main_palette) {
+        impl->controller->bg->set_main_palette(impl->controller->bg, red, green,
+                                              blue, intensity);
+    }
+    return true;
+}
+
+GDS_DEF(ModifySubBGPal) {
+    int32_t args[4];
+    if (!gds_read_s32_args(reader, args, sizeof(args) / sizeof(args[0]),
+                           command)) {
+        return false;
+    }
+
+    mode_impl_t *impl = (mode_impl_t *)user_data;
+    if (!impl || !impl->controller || !impl->controller->bg) {
+        fprintf(stderr, "gds: ModifySubBGPal called without background context\n");
+        return false;
+    }
+
+    int32_t red = args[0];
+    int32_t green = args[1];
+    int32_t blue = args[2];
+    int32_t intensity = args[3];
+
+#ifdef GDS_TRACE
+    const char *function_name = gds_record_to_string(command);
+    printf("gds: %s(red=%d, green=%d, blue=%d, intensity=%d)\n",
+           function_name, red, green, blue, intensity);
+#endif
+
+    if (!impl->state || impl->state->isQuestionCheck) {
+        return true;
+    }
+
+    if (impl->controller->bg->set_sub_palette) {
+        impl->controller->bg->set_sub_palette(impl->controller->bg, red, green,
+                                             blue, intensity);
+    }
     return true;
 }
 

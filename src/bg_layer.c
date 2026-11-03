@@ -73,6 +73,10 @@ static bool bg_layer_load_main2(bg_layer_t *bg_layer, game_state_t *state,
 static void bg_layer_texture_init(bg_layer_texture_t *tex) {
     tex->tex = NULL;
     tex->darkness = 0;
+    tex->tint_r = 0;
+    tex->tint_g = 0;
+    tex->tint_b = 0;
+    tex->tint_intensity = 0;
     tex->shake_remaining_ms = 0.0f;
     tex->repeating = false;
     tex->scroll_x = 0.0f;
@@ -101,6 +105,9 @@ void bg_layer_init(bg_layer_t *bg, renderer_t *renderer) {
     bg->set_sub_scroll = bg_layer_set_sub_scroll;
     bg->set_main_scroll = bg_layer_set_main_scroll;
     bg->set_main2_scroll = bg_layer_set_main2_scroll;
+    bg->set_sub_palette = bg_layer_set_sub_palette;
+    bg->set_main_palette = bg_layer_set_main_palette;
+    bg->set_main2_palette = bg_layer_set_main2_palette;
 
     if (bg->tex_sub.tex)
         bg_layer_texture_destroy(&bg->tex_sub, bg->renderer);
@@ -200,6 +207,91 @@ void bg_layer_set_main_darkness(bg_layer_t *bg, uint8_t darkness) {
 
 void bg_layer_set_main2_darkness(bg_layer_t *bg, uint8_t darkness) {
     bg_layer_texture_set_darkness(&bg->tex_main2, darkness);
+}
+
+static void bg_layer_texture_set_palette(bg_layer_texture_t *tex, int red,
+                                        int green, int blue, int intensity) {
+    int clamped_red = red;
+    int clamped_green = green;
+    int clamped_blue = blue;
+    int clamped_intensity = intensity;
+
+    if (clamped_red < 0) {
+        clamped_red = 0;
+    } else if (clamped_red > 255) {
+        clamped_red = 255;
+    }
+
+    if (clamped_green < 0) {
+        clamped_green = 0;
+    } else if (clamped_green > 255) {
+        clamped_green = 255;
+    }
+
+    if (clamped_blue < 0) {
+        clamped_blue = 0;
+    } else if (clamped_blue > 255) {
+        clamped_blue = 255;
+    }
+
+    if (clamped_intensity < 0) {
+        clamped_intensity = 0;
+    } else if (clamped_intensity > 255) {
+        clamped_intensity = 255;
+    }
+
+    int inverse_intensity = 0xff - clamped_intensity;
+    int tint_r = inverse_intensity + ((clamped_intensity * clamped_red) / 0xff);
+    int tint_g = inverse_intensity + ((clamped_intensity * clamped_green) / 0xff);
+    int tint_b = inverse_intensity + ((clamped_intensity * clamped_blue) / 0xff);
+
+    if (tint_r < 0) {
+        tint_r = 0;
+    } else if (tint_r > 255) {
+        tint_r = 255;
+    }
+
+    if (tint_g < 0) {
+        tint_g = 0;
+    } else if (tint_g > 255) {
+        tint_g = 255;
+    }
+
+    if (tint_b < 0) {
+        tint_b = 0;
+    } else if (tint_b > 255) {
+        tint_b = 255;
+    }
+
+    tex->tint_r = (uint8_t)tint_r;
+    tex->tint_g = (uint8_t)tint_g;
+    tex->tint_b = (uint8_t)tint_b;
+    tex->tint_intensity = (uint8_t)clamped_intensity;
+}
+
+void bg_layer_set_sub_palette(bg_layer_t *bg, int red, int green, int blue,
+                             int intensity) {
+    if (!bg) {
+        return;
+    }
+    bg_layer_texture_set_palette(&bg->tex_sub, red, green, blue, intensity);
+}
+
+void bg_layer_set_main_palette(bg_layer_t *bg, int red, int green, int blue,
+                              int intensity) {
+    if (!bg) {
+        return;
+    }
+    bg_layer_texture_set_palette(&bg->tex_main, red, green, blue, intensity);
+    bg_layer_texture_set_palette(&bg->tex_main2, red, green, blue, intensity);
+}
+
+void bg_layer_set_main2_palette(bg_layer_t *bg, int red, int green, int blue,
+                               int intensity) {
+    if (!bg) {
+        return;
+    }
+    bg_layer_texture_set_palette(&bg->tex_main2, red, green, blue, intensity);
 }
 
 void bg_layer_set_sub_shake(bg_layer_t *bg, float shake_remaining_ms) {
@@ -303,6 +395,15 @@ static void bg_layer_texture_draw(renderer_t *renderer, bg_layer_texture_t *tex,
                           .w = (float)WB_SCREEN_WIDTH,
                           .h = (float)WB_SCREEN_HEIGHT};
         renderer_fill_rect(renderer, &overlay, 0, 0, 0, tex->darkness);
+    }
+
+    if (tex->tint_intensity > 0) {
+        rect_t overlay = {.x = 0.0f,
+                          .y = (float)y_offset,
+                          .w = (float)WB_SCREEN_WIDTH,
+                          .h = (float)WB_SCREEN_HEIGHT};
+        renderer_fill_rect(renderer, &overlay, tex->tint_r, tex->tint_g,
+                          tex->tint_b, tex->tint_intensity);
     }
 }
 

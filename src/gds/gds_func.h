@@ -40,6 +40,7 @@
     X(LoadBG)                                                                  \
     X(LoadSubBG)                                                               \
     X(ModifyBGPal)                                                             \
+    X(ModifySubBGPal)                                                          \
     X(Print)
 
 #define GDS_FUNC_LOOKUP_TABLE(X) GDS_OPCODE_HANDLER_LIST(X)
