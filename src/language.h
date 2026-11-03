@@ -54,6 +54,180 @@ static inline const char *language_to_data_dir(language_t language) {
     }
 }
 
+static inline bool asset_path_is_image_extension(const char *suffix) {
+    return suffix != NULL &&
+           (strcmp(suffix, ".jpg") == 0 || strcmp(suffix, ".jpeg") == 0 ||
+            strcmp(suffix, ".png") == 0 || strcmp(suffix, ".webp") == 0 ||
+            strcmp(suffix, ".bgx") == 0);
+}
+
+static inline void asset_path_replace_extension(char *path,
+                                               const char *new_suffix) {
+    char *suffix;
+    size_t suffix_len;
+
+    if (!path || !new_suffix) {
+        return;
+    }
+
+    suffix = strrchr(path, '.');
+    if (suffix == NULL) {
+        return;
+    }
+
+    suffix_len = strlen(suffix);
+    if (suffix_len >= strlen(new_suffix)) {
+        snprintf(suffix, suffix_len + 1U, "%s", new_suffix);
+        return;
+    }
+
+    snprintf(suffix, strlen(new_suffix) + 1U, "%s", new_suffix);
+}
+
+static inline void asset_path_to_spr_path(char *path) {
+    char *suffix;
+
+    if (!path) {
+        return;
+    }
+
+    suffix = strrchr(path, '.');
+    if (suffix != NULL && asset_path_is_image_extension(suffix)) {
+        asset_path_replace_extension(path, ".spr");
+    }
+}
+
+static inline bool asset_path_resolve_spr_image_roots(
+    const char *assets_root, const char *resource_pack_root,
+    language_t language, const char *rel_path, char *out_path,
+    size_t out_path_size) {
+    static const char *const dir_candidates[] = {"data", "data-EU"};
+    static const char *const image_extensions[] = {".jpg", ".jpeg", ".png",
+                                                   ".webp", ".bgx"};
+    char candidate[4096];
+    char stem[4096];
+    const char *normalized = rel_path;
+    const char *lang_dir = language_to_data_dir(language);
+    const char *roots[2];
+    size_t root_count = 0U;
+    const char *suffix;
+    size_t stem_len;
+    char candidate_paths[6][4096];
+    size_t candidate_count = 0U;
+
+    if (!rel_path || !out_path || out_path_size == 0U) {
+        return false;
+    }
+
+    if (resource_pack_root && resource_pack_root[0] != '\0') {
+        roots[root_count++] = resource_pack_root;
+    }
+    if (assets_root && assets_root[0] != '\0') {
+        roots[root_count++] = assets_root;
+    }
+    if (root_count == 0U) {
+        return false;
+    }
+
+    while (*normalized == '/') {
+        ++normalized;
+    }
+
+    if (strncmp(normalized, "data/", 5U) == 0) {
+        normalized += 5U;
+    } else if (strncmp(normalized, "data-EU/", 8U) == 0) {
+        normalized += 8U;
+    } else if (strncmp(normalized, "data-", 5U) == 0) {
+        const char *slash = strchr(normalized + 5U, '/');
+        if (slash) {
+            normalized = slash + 1;
+        }
+    }
+
+    suffix = strrchr(normalized, '.');
+    stem_len = strlen(normalized);
+    if (suffix != NULL &&
+        (strcmp(suffix, ".spr") == 0 || strcmp(suffix, ".sbj") == 0 ||
+         asset_path_is_image_extension(suffix))) {
+        stem_len = (size_t)(suffix - normalized);
+    }
+    if (stem_len >= sizeof(stem)) {
+        stem_len = sizeof(stem) - 1U;
+    }
+    memcpy(stem, normalized, stem_len);
+    stem[stem_len] = '\0';
+
+    for (size_t v = 0U; v < sizeof(image_extensions) / sizeof(image_extensions[0]);
+         ++v) {
+        int len = snprintf(candidate_paths[candidate_count],
+                           sizeof(candidate_paths[candidate_count]), "%s%s",
+                           stem, image_extensions[v]);
+        if (len >= 0 && (size_t)len < sizeof(candidate_paths[candidate_count])) {
+            ++candidate_count;
+        }
+    }
+
+    if (candidate_count == 0U ||
+        strcmp(candidate_paths[candidate_count - 1], normalized) != 0) {
+        int len = snprintf(candidate_paths[candidate_count],
+                           sizeof(candidate_paths[candidate_count]), "%s",
+                           normalized);
+        if (len >= 0 && (size_t)len < sizeof(candidate_paths[candidate_count])) {
+            ++candidate_count;
+        }
+    }
+
+    for (size_t i = 0U; i < root_count; ++i) {
+        const char *root = roots[i];
+        for (size_t j = 0U; j < sizeof(dir_candidates) / sizeof(dir_candidates[0]);
+             ++j) {
+            for (size_t k = 0U; k < candidate_count; ++k) {
+                int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s",
+                                   root, dir_candidates[j],
+                                   candidate_paths[k]);
+                if (len < 0 || (size_t)len >= sizeof(candidate)) {
+                    continue;
+                }
+                if (access(candidate, F_OK) == 0) {
+                    size_t candidate_len = strlen(candidate);
+                    if (candidate_len < out_path_size) {
+                        snprintf(out_path, out_path_size, "%s", candidate);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        for (size_t k = 0U; k < candidate_count; ++k) {
+            int len = snprintf(candidate, sizeof(candidate), "%s/%s/%s", root,
+                               lang_dir, candidate_paths[k]);
+            if (len >= 0 && (size_t)len < sizeof(candidate) &&
+                access(candidate, F_OK) == 0) {
+                size_t candidate_len = strlen(candidate);
+                if (candidate_len < out_path_size) {
+                    snprintf(out_path, out_path_size, "%s", candidate);
+                    return true;
+                }
+            }
+        }
+
+        for (size_t k = 0U; k < candidate_count; ++k) {
+            int len = snprintf(candidate, sizeof(candidate), "%s/data/%s", root,
+                               candidate_paths[k]);
+            if (len >= 0 && (size_t)len < sizeof(candidate) &&
+                access(candidate, F_OK) == 0) {
+                size_t candidate_len = strlen(candidate);
+                if (candidate_len < out_path_size) {
+                    snprintf(out_path, out_path_size, "%s", candidate);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 static inline bool asset_path_resolve_roots(const char *assets_root,
                                             const char *resource_pack_root,
                                             language_t language,

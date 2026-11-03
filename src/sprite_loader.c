@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define SPRITE_PATH_MAX 4096
 
@@ -372,7 +373,8 @@ bool sprite_sheet_load_from_assets(const char *assets_root,
 
     suffix = strrchr(normalized, '.');
     if (suffix != NULL && strcmp(suffix, ".spr") != 0 &&
-        strcmp(suffix, ".png") != 0) {
+        strcmp(suffix, ".sbj") != 0 &&
+        !asset_path_is_image_extension(suffix)) {
         suffix = NULL;
     }
 
@@ -381,11 +383,8 @@ bool sprite_sheet_load_from_assets(const char *assets_root,
         return false;
     }
 
-    if (suffix != NULL && strcmp(suffix, ".png") == 0) {
-        char *resolved_suffix = strrchr(path, '.');
-        if (resolved_suffix != NULL && strcmp(resolved_suffix, ".png") == 0) {
-            strcpy(resolved_suffix, ".spr");
-        }
+    if (suffix != NULL && asset_path_is_image_extension(suffix)) {
+        asset_path_to_spr_path(path);
     }
 
     sheet = sprite_sheet_load(path);
@@ -433,7 +432,9 @@ bool sprite_loader_load(game_state_t *state, const char *rel_path,
 
     if (strncmp(rel_path, "ani/", 4U) == 0 ||
         strstr(rel_path, "/ani/") != NULL || strstr(rel_path, ".spr") != NULL ||
-        strstr(rel_path, ".png") != NULL) {
+        strstr(rel_path, ".sbj") != NULL ||
+        (strrchr(rel_path, '.') != NULL &&
+         asset_path_is_image_extension(strrchr(rel_path, '.')))) {
         *out_sheet = sprite_sheet_load(full_path);
         return *out_sheet != NULL;
     }
@@ -503,7 +504,6 @@ bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
                                    size_t frame_index, uint8_t **out_rgba,
                                    int *out_width, int *out_height) {
     char spritesheet_path[SPRITE_PATH_MAX];
-    char *suffix;
     texture_data_t *spritesheet = NULL;
     sprite_sheet_t *sheet = NULL;
     bool ok = false;
@@ -513,18 +513,12 @@ bool sprite_loader_load_frame_rgba(game_state_t *state, const char *rel_path,
         return false;
     }
 
-    if (!asset_path_resolve(state, rel_path, spritesheet_path,
-                            sizeof(spritesheet_path))) {
+    if (!asset_path_resolve_spr_image_roots(state->assets_root,
+                                           state->resource_pack_root,
+                                           state->language, rel_path,
+                                           spritesheet_path,
+                                           sizeof(spritesheet_path))) {
         return false;
-    }
-
-    suffix = strrchr(spritesheet_path, '.');
-    if (suffix != NULL && strcmp(suffix, ".spr") == 0) {
-        size_t prefix_len = (size_t)(suffix - spritesheet_path);
-        if (prefix_len + strlen(".png") + 1U < sizeof(spritesheet_path)) {
-            snprintf(spritesheet_path + prefix_len,
-                     sizeof(spritesheet_path) - prefix_len, ".png");
-        }
     }
 
     spritesheet = texture_load_rgba(spritesheet_path);
@@ -630,7 +624,6 @@ bool sprite_loader_load_animation_names(game_state_t *state,
                                         const char *rel_path, char ***out_names,
                                         size_t *out_count) {
     char full_path[SPRITE_PATH_MAX];
-    char *suffix;
     FILE *file;
     long size;
     uint8_t *buffer = NULL;
@@ -643,18 +636,13 @@ bool sprite_loader_load_animation_names(game_state_t *state,
         return false;
     }
 
-    if (!asset_path_resolve(state, rel_path, full_path, sizeof(full_path))) {
+    if (!asset_path_resolve_spr_image_roots(state->assets_root,
+                                           state->resource_pack_root,
+                                           state->language, rel_path, full_path,
+                                           sizeof(full_path))) {
         return false;
     }
-
-    suffix = strrchr(full_path, '.');
-    if (suffix != NULL && strcmp(suffix, ".png") == 0) {
-        size_t prefix_len = (size_t)(suffix - full_path);
-        if (prefix_len + strlen(".spr") + 1U < sizeof(full_path)) {
-            snprintf(full_path + prefix_len, sizeof(full_path) - prefix_len,
-                     ".spr");
-        }
-    }
+    asset_path_to_spr_path(full_path);
 
     file = fopen(full_path, "rb");
     if (!file) {
@@ -706,7 +694,6 @@ bool sprite_loader_load_animation_rgba(
     size_t *out_frame_count, int **out_frame_widths, int **out_frame_heights,
     int *out_width, int *out_height) {
     char spritesheet_path[SPRITE_PATH_MAX];
-    char *suffix;
     texture_data_t *spritesheet = NULL;
     sprite_sheet_t *sheet = NULL;
     uint8_t **frames = NULL;
@@ -726,20 +713,14 @@ bool sprite_loader_load_animation_rgba(
         return false;
     }
 
-    if (!asset_path_resolve(state, rel_path, spritesheet_path,
-                            sizeof(spritesheet_path))) {
+    if (!asset_path_resolve_spr_image_roots(state->assets_root,
+                                           state->resource_pack_root,
+                                           state->language, rel_path,
+                                           spritesheet_path,
+                                           sizeof(spritesheet_path))) {
         fprintf(stderr, "widebrim: Failed to resolve asset path for %s\n",
                 rel_path);
         return false;
-    }
-
-    suffix = strrchr(spritesheet_path, '.');
-    if (suffix != NULL && strcmp(suffix, ".spr") == 0) {
-        size_t prefix_len = (size_t)(suffix - spritesheet_path);
-        if (prefix_len + strlen(".png") + 1U < sizeof(spritesheet_path)) {
-            snprintf(spritesheet_path + prefix_len,
-                     sizeof(spritesheet_path) - prefix_len, ".png");
-        }
     }
 
     spritesheet = texture_load_rgba(spritesheet_path);
